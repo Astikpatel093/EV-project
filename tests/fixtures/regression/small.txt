@@ -1,0 +1,2 @@
+55 65 2
+# feasible trips, placement benefit, new stations - recorded from ev33 run (dp + dijkstra) on data/scenarios/small
