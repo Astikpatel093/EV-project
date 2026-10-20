@@ -1,0 +1,9 @@
+# Render blueprint: one free web service built from the Dockerfile.
+services:
+  - type: web
+    name: ev-project
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true

@@ -1,0 +1,257 @@
+[sort]
+  sort        merge              small        n=1000          0.106 ms        4000 B  q=10428        ok  quality=comparisons
+  sort        quick-median3      small        n=1000          0.107 ms           4 B  q=16635        ok  quality=comparisons
+  sort        quick-first        small        n=1000          0.102 ms           4 B  q=16470        ok  quality=comparisons
+  sort        quick-random       small        n=1000          0.115 ms           4 B  q=14278        ok  quality=comparisons
+  sort        libc-qsort         small        n=1000          0.098 ms           0 B  q=0            ok  quality=comparisons
+  sort        merge              medium       n=100000       19.131 ms      400000 B  q=1.64731e+06  ok  quality=comparisons
+  sort        quick-median3      medium       n=100000       16.121 ms           4 B  q=2.55875e+06  ok  quality=comparisons
+  sort        quick-first        medium       n=100000       17.089 ms           4 B  q=2.51669e+06  ok  quality=comparisons
+  sort        quick-random       medium       n=100000       16.373 ms           4 B  q=2.45088e+06  ok  quality=comparisons
+  sort        libc-qsort         medium       n=100000       12.914 ms           0 B  q=0            ok  quality=comparisons
+  sort        merge              large        n=1000000     226.918 ms     4000000 B  q=2.02901e+07  ok  quality=comparisons
+  sort        quick-median3      large        n=1000000     176.108 ms           4 B  q=3.01695e+07  ok  quality=comparisons
+  sort        quick-random       large        n=1000000     203.695 ms           4 B  q=2.8734e+07   ok  quality=comparisons
+  sort        libc-qsort         large        n=1000000     168.558 ms           0 B  q=0            ok  quality=comparisons
+  sort        merge              adversarial  n=20000         0.165 ms       80000 B  q=19999        ok  pre-sorted input; quality=comparisons
+  sort        quick-median3      adversarial  n=20000         1.056 ms           4 B  q=363291       ok  pre-sorted input; quality=comparisons
+  sort        quick-first        adversarial  n=20000       502.574 ms           4 B  q=2.0003e+08   ok  pre-sorted input; quality=comparisons
+  sort        quick-random       adversarial  n=20000         1.770 ms           4 B  q=422200       ok  pre-sorted input; quality=comparisons
+  sort        libc-qsort         adversarial  n=20000         0.513 ms           0 B  q=0            ok  pre-sorted input; quality=comparisons
+[search]
+  search      binary-iterative   small        n=1000          9.994 ms           0 B  q=33192        ok  q queries; quality=hits
+  search      binary-recursive   small        n=1000          8.849 ms           0 B  q=33192        ok  quality=hits
+  search      linear-scan        small        n=1000         50.903 ms           0 B  q=348          ok  time extrapolated from 1000 queries
+  search      binary-iterative   medium       n=100000       16.669 ms           0 B  q=33463        ok  q queries; quality=hits
+  search      binary-recursive   medium       n=100000       15.173 ms           0 B  q=33463        ok  quality=hits
+  search      linear-scan        medium       n=100000     3087.036 ms           0 B  q=318          ok  time extrapolated from 1000 queries
+  search      binary-iterative   large        n=1000000      30.273 ms           0 B  q=33286        ok  q queries; quality=hits
+  search      binary-recursive   large        n=1000000      25.169 ms           0 B  q=33286        ok  quality=hits
+  search      linear-scan        large        n=1000000   33152.930 ms           0 B  q=358          ok  time extrapolated from 1000 queries
+  search      binary-iterative   adversarial  n=1000000       4.711 ms           0 B  q=100000       ok  q queries; quality=hits
+  search      binary-recursive   adversarial  n=1000000       0.368 ms           0 B  q=100000       ok  quality=hits
+  search      linear-scan        adversarial  n=1000000       0.122 ms           0 B  q=1000         ok  time extrapolated from 1000 queries
+[divide-and-conquer]
+  maxsubarray divide-conquer     small        n=1000          0.022 ms           0 B  q=909.099      ok  
+  maxsubarray kadane             small        n=1000          0.002 ms           0 B  q=909.099      ok  
+  maxsubarray brute-n2           small        n=1000          0.354 ms           0 B  q=909.099      ok  
+  maxsubarray divide-conquer     medium       n=100000        3.835 ms           0 B  q=17004.9      ok  
+  maxsubarray kadane             medium       n=100000        0.100 ms           0 B  q=17004.9      ok  
+  maxsubarray divide-conquer     large        n=1000000      47.200 ms           0 B  q=126018       ok  
+  maxsubarray kadane             large        n=1000000       1.242 ms           0 B  q=126018       ok  
+  maxsubarray divide-conquer     adversarial  n=1000000      53.674 ms           0 B  q=-1           ok  all negative
+  maxsubarray kadane             adversarial  n=1000000       1.530 ms           0 B  q=-1           ok  
+  power       fast-x1000         small        n=1000          0.016 ms           0 B  q=0.818633     ok  time for 1000 calls
+  power       naive              small        n=1000          0.002 ms           0 B  q=0.818714     ok  
+  power       fast-x1000         medium       n=100000        0.029 ms           0 B  q=2.05683e-09  ok  time for 1000 calls
+  power       naive              medium       n=100000        0.208 ms           0 B  q=2.05703e-09  ok  
+  power       fast-x1000         large        n=10000000      0.046 ms           0 B  q=0            ok  time for 1000 calls
+  power       naive              large        n=10000000    326.695 ms           0 B  q=1.23516e-320 ok  
+  power       fast-x1000         adversarial  n=10000000      0.042 ms           0 B  q=2.71828      ok  time for 1000 calls
+  power       naive              adversarial  n=10000000     17.013 ms           0 B  q=2.71828      ok  
+  celebrity   divide-conquer     small        n=200           0.003 ms           0 B  q=597          ok  quality=knows() queries
+  celebrity   naive-n2           small        n=200           0.003 ms           0 B  q=740          ok  quality=knows() queries
+  celebrity   divide-conquer     medium       n=1000          0.056 ms           0 B  q=2997         ok  quality=knows() queries
+  celebrity   naive-n2           medium       n=1000          0.015 ms           0 B  q=3170         ok  quality=knows() queries
+  celebrity   divide-conquer     large        n=4000          0.221 ms           0 B  q=11997        ok  quality=knows() queries
+  celebrity   naive-n2           large        n=4000          0.051 ms           0 B  q=9996         ok  quality=knows() queries
+  celebrity   divide-conquer     adversarial  n=4000          0.278 ms           0 B  q=4003         ok  quality=knows() queries
+  celebrity   naive-n2           adversarial  n=4000          0.107 ms           0 B  q=10570        ok  quality=knows() queries
+  matmul      classical          small        n=64            0.105 ms           0 B  q=0            ok  
+  matmul      strassen-cut64     small        n=64            0.129 ms           0 B  q=0            ok  quality=max|err|
+  matmul      strassen-cut16     small        n=64            0.142 ms       92160 B  q=3.55271e-14  ok  quality=max|err|
+  matmul      classical          medium       n=128           0.973 ms           0 B  q=0            ok  
+  matmul      strassen-cut64     medium       n=128           1.315 ms      294912 B  q=7.10543e-14  ok  quality=max|err|
+  matmul      strassen-cut16     medium       n=128           1.011 ms      387072 B  q=1.52767e-13  ok  quality=max|err|
+  matmul      classical          large        n=256           8.790 ms           0 B  q=0            ok  
+  matmul      strassen-cut64     large        n=256           7.490 ms     1474560 B  q=3.05533e-13  ok  quality=max|err|
+  matmul      strassen-cut16     large        n=256           8.184 ms     1566720 B  q=7.53175e-13  ok  quality=max|err|
+  matmul      classical          xlarge       n=512          68.549 ms           0 B  q=0            ok  
+  matmul      strassen-cut64     xlarge       n=512          54.682 ms     6193152 B  q=1.33582e-12  ok  quality=max|err|
+  matmul      strassen-cut16     xlarge       n=512          51.487 ms     6285312 B  q=4.07852e-12  ok  quality=max|err|
+  matmul      classical          adversarial  n=257           8.295 ms           0 B  q=0            ok  
+  matmul      strassen-cut64     adversarial  n=257          57.535 ms    12484608 B  q=2.70006e-13  ok  padded to 512; quality=max|err|
+  matmul      strassen-cut16     adversarial  n=257          52.817 ms    12576768 B  q=6.96332e-13  ok  quality=max|err|
+[greedy]
+  intervals   activity-selection small        n=1000          0.113 ms       32000 B  q=70           ok  quality=sessions on 1 charger
+  intervals   interval-partition small        n=1000          0.151 ms       32000 B  q=39           ok  quality=chargers; check=depth bound
+  intervals   activity-selection medium       n=100000       18.992 ms     3200000 B  q=6942         ok  quality=sessions on 1 charger
+  intervals   interval-partition medium       n=100000       23.671 ms     3200000 B  q=49           ok  quality=chargers; check=depth bound
+  intervals   activity-selection large        n=1000000     243.595 ms    32000000 B  q=69800        ok  quality=sessions on 1 charger
+  intervals   interval-partition large        n=1000000     339.933 ms    32000000 B  q=52           ok  quality=chargers; check=depth bound
+  intervals   activity-selection adversarial  n=100000        1.972 ms     3200000 B  q=1            ok  quality=sessions on 1 charger
+  intervals   interval-partition adversarial  n=100000        1.225 ms     3200000 B  q=100000       ok  quality=chargers; check=depth bound
+  huffman     build+encode+decode skewed-small n=10000         0.247 ms       14579 B  q=1.8119       ok  quality=bits/symbol
+  huffman     build+encode+decode skewed-large n=1000000      24.291 ms      237112 B  q=1.79838      ok  quality=bits/symbol
+  huffman     build+encode+decode adversarial  n=1000000     102.002 ms     1014593 B  q=8            ok  quality=bits/symbol
+[shortest paths]
+  sssp        bellman-ford       small        n=100           0.003 ms           0 B  q=38.6648      ok  single source; 3 passes
+  sssp        dijkstra           small        n=100           0.007 ms        5892 B  q=38.6648      ok  single source
+  apsp        dijkstra-x-n       small        n=100           0.553 ms        5892 B  q=0            ok  all sources
+  apsp        floyd-warshall     small        n=100           0.772 ms      120000 B  q=38.6648      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       small-neg    n=100           0.003 ms           0 B  q=14.5973      ok  single source; 3 passes
+  sssp        dijkstra(on-negative) small-neg    n=100           0.000 ms           0 B  q=14.5973      ok  same answer here (no luck guaranteed)
+  apsp        floyd-warshall     small-neg    n=100           0.720 ms      120000 B  q=14.5973      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       medium       n=900           0.031 ms           0 B  q=113.632      ok  single source; 4 passes
+  sssp        dijkstra           medium       n=900           0.058 ms       56612 B  q=113.632      ok  single source
+  apsp        dijkstra-x-n       medium       n=900          49.643 ms       56612 B  q=0            ok  all sources
+  apsp        floyd-warshall     medium       n=900         444.320 ms     9720000 B  q=113.632      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       medium-neg   n=900           0.029 ms           0 B  q=42.1229      ok  single source; 4 passes
+  sssp        dijkstra(on-negative) medium-neg   n=900           0.000 ms           0 B  q=42.1229      ok  same answer here (no luck guaranteed)
+  apsp        floyd-warshall     medium-neg   n=900         468.411 ms     9720000 B  q=42.1229      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       large        n=3600          0.190 ms           0 B  q=233.169      ok  single source; 7 passes
+  sssp        dijkstra           large        n=3600          0.239 ms      230192 B  q=233.169      ok  single source
+  apsp        dijkstra-x-n       large        n=3600        944.334 ms      230192 B  q=0            ok  all sources
+  apsp        floyd-warshall     large        n=3600      32946.248 ms   155520000 B  q=233.169      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       large-neg    n=3600          0.161 ms           0 B  q=92.4369      ok  single source; 6 passes
+  sssp        dijkstra(on-negative) large-neg    n=3600          0.000 ms           0 B  q=93.2548      ok  WRONG answer: negative arcs break Dijkstra
+  apsp        floyd-warshall     large-neg    n=3600      34288.167 ms   155520000 B  q=92.4369      ok  all pairs incl. n^2 tables
+  sssp        bellman-ford       adversarial  n=3000         19.926 ms           0 B  q=2999         ok  reverse-ordered path; 3000 passes
+  sssp        dijkstra           adversarial  n=3000          0.036 ms       51016 B  q=2999         ok  
+[minimum spanning tree]
+  mst         prim-dense         small        n=100           0.074 ms         900 B  q=680.665      ok  complete graph; quality=weight
+  mst         kruskal            small        n=100           0.902 ms      158400 B  q=680.665      ok  
+  mst         prim-dense         medium       n=500           1.338 ms        4500 B  q=1475.72      ok  complete graph; quality=weight
+  mst         kruskal            medium       n=500          31.587 ms     3992000 B  q=1475.72      ok  
+  mst         prim-dense         large        n=1500         11.040 ms       13500 B  q=2556.5       ok  complete graph; quality=weight
+  mst         kruskal            large        n=1500        309.599 ms    35976000 B  q=2556.5       ok  
+  mst         prim-dense         adversarial  n=1500          4.019 ms       13500 B  q=1499         ok  complete graph; quality=weight
+  mst         kruskal            adversarial  n=1500         24.617 ms    35976000 B  q=1499         ok  all weights equal
+[knapsack: DP vs branch-and-bound vs greedy]
+  knapsack    dp-table           small        n=20            0.013 ms        4396 B  q=1            ok  verified by brute force
+  knapsack    bnb-FIFO           small        n=20            0.009 ms       45216 B  q=1            ok  generated=42 frontier=2
+  knapsack    bnb-LIFO           small        n=20            0.004 ms       45216 B  q=1            ok  generated=42 frontier=3
+  knapsack    bnb-LC             small        n=20            0.003 ms       45216 B  q=1            ok  generated=42 frontier=3
+  knapsack    greedy-ratio       small        n=20            0.001 ms           0 B  q=1            ok  quality=value/optimum
+  knapsack    dp-table           medium       n=60            0.115 ms       20948 B  q=1            ok  reference optimum
+  knapsack    bnb-FIFO           medium       n=60            0.013 ms       45536 B  q=1            ok  generated=215 frontier=15
+  knapsack    bnb-LIFO           medium       n=60            0.011 ms       45536 B  q=1            ok  generated=208 frontier=9
+  knapsack    bnb-LC             medium       n=60            0.012 ms       45536 B  q=1            ok  generated=151 frontier=12
+  knapsack    greedy-ratio       medium       n=60            0.002 ms           0 B  q=0.99868      ok  quality=value/optimum
+  knapsack    dp-table           large        n=200           1.594 ms      183728 B  q=1            ok  reference optimum
+  knapsack    bnb-FIFO           large        n=200           0.051 ms       46656 B  q=1            ok  generated=708 frontier=135
+  knapsack    bnb-LIFO           large        n=200           0.067 ms       46656 B  q=1            ok  generated=708 frontier=13
+  knapsack    bnb-LC             large        n=200           0.043 ms       46656 B  q=1            ok  generated=353 frontier=26
+  knapsack    greedy-ratio       large        n=200           0.015 ms           0 B  q=0.999409     ok  quality=value/optimum
+  knapsack    dp-table           weak-corr    n=60            0.173 ms       25528 B  q=1            ok  reference optimum
+  knapsack    bnb-FIFO           weak-corr    n=60            0.026 ms       45536 B  q=1            ok  generated=776 frontier=105
+  knapsack    bnb-LIFO           weak-corr    n=60            0.013 ms       45536 B  q=1            ok  generated=321 frontier=18
+  knapsack    bnb-LC             weak-corr    n=60            0.029 ms       45536 B  q=1            ok  generated=385 frontier=60
+  knapsack    greedy-ratio       weak-corr    n=60            0.002 ms           0 B  q=0.998556     ok  quality=value/optimum
+  knapsack    dp-table           adversarial  n=40            0.080 ms       14944 B  q=1            ok  reference optimum
+  knapsack    bnb-FIFO           adversarial  n=40            0.258 ms      721216 B  q=1            ok  generated=14886 frontier=3609
+  knapsack    bnb-LIFO           adversarial  n=40            0.008 ms       45376 B  q=1            ok  generated=191 frontier=28
+  knapsack    bnb-LC             adversarial  n=40            0.017 ms       45376 B  q=1            ok  generated=252 frontier=36
+  knapsack    greedy-ratio       adversarial  n=40            0.001 ms           0 B  q=0.992237     ok  quality=value/optimum
+[matrix chain, LCS, optimal BST, TSP]
+  matrixchain dp-n3              small        n=10            0.001 ms         800 B  q=5.03424      ok  quality=left-to-right/optimal
+  matrixchain dp-n3              medium       n=100           0.325 ms       80000 B  q=14.2753      ok  quality=left-to-right/optimal
+  matrixchain dp-n3              large        n=300           6.241 ms      720000 B  q=8.16939      ok  quality=left-to-right/optimal
+  lcs         dp-table           small        n=1000          3.928 ms     4008004 B  q=242          ok  quality=LCS length
+  lcs         dp-table           medium       n=3000         49.102 ms    36024004 B  q=725          ok  quality=LCS length
+  lcs         dp-table           large        n=8000        285.099 ms   256064004 B  q=1941         ok  quality=LCS length
+  lcs         dp-table           adversarial  n=3000         41.736 ms    36024004 B  q=0            ok  quality=LCS length
+  obst        dp-n3              small        n=50            0.067 ms       43264 B  q=1.17616      ok  quality=balanced/optimal probes
+  obst        dp-n3              medium       n=200           2.736 ms      652864 B  q=1.10232      ok  quality=balanced/optimal probes
+  obst        dp-n3              large        n=400          19.405 ms     2585664 B  q=1.09587      ok  quality=balanced/optimal probes
+  obst        dp-n3              adversarial  n=400          10.781 ms     2585664 B  q=3.15136      ok  quality=balanced/optimal probes
+  tsp         held-karp          n6           n=6             0.006 ms        1440 B  q=100.964      ok  verified by brute force
+  tsp         brute-force        n6           n=6             0.001 ms           0 B  q=100.964      ok  
+  tsp         held-karp          n8           n=8             0.025 ms        8064 B  q=96.4199      ok  verified by brute force
+  tsp         brute-force        n8           n=8             0.033 ms           0 B  q=96.4199      ok  
+  tsp         held-karp          n10          n=10            0.131 ms       41472 B  q=131.753      ok  verified by brute force
+  tsp         brute-force        n10          n=10            1.325 ms           0 B  q=131.753      ok  
+  tsp         held-karp          n13          n=13            1.861 ms      442368 B  q=173.326      ok  
+  tsp         held-karp          n15          n=15            9.935 ms     2064384 B  q=168.032      ok  
+  tsp         held-karp          n16          n=16           23.112 ms     4423680 B  q=180.427      ok  
+[backtracking]
+  nqueens     backtracking       n6           n=6             0.003 ms          24 B  q=4            ok  nodes=153
+  nqueens     backtracking       n8           n=8             0.037 ms          32 B  q=92           ok  nodes=2057
+  nqueens     backtracking       n10          n=10            0.866 ms          40 B  q=724          ok  nodes=35539
+  nqueens     backtracking       n12          n=12           17.381 ms          48 B  q=14200        ok  nodes=856189
+  subsetsum   backtracking       small        n=20            0.004 ms         568 B  q=1            ok  nodes=259 result=found
+  subsetsum   dp-oracle          small        n=20            0.022 ms         964 B  q=1            ok  
+  subsetsum   backtracking       medium       n=30            0.003 ms         848 B  q=1            ok  nodes=72 result=found
+  subsetsum   dp-oracle          medium       n=30            0.048 ms        1620 B  q=1            ok  
+  subsetsum   backtracking       large        n=60            0.005 ms        1688 B  q=1            ok  nodes=190 result=found
+  subsetsum   dp-oracle          large        n=60            0.164 ms        3092 B  q=1            ok  
+  subsetsum   backtracking       adversarial  n=26           15.451 ms         736 B  q=0            ok  nodes=6363282 result=none
+  subsetsum   dp-oracle          adversarial  n=26            0.208 ms        7476 B  q=0            ok  
+[max-flow and matching]
+  flow        bipartite-kuhn     small        n=100           0.015 ms         400 B  q=99           ok  unit-capacity assignment
+  flow        ford-fulkerson-dfs small        n=100           0.109 ms        3232 B  q=99           ok  same network as matching
+  flow        edmonds-karp-bfs   small        n=100           0.148 ms        3232 B  q=99           ok  
+  flow        bipartite-kuhn     medium       n=500           0.273 ms        2000 B  q=495          ok  unit-capacity assignment
+  flow        ford-fulkerson-dfs medium       n=500           1.787 ms       16032 B  q=495          ok  same network as matching
+  flow        edmonds-karp-bfs   medium       n=500           2.782 ms       16032 B  q=495          ok  
+  flow        bipartite-kuhn     large        n=2000          4.642 ms        8000 B  q=1986         ok  unit-capacity assignment
+  flow        ford-fulkerson-dfs large        n=2000         23.392 ms       64032 B  q=1986         ok  same network as matching
+  flow        edmonds-karp-bfs   large        n=2000         51.156 ms       64032 B  q=1986         ok  
+  flow        ford-fulkerson-dfs adversarial  n=600         170.016 ms       19232 B  q=260704       ok  capacities 1..1000; augmenting paths=9207
+  flow        edmonds-karp-bfs   adversarial  n=600          32.448 ms       19232 B  q=260704       ok  capacities 1..1000; augmenting paths=2380
+[string matching]
+  strings     naive              small        n=10000         0.030 ms           0 B  q=11941        ok  matches=1 preprocess=0 m=6
+  strings     rabin-karp         small        n=10000         0.074 ms           0 B  q=6            ok  matches=1 preprocess=12 m=6
+  strings     finite-automaton   small        n=10000         0.028 ms        7168 B  q=10000        ok  matches=1 preprocess=1536 m=6
+  strings     kmp                small        n=10000         0.032 ms          48 B  q=11598        ok  matches=1 preprocess=6 m=6
+  strings     naive              medium       n=1000000       3.805 ms           0 B  q=1.20012e+06  ok  matches=2 preprocess=0 m=8
+  strings     rabin-karp         medium       n=1000000       8.219 ms           0 B  q=16           ok  matches=2 preprocess=16 m=8
+  strings     finite-automaton   medium       n=1000000       3.020 ms        9216 B  q=1e+06        ok  matches=2 preprocess=2048 m=8
+  strings     kmp                medium       n=1000000       4.379 ms          64 B  q=1.16691e+06  ok  matches=2 preprocess=7 m=8
+  strings     naive              large        n=10000000     39.255 ms           0 B  q=1.20006e+07  ok  matches=1 preprocess=0 m=12
+  strings     rabin-karp         large        n=10000000     77.477 ms           0 B  q=12           ok  matches=1 preprocess=24 m=12
+  strings     finite-automaton   large        n=10000000     27.466 ms       13312 B  q=1e+07        ok  matches=1 preprocess=3072 m=12
+  strings     kmp                large        n=10000000     39.046 ms          96 B  q=1.16602e+07  ok  matches=1 preprocess=13 m=12
+  strings     naive              adversarial  n=1000000     133.571 ms           0 B  q=1.9996e+08   ok  matches=0 preprocess=0 m=200
+  strings     rabin-karp         adversarial  n=1000000       7.322 ms           0 B  q=0            ok  matches=0 preprocess=400 m=200
+  strings     finite-automaton   adversarial  n=1000000       2.750 ms      205824 B  q=1e+06        ok  matches=0 preprocess=51200 m=200
+  strings     kmp                adversarial  n=1000000       1.980 ms        1600 B  q=1.9998e+06   ok  matches=0 preprocess=397 m=200
+[chinese remainder theorem]
+  crt         generalized-crt    coprime      n=4             2.342 ms           0 B  q=1            ok  x=1073 M=1155 (x10000 calls)
+  crt         generalized-crt    non-coprime  n=3             1.675 ms           0 B  q=1            ok  x=130 M=144 (x10000 calls)
+  crt         generalized-crt    inconsistent n=2             0.788 ms           0 B  q=0            ok  x=-1 M=-1 (x10000 calls)
+  crt         generalized-crt    large        n=4             4.163 ms           0 B  q=1            ok  x=63550204503165015 M=97871629773008477 (x10000 calls)
+  crt         generalized-crt    overflow     n=3             3.232 ms           0 B  q=-1           ok  x=-1 M=-1 (x10000 calls)
+[end-to-end EV pipeline]
+  select      greedy             small        n=12            0.001 ms         288 B  q=1            ok  stations=3 cost=191 nodes=0
+  select      dp                 small        n=12            0.003 ms        2112 B  q=1            ok  stations=3 cost=191 nodes=0
+  select      bnb-lc             small        n=12            0.005 ms       45344 B  q=1            ok  stations=3 cost=191 nodes=15
+  select      bnb-fifo           small        n=12            0.002 ms       45344 B  q=1            ok  stations=3 cost=191 nodes=15
+  select      bnb-lifo           small        n=12            0.002 ms       45344 B  q=1            ok  stations=3 cost=191 nodes=15
+  route       dijkstra           small        n=36            0.099 ms       40846 B  q=88.3333      ok  feasible=53/60 avg_km=23.34 avg_kwh=4.658 sssp=30
+  route       floyd              small        n=36            0.094 ms       40522 B  q=88.3333      ok  feasible=53/60 avg_km=23.34 avg_kwh=4.658 sssp=36
+  route       bellman            small        n=36            0.080 ms       38506 B  q=88.3333      ok  feasible=53/60 avg_km=23.37 avg_kwh=4.634 sssp=30
+  select      greedy             medium       n=60            0.006 ms        1440 B  q=0.974597     ok  stations=10 cost=862 nodes=0
+  select      dp                 medium       n=60            0.064 ms       14948 B  q=1            ok  stations=10 cost=899 nodes=0
+  select      bnb-lc             medium       n=60            0.013 ms       46496 B  q=1            ok  stations=10 cost=899 nodes=84
+  select      bnb-fifo           medium       n=60            0.009 ms       46496 B  q=1            ok  stations=10 cost=899 nodes=128
+  select      bnb-lifo           medium       n=60            0.012 ms       46496 B  q=1            ok  stations=10 cost=899 nodes=285
+  route       dijkstra           medium       n=256           8.181 ms     1260118 B  q=98.4167      ok  feasible=1181/1200 avg_km=47.20 avg_kwh=9.320 sssp=243
+  route       floyd              medium       n=256          19.466 ms     1278454 B  q=98.4167      ok  feasible=1181/1200 avg_km=47.20 avg_kwh=9.320 sssp=256
+  route       bellman            medium       n=256           7.713 ms     1242614 B  q=98.4167      ok  feasible=1181/1200 avg_km=47.31 avg_kwh=9.261 sssp=243
+  select      greedy             shock        n=60            0.006 ms        1440 B  q=0.964399     ok  stations=6 cost=462 nodes=0
+  select      dp                 shock        n=60            0.029 ms        8648 B  q=1            ok  stations=6 cost=491 nodes=0
+  select      bnb-lc             shock        n=60            0.010 ms       46496 B  q=1            ok  stations=6 cost=491 nodes=69
+  select      bnb-fifo           shock        n=60            0.007 ms       46496 B  q=1            ok  stations=6 cost=491 nodes=86
+  select      bnb-lifo           shock        n=60            0.006 ms       46496 B  q=1            ok  stations=6 cost=491 nodes=121
+  route       dijkstra           shock        n=256           5.846 ms     1585594 B  q=96.6667      ok  feasible=1856/1920 avg_km=50.72 avg_kwh=9.924 sssp=254
+  route       floyd              shock        n=256          12.619 ms     1570906 B  q=96.6667      ok  feasible=1856/1920 avg_km=50.72 avg_kwh=9.924 sssp=256
+  route       bellman            shock        n=256           7.093 ms     1568858 B  q=96.6667      ok  feasible=1856/1920 avg_km=50.74 avg_kwh=9.899 sssp=254
+  select      greedy             large        n=220           0.035 ms        5280 B  q=1            ok  stations=26 cost=2499 nodes=0
+  select      dp                 large        n=220           1.007 ms       92388 B  q=1            ok  stations=26 cost=2499 nodes=0
+  select      bnb-lc             large        n=220           0.042 ms       50336 B  q=1            ok  stations=26 cost=2499 nodes=208
+  select      bnb-fifo           large        n=220           0.035 ms       50336 B  q=1            ok  stations=26 cost=2499 nodes=208
+  select      bnb-lifo           large        n=220           0.032 ms       50336 B  q=1            ok  stations=26 cost=2499 nodes=208
+  route       dijkstra           large        n=1024        131.689 ms    14775942 B  q=97.1167      ok  feasible=5827/6000 avg_km=72.11 avg_kwh=13.939 sssp=995
+  route       floyd              large        n=1024        729.752 ms    15044006 B  q=97.1167      ok  feasible=5827/6000 avg_km=72.11 avg_kwh=13.939 sssp=1024
+  route       bellman            large        n=1024        264.177 ms    14704038 B  q=97.1167      ok  feasible=5827/6000 avg_km=72.16 avg_kwh=13.927 sssp=995
+  select      greedy             adversarial  n=80            0.010 ms        1920 B  q=1            ok  stations=24 cost=600 nodes=0
+  select      dp                 adversarial  n=80            0.075 ms       12168 B  q=1            ok  stations=24 cost=600 nodes=0
+  select      bnb-lc             adversarial  n=80            0.008 ms       46976 B  q=1            ok  stations=24 cost=600 nodes=1
+  select      bnb-fifo           adversarial  n=80            0.005 ms       46976 B  q=1            ok  stations=24 cost=600 nodes=1
+  select      bnb-lifo           adversarial  n=80            0.004 ms       46976 B  q=1            ok  stations=24 cost=600 nodes=1
+  route       dijkstra           adversarial  n=400          33.262 ms      956452 B  q=0            ok  feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=64
+  route       floyd              adversarial  n=400         134.153 ms     2543284 B  q=0            ok  feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=400
+  route       bellman            adversarial  n=400          47.629 ms      936884 B  q=0            ok  feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=64
+
+242 rows, 0 failed checks, 76.8 s -> results/bench.csv

@@ -1,0 +1,230 @@
+
+######## SCENARIO medium: validate
+ok: 'medium' 256 nodes, 538 roads, 60 candidate sites, 1200 trips, 50000 events, budget 900
+
+######## SCENARIO medium: strategy A = exact selection (DP) + Dijkstra routing
+
+== Scenario 'medium': 256 nodes, 538 roads, 60 candidate sites, 1200 trips, budget 900
+-- Station selection [dp]: 10 stations, cost 899, value 2480 (optimal), 0.05 ms, 14948 B peak
+   sites: 502 510 517 522 538 546 552 555 557 558
+-- Trip planning [dijkstra]: 1181/1200 feasible (98.4%); 446 needed a charge, 427 of those served
+   avg 47.2 km, 9.32 kWh, 0.36 stops, 5.4 min charging, 0.9 km detour, 76.2 min door-to-door
+   router 0.14 ms + planning 5.57 ms, 243 SSSP trees, 1260118 B peak
+-- Capacity (window 120 min): 446 trips need a charge, 240 port-slots
+   max-flow FF/DFS=240 (240 aug, 0.16 ms)  Edmonds-Karp=240 (240 aug, 1.16 ms)  matching=240 (4.96 ms)  [consistent]
+   bottleneck station: 522
+-- Sessions: 427 planned, 411 servable with installed ports, 1 overloaded stations
+   worst grid surge: hours 9-9, 310.1 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/medium/dp_dijkstra
+
+######## SCENARIO medium: strategy B = greedy selection + energy-optimal Bellman-Ford routing
+
+== Scenario 'medium': 256 nodes, 538 roads, 60 candidate sites, 1200 trips, budget 900
+-- Station selection [greedy]: 10 stations, cost 862, value 2417, 0.01 ms, 1440 B peak
+   sites: 502 510 517 518 522 538 546 555 557 558
+-- Trip planning [bellman]: 1177/1200 feasible (98.1%); 442 needed a charge, 419 of those served
+   avg 47.4 km, 9.28 kWh, 0.39 stops, 5.8 min charging, 1.0 km detour, 76.9 min door-to-door
+   router 0.28 ms + planning 9.40 ms, 243 SSSP trees, 1242614 B peak
+-- Capacity (window 120 min): 469 trips need a charge, 244 port-slots
+   max-flow FF/DFS=244 (244 aug, 0.47 ms)  Edmonds-Karp=244 (244 aug, 1.74 ms)  matching=244 (5.74 ms)  [consistent]
+   bottleneck station: 522
+-- Sessions: 456 planned, 431 servable with installed ports, 3 overloaded stations
+   worst grid surge: hours 8-9, 391.0 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/medium/greedy_bellman
+
+######## SCENARIO medium: full strategy matrix (5 selection x 3 routing)
+
+== Strategy comparison on 'medium' (1200 trips, budget 900)
+select    route       st   cost   value opt    sel_ms     nodes | feasible      %  avg_km avg_kWh  route_ms  route_KiB
+greedy    dijkstra    10    862    2417  no      0.01         0 |     1177   98.1   47.33   9.335      5.97     1230.6
+greedy    floyd       10    862    2417  no      0.01         0 |     1177   98.1   47.33   9.335     13.33     1248.5
+greedy    bellman     10    862    2417  no      0.01         0 |     1177   98.1   47.43   9.275      6.38     1213.5
+dp        dijkstra    10    899    2480 yes      0.07         0 |     1181   98.4   47.20   9.320      5.46     1230.6
+dp        floyd       10    899    2480 yes      0.05         0 |     1181   98.4   47.20   9.320     13.14     1248.5
+dp        bellman     10    899    2480 yes      0.06         0 |     1181   98.4   47.31   9.261      6.39     1213.5
+bnb-lc    dijkstra    10    899    2480 yes      0.01        84 |     1181   98.4   47.20   9.320      5.88     1230.6
+bnb-lc    floyd       10    899    2480 yes      0.01        84 |     1181   98.4   47.20   9.320     13.35     1248.5
+bnb-lc    bellman     10    899    2480 yes      0.01        84 |     1181   98.4   47.31   9.261      6.45     1213.5
+bnb-fifo  dijkstra    10    899    2480 yes      0.01       128 |     1181   98.4   47.20   9.320      5.48     1230.6
+bnb-fifo  floyd       10    899    2480 yes      0.01       128 |     1181   98.4   47.20   9.320     13.30     1248.5
+bnb-fifo  bellman     10    899    2480 yes      0.01       128 |     1181   98.4   47.31   9.261      6.78     1213.5
+bnb-lifo  dijkstra    10    899    2480 yes      0.01       285 |     1181   98.4   47.20   9.320      5.57     1230.6
+bnb-lifo  floyd       10    899    2480 yes      0.01       285 |     1181   98.4   47.20   9.320     13.46     1248.5
+bnb-lifo  bellman     10    899    2480 yes      0.02       285 |     1181   98.4   47.31   9.261      6.47     1213.5
+   exported compare.csv to results/demo/medium
+
+######## SCENARIO shock: validate
+ok: 'shock' 256 nodes, 514 roads, 60 candidate sites, 1920 trips, 50000 events, budget 495
+
+######## SCENARIO shock: strategy A = exact selection (DP) + Dijkstra routing
+
+== Scenario 'shock': 256 nodes, 514 roads, 60 candidate sites, 1920 trips, budget 495
+-- Station selection [dp]: 6 stations, cost 491, value 3455 (optimal), 0.02 ms, 8648 B peak
+   sites: 500 505 506 510 526 551
+-- Trip planning [dijkstra]: 1856/1920 feasible (96.7%); 751 needed a charge, 687 of those served
+   avg 50.7 km, 9.92 kWh, 0.37 stops, 10.6 min charging, 1.9 km detour, 86.6 min door-to-door
+   router 0.08 ms + planning 5.34 ms, 254 SSSP trees, 1585594 B peak
+-- Capacity (window 120 min): 751 trips need a charge, 144 port-slots
+   max-flow FF/DFS=144 (144 aug, 0.21 ms)  Edmonds-Karp=144 (144 aug, 1.11 ms)  matching=144 (4.86 ms)  [consistent]
+   bottleneck station: 500
+-- Sessions: 691 planned, 399 servable with installed ports, 5 overloaded stations
+   worst grid surge: hours 17-20, 4631.9 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/shock/dp_dijkstra
+
+######## SCENARIO shock: strategy B = greedy selection + energy-optimal Bellman-Ford routing
+
+== Scenario 'shock': 256 nodes, 514 roads, 60 candidate sites, 1920 trips, budget 495
+-- Station selection [greedy]: 6 stations, cost 462, value 3332, 0.01 ms, 1440 B peak
+   sites: 500 505 506 526 551 553
+-- Trip planning [bellman]: 1834/1920 feasible (95.5%); 744 needed a charge, 658 of those served
+   avg 50.9 km, 9.91 kWh, 0.40 stops, 11.1 min charging, 2.0 km detour, 87.4 min door-to-door
+   router 0.13 ms + planning 6.81 ms, 254 SSSP trees, 1568858 B peak
+-- Capacity (window 120 min): 787 trips need a charge, 116 port-slots
+   max-flow FF/DFS=116 (116 aug, 0.19 ms)  Edmonds-Karp=116 (116 aug, 0.86 ms)  matching=116 (3.86 ms)  [consistent]
+   bottleneck station: 500
+-- Sessions: 729 planned, 398 servable with installed ports, 5 overloaded stations
+   worst grid surge: hours 17-20, 4742.6 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/shock/greedy_bellman
+
+######## SCENARIO shock: full strategy matrix (5 selection x 3 routing)
+
+== Strategy comparison on 'shock' (1920 trips, budget 495)
+select    route       st   cost   value opt    sel_ms     nodes | feasible      %  avg_km avg_kWh  route_ms  route_KiB
+greedy    dijkstra     6    462    3332  no      0.01         0 |     1833   95.5   50.83   9.944      5.61     1548.4
+greedy    floyd        6    462    3332  no      0.01         0 |     1833   95.5   50.83   9.944     12.54     1534.1
+greedy    bellman      6    462    3332  no      0.01         0 |     1834   95.5   50.85   9.913      6.51     1532.1
+dp        dijkstra     6    491    3455 yes      0.02         0 |     1856   96.7   50.72   9.924      5.43     1548.4
+dp        floyd        6    491    3455 yes      0.05         0 |     1856   96.7   50.72   9.924     13.09     1534.1
+dp        bellman      6    491    3455 yes      0.02         0 |     1856   96.7   50.74   9.899      6.41     1532.1
+bnb-lc    dijkstra     6    491    3455 yes      0.01        69 |     1856   96.7   50.72   9.924      5.35     1548.4
+bnb-lc    floyd        6    491    3455 yes      0.01        69 |     1856   96.7   50.72   9.924     12.70     1534.1
+bnb-lc    bellman      6    491    3455 yes      0.01        69 |     1856   96.7   50.74   9.899      6.37     1532.1
+bnb-fifo  dijkstra     6    491    3455 yes      0.01        86 |     1856   96.7   50.72   9.924      5.60     1548.4
+bnb-fifo  floyd        6    491    3455 yes      0.01        86 |     1856   96.7   50.72   9.924     13.56     1534.1
+bnb-fifo  bellman      6    491    3455 yes      0.01        86 |     1856   96.7   50.74   9.899      6.38     1532.1
+bnb-lifo  dijkstra     6    491    3455 yes      0.01       121 |     1856   96.7   50.72   9.924      5.34     1548.4
+bnb-lifo  floyd        6    491    3455 yes      0.01       121 |     1856   96.7   50.72   9.924     12.70     1534.1
+bnb-lifo  bellman      6    491    3455 yes      0.01       121 |     1856   96.7   50.74   9.899      6.49     1532.1
+   exported compare.csv to results/demo/shock
+
+######## SCENARIO large: validate
+ok: 'large' 1024 nodes, 2214 roads, 220 candidate sites, 6000 trips, 400000 events, budget 2500
+
+######## SCENARIO large: strategy A = exact selection (DP) + Dijkstra routing
+
+== Scenario 'large': 1024 nodes, 2214 roads, 220 candidate sites, 6000 trips, budget 2500
+-- Station selection [dp]: 26 stations, cost 2499, value 30996 (optimal), 0.54 ms, 92388 B peak
+   sites: 527 535 548 570 571 573 598 606 607 617 619 624 626 638 639 641 659 664 665 673 ... (+6)
+-- Trip planning [dijkstra]: 5827/6000 feasible (97.1%); 3594 needed a charge, 3421 of those served
+   avg 72.1 km, 13.94 kWh, 0.62 stops, 12.2 min charging, 1.4 km detour, 120.4 min door-to-door
+   router 1.69 ms + planning 127.92 ms, 995 SSSP trees, 14775942 B peak
+-- Capacity (window 120 min): 3594 trips need a charge, 532 port-slots
+   max-flow FF/DFS=532 (532 aug, 4.65 ms)  Edmonds-Karp=532 (532 aug, 65.59 ms)  matching=532 (227.49 ms)  [consistent]
+   bottleneck station: 684
+-- Sessions: 3621 planned, 2628 servable with installed ports, 20 overloaded stations
+   worst grid surge: hours 8-10, 7762.8 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/large/dp_dijkstra
+
+######## SCENARIO large: strategy B = greedy selection + energy-optimal Bellman-Ford routing
+
+== Scenario 'large': 1024 nodes, 2214 roads, 220 candidate sites, 6000 trips, budget 2500
+-- Station selection [greedy]: 26 stations, cost 2499, value 30996, 0.03 ms, 5280 B peak
+   sites: 527 535 548 570 571 573 598 606 607 617 619 624 626 638 639 641 659 664 665 673 ... (+6)
+-- Trip planning [bellman]: 5827/6000 feasible (97.1%); 3593 needed a charge, 3420 of those served
+   avg 72.2 km, 13.93 kWh, 0.68 stops, 12.7 min charging, 1.3 km detour, 121.0 min door-to-door
+   router 4.00 ms + planning 217.61 ms, 995 SSSP trees, 14704038 B peak
+-- Capacity (window 120 min): 3744 trips need a charge, 532 port-slots
+   max-flow FF/DFS=532 (532 aug, 4.83 ms)  Edmonds-Karp=532 (532 aug, 69.22 ms)  matching=532 (371.35 ms)  [consistent]
+   bottleneck station: 684
+-- Sessions: 3979 planned, 2879 servable with installed ports, 20 overloaded stations
+   worst grid surge: hours 8-10, 9093.5 kWh above supply
+   exported selection.csv, plans.csv, summary.json to results/demo/large/greedy_bellman
+
+######## SCENARIO large: full strategy matrix (5 selection x 3 routing)
+
+== Strategy comparison on 'large' (6000 trips, budget 2500)
+select    route       st   cost   value opt    sel_ms     nodes | feasible      %  avg_km avg_kWh  route_ms  route_KiB
+greedy    dijkstra    26   2499   30996  no      0.02         0 |     5827   97.1   72.11  13.939    135.42    14429.6
+greedy    floyd       26   2499   30996  no      0.03         0 |     5827   97.1   72.11  13.939    729.72    14691.4
+greedy    bellman     26   2499   30996  no      0.03         0 |     5827   97.1   72.16  13.927    219.16    14359.4
+dp        dijkstra    26   2499   30996 yes      0.51         0 |     5827   97.1   72.11  13.939    122.75    14429.6
+dp        floyd       26   2499   30996 yes      0.51         0 |     5827   97.1   72.11  13.939    775.94    14691.4
+dp        bellman     26   2499   30996 yes      0.56         0 |     5827   97.1   72.16  13.927    218.87    14359.4
+bnb-lc    dijkstra    26   2499   30996 yes      0.03       208 |     5827   97.1   72.11  13.939    127.01    14429.6
+bnb-lc    floyd       26   2499   30996 yes      0.03       208 |     5827   97.1   72.11  13.939    838.86    14691.4
+bnb-lc    bellman     26   2499   30996 yes      0.03       208 |     5827   97.1   72.16  13.927    287.19    14359.4
+bnb-fifo  dijkstra    26   2499   30996 yes      0.04       208 |     5827   97.1   72.11  13.939    195.44    14429.6
+bnb-fifo  floyd       26   2499   30996 yes      0.04       208 |     5827   97.1   72.11  13.939   1004.60    14691.4
+bnb-fifo  bellman     26   2499   30996 yes      0.04       208 |     5827   97.1   72.16  13.927    220.14    14359.4
+bnb-lifo  dijkstra    26   2499   30996 yes      0.03       208 |     5827   97.1   72.11  13.939    140.85    14429.6
+bnb-lifo  floyd       26   2499   30996 yes      0.04       208 |     5827   97.1   72.11  13.939    879.21    14691.4
+bnb-lifo  bellman     26   2499   30996 yes      0.03       208 |     5827   97.1   72.16  13.927    241.91    14359.4
+   exported compare.csv to results/demo/large
+
+######## Syllabus analysis on the normal scenario
+
+== Scenario 'medium': 256 nodes, 538 roads, 60 candidate sites, 1200 trips, budget 900
+-- Station selection [dp]: 10 stations, cost 899, value 2480 (optimal), 0.06 ms, 14948 B peak
+   sites: 502 510 517 522 538 546 552 555 557 558
+-- Trip planning [dijkstra]: 1181/1200 feasible (98.4%); 446 needed a charge, 427 of those served
+   avg 47.2 km, 9.32 kWh, 0.36 stops, 5.4 min charging, 0.9 km detour, 76.2 min door-to-door
+   router 0.16 ms + planning 6.55 ms, 243 SSSP trees, 1260118 B peak
+-- Capacity (window 120 min): 446 trips need a charge, 240 port-slots
+   max-flow FF/DFS=240 (240 aug, 0.16 ms)  Edmonds-Karp=240 (240 aug, 1.20 ms)  matching=240 (5.71 ms)  [consistent]
+   bottleneck station: 522
+-- Sessions: 427 planned, 411 servable with installed ports, 1 overloaded stations
+   worst grid surge: hours 9-9, 310.1 kWh above supply
+
+[1] Sorting, searching and domain indices
+    dispatch queue (trips by departure): merge 0.172 ms [sorted=1 stable=1], quick 0.188 ms [agrees=1]
+    cost index (quick sort): 36 candidate sites cost <= 90 (10% of budget) via binary search
+    node-id index: iterative binary search 1200/1200 hits (0.088 ms), recursive 1200/1200 hits (0.070 ms)
+
+[2] Divide and conquer
+    max subarray of (charging load - grid supply) per hour: D&C sum 310.1 [h9..h9], Kadane 310.1 -> agree
+    battery after 1500 cycles at 0.02%/cycle fade: fast power 22.2239 kWh, naive 22.2239 kWh (diff 1.78e-13)
+    overflow hub (celebrity: everyone forwards to it, it forwards to nobody): station 558; D&C 27 queries vs naive 66
+    demand propagation P^4 over 64x64 zones: classical 0.209 ms, Strassen 1.330 ms, max |diff| 5.90e-17; strongest attractor zone 50 (mass 0.03)
+
+[3] Greedy
+    interval partitioning: busiest station 522 needs 8 chargers for 92 sessions (max overlap 8, has 4 ports)
+    activity selection per port: 76 of 92 sessions servable there; network-wide 411/427
+    Huffman on 50000-event station log: 6 symbols, 2.074 bits/event, 50000 -> 12964 bytes (25.9%), round-trip ok, 0.915 ms
+    Dijkstra: 243 shortest-path trees built for planning
+    grid-backbone MST over 10 stations: Prim 136.49 km (0.001 ms), Kruskal 136.50 km (0.004 ms) -> agree
+
+[4] Dynamic programming
+    0/1 knapsack station selection: DP value 2480 (cost 899) vs greedy ratio 2417 (cost 862) -> greedy reaches 97.5%
+    matrix chain (node->zone, 3 zone transitions, zone->node): optimal (A1((A2(A3A4))A5)) = 5767168 mults; left-to-right 7340032, right-to-left 7340032
+    LCS route adherence over 50 trips (planned vs simulated GPS): 91.1%
+    optimal BST station lookup: expected 2.675 probes vs balanced 2.930 (8.7% fewer)
+    maintenance van TSP (depot + 9 stations): Held-Karp 193.75 km (0.138 ms), brute force 193.75 km (1.374 ms) -> agree
+      tour: DEPOT J08-10 J11-10 J12-02 J11-05 J09-07 J05-05 J02-04 J04-05 J04-08 DEPOT
+    Bellman-Ford / Floyd-Warshall: available as routing strategies (see 'compare')
+
+[5] Backtracking and branch-and-bound
+    N-Queens(8): 92 solutions (expected 92) in 2057 nodes -> framework validated
+    subset sum: spend the leftover budget 1 exactly on unselected sites? backtracking=no (51 nodes), DP oracle=no
+    knapsack B&B FIFO: value 2480 (DP 2480, optimal), generated 128, expanded 91, peak frontier 24, 0.012 ms
+    knapsack B&B LIFO: value 2480 (DP 2480, optimal), generated 285, expanded 262, peak frontier 8, 0.015 ms
+    knapsack B&B LC  : value 2480 (DP 2480, optimal), generated 84, expanded 69, peak frontier 10, 0.010 ms
+
+[6] Network flow and matching
+    see Capacity line above: Ford-Fulkerson (DFS), Edmonds-Karp (BFS) and bipartite matching all report 240/240/240 trips served
+
+[7] Chinese Remainder Theorem and string matching
+    maintenance windows of the 4 highest-value stations: #522(h=38 mod 60) #517(h=16 mod 36) #510(h=61 mod 72) #557(h=26 mod 48)
+    CRT: the windows never coincide (inconsistent congruences) -> safe schedule
+    pattern "FOR" (fault->offline->reset): 313 hits | naive 51549 cmp 0.062 ms | Rabin-Karp 939 cmp 0.361 ms | automaton 50000 steps 0.114 ms | KMP 50796 cmp 0.072 ms -> agree
+    pattern "FFFF" (fault burst): 81 hits | naive 51749 cmp 0.046 ms | Rabin-Karp 324 cmp 0.335 ms | automaton 50000 steps 0.142 ms | KMP 51028 cmp 0.169 ms -> agree
+
+   exported analysis.json to results/demo/medium
+
+######## Single-trip explanation (large map, two charging stops)
+trip 22: J27-03 -> J16-28, departs 12:29 with 37% SoC (11.2 kWh)
+strategy: select=dp route=dijkstra (26 stations built)
+direct route: 134.0 km (not reachable on current charge)
+result: 137.8 km, 29.12 kWh, 2 charging stop(s), arrive 16:34
+  stop 1: station 607 at J21-04, arrive 13:09 with 5.9 kWh, charge 36 min at 30 kW
+  stop 2: station 535 at J21-14, arrive 14:44 with 18.0 kWh, charge 3 min at 120 kW
+  first leg nodes: J27-03 J26-03 J25-03 J25-04 J24-04 J23-04 J22-04 J21-04

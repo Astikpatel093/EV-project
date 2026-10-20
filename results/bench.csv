@@ -1,0 +1,243 @@
+family,algorithm,dataset,n,ms,peak_bytes,quality,check,note
+sort,merge,small,1000,0.1062,4000,10428,1,quality=comparisons
+sort,quick-median3,small,1000,0.1069,4,16635,1,quality=comparisons
+sort,quick-first,small,1000,0.1018,4,16470,1,quality=comparisons
+sort,quick-random,small,1000,0.1152,4,14278,1,quality=comparisons
+sort,libc-qsort,small,1000,0.0979,0,0,1,quality=comparisons
+sort,merge,medium,100000,19.1309,400000,1.64731e+06,1,quality=comparisons
+sort,quick-median3,medium,100000,16.1211,4,2.55875e+06,1,quality=comparisons
+sort,quick-first,medium,100000,17.0889,4,2.51669e+06,1,quality=comparisons
+sort,quick-random,medium,100000,16.3730,4,2.45088e+06,1,quality=comparisons
+sort,libc-qsort,medium,100000,12.9136,0,0,1,quality=comparisons
+sort,merge,large,1000000,226.9177,4000000,2.02901e+07,1,quality=comparisons
+sort,quick-median3,large,1000000,176.1079,4,3.01695e+07,1,quality=comparisons
+sort,quick-random,large,1000000,203.6951,4,2.8734e+07,1,quality=comparisons
+sort,libc-qsort,large,1000000,168.5583,0,0,1,quality=comparisons
+sort,merge,adversarial,20000,0.1650,80000,19999,1,pre-sorted input; quality=comparisons
+sort,quick-median3,adversarial,20000,1.0564,4,363291,1,pre-sorted input; quality=comparisons
+sort,quick-first,adversarial,20000,502.5745,4,2.0003e+08,1,pre-sorted input; quality=comparisons
+sort,quick-random,adversarial,20000,1.7700,4,422200,1,pre-sorted input; quality=comparisons
+sort,libc-qsort,adversarial,20000,0.5129,0,0,1,pre-sorted input; quality=comparisons
+search,binary-iterative,small,1000,9.9941,0,33192,1,q queries; quality=hits
+search,binary-recursive,small,1000,8.8486,0,33192,1,quality=hits
+search,linear-scan,small,1000,50.9033,0,348,1,time extrapolated from 1000 queries
+search,binary-iterative,medium,100000,16.6687,0,33463,1,q queries; quality=hits
+search,binary-recursive,medium,100000,15.1731,0,33463,1,quality=hits
+search,linear-scan,medium,100000,3087.0361,0,318,1,time extrapolated from 1000 queries
+search,binary-iterative,large,1000000,30.2734,0,33286,1,q queries; quality=hits
+search,binary-recursive,large,1000000,25.1687,0,33286,1,quality=hits
+search,linear-scan,large,1000000,33152.9297,0,358,1,time extrapolated from 1000 queries
+search,binary-iterative,adversarial,1000000,4.7114,0,100000,1,q queries; quality=hits
+search,binary-recursive,adversarial,1000000,0.3684,0,100000,1,quality=hits
+search,linear-scan,adversarial,1000000,0.1221,0,1000,1,time extrapolated from 1000 queries
+maxsubarray,divide-conquer,small,1000,0.0217,0,909.099,1,
+maxsubarray,kadane,small,1000,0.0020,0,909.099,1,
+maxsubarray,brute-n2,small,1000,0.3535,0,909.099,1,
+maxsubarray,divide-conquer,medium,100000,3.8352,0,17004.9,1,
+maxsubarray,kadane,medium,100000,0.0996,0,17004.9,1,
+maxsubarray,divide-conquer,large,1000000,47.2004,0,126018,1,
+maxsubarray,kadane,large,1000000,1.2422,0,126018,1,
+maxsubarray,divide-conquer,adversarial,1000000,53.6741,0,-1,1,all negative
+maxsubarray,kadane,adversarial,1000000,1.5298,0,-1,1,
+power,fast-x1000,small,1000,0.0159,0,0.818633,1,time for 1000 calls
+power,naive,small,1000,0.0020,0,0.818714,1,
+power,fast-x1000,medium,100000,0.0293,0,2.05683e-09,1,time for 1000 calls
+power,naive,medium,100000,0.2075,0,2.05703e-09,1,
+power,fast-x1000,large,10000000,0.0459,0,0,1,time for 1000 calls
+power,naive,large,10000000,326.6946,0,1.23516e-320,1,
+power,fast-x1000,adversarial,10000000,0.0422,0,2.71828,1,time for 1000 calls
+power,naive,adversarial,10000000,17.0127,0,2.71828,1,
+celebrity,divide-conquer,small,200,0.0029,0,597,1,quality=knows() queries
+celebrity,naive-n2,small,200,0.0029,0,740,1,quality=knows() queries
+celebrity,divide-conquer,medium,1000,0.0564,0,2997,1,quality=knows() queries
+celebrity,naive-n2,medium,1000,0.0154,0,3170,1,quality=knows() queries
+celebrity,divide-conquer,large,4000,0.2207,0,11997,1,quality=knows() queries
+celebrity,naive-n2,large,4000,0.0513,0,9996,1,quality=knows() queries
+celebrity,divide-conquer,adversarial,4000,0.2776,0,4003,1,quality=knows() queries
+celebrity,naive-n2,adversarial,4000,0.1067,0,10570,1,quality=knows() queries
+matmul,classical,small,64,0.1050,0,0,1,
+matmul,strassen-cut64,small,64,0.1292,0,0,1,quality=max|err|
+matmul,strassen-cut16,small,64,0.1416,92160,3.55271e-14,1,quality=max|err|
+matmul,classical,medium,128,0.9734,0,0,1,
+matmul,strassen-cut64,medium,128,1.3149,294912,7.10543e-14,1,quality=max|err|
+matmul,strassen-cut16,medium,128,1.0115,387072,1.52767e-13,1,quality=max|err|
+matmul,classical,large,256,8.7903,0,0,1,
+matmul,strassen-cut64,large,256,7.4897,1474560,3.05533e-13,1,quality=max|err|
+matmul,strassen-cut16,large,256,8.1836,1566720,7.53175e-13,1,quality=max|err|
+matmul,classical,xlarge,512,68.5491,0,0,1,
+matmul,strassen-cut64,xlarge,512,54.6824,6193152,1.33582e-12,1,quality=max|err|
+matmul,strassen-cut16,xlarge,512,51.4868,6285312,4.07852e-12,1,quality=max|err|
+matmul,classical,adversarial,257,8.2954,0,0,1,
+matmul,strassen-cut64,adversarial,257,57.5352,12484608,2.70006e-13,1,padded to 512; quality=max|err|
+matmul,strassen-cut16,adversarial,257,52.8171,12576768,6.96332e-13,1,quality=max|err|
+intervals,activity-selection,small,1000,0.1125,32000,70,1,quality=sessions on 1 charger
+intervals,interval-partition,small,1000,0.1509,32000,39,1,quality=chargers; check=depth bound
+intervals,activity-selection,medium,100000,18.9917,3200000,6942,1,quality=sessions on 1 charger
+intervals,interval-partition,medium,100000,23.6707,3200000,49,1,quality=chargers; check=depth bound
+intervals,activity-selection,large,1000000,243.5955,32000000,69800,1,quality=sessions on 1 charger
+intervals,interval-partition,large,1000000,339.9331,32000000,52,1,quality=chargers; check=depth bound
+intervals,activity-selection,adversarial,100000,1.9724,3200000,1,1,quality=sessions on 1 charger
+intervals,interval-partition,adversarial,100000,1.2251,3200000,100000,1,quality=chargers; check=depth bound
+huffman,build+encode+decode,skewed-small,10000,0.2466,14579,1.8119,1,quality=bits/symbol
+huffman,build+encode+decode,skewed-large,1000000,24.2908,237112,1.79838,1,quality=bits/symbol
+huffman,build+encode+decode,adversarial,1000000,102.0022,1014593,8,1,quality=bits/symbol
+sssp,bellman-ford,small,100,0.0032,0,38.6648,1,single source; 3 passes
+sssp,dijkstra,small,100,0.0068,5892,38.6648,1,single source
+apsp,dijkstra-x-n,small,100,0.5530,5892,0,1,all sources
+apsp,floyd-warshall,small,100,0.7720,120000,38.6648,1,all pairs incl. n^2 tables
+sssp,bellman-ford,small-neg,100,0.0032,0,14.5973,1,single source; 3 passes
+sssp,dijkstra(on-negative),small-neg,100,0.0000,0,14.5973,1,same answer here (no luck guaranteed)
+apsp,floyd-warshall,small-neg,100,0.7197,120000,14.5973,1,all pairs incl. n^2 tables
+sssp,bellman-ford,medium,900,0.0315,0,113.632,1,single source; 4 passes
+sssp,dijkstra,medium,900,0.0583,56612,113.632,1,single source
+apsp,dijkstra-x-n,medium,900,49.6433,56612,0,1,all sources
+apsp,floyd-warshall,medium,900,444.3201,9720000,113.632,1,all pairs incl. n^2 tables
+sssp,bellman-ford,medium-neg,900,0.0288,0,42.1229,1,single source; 4 passes
+sssp,dijkstra(on-negative),medium-neg,900,0.0000,0,42.1229,1,same answer here (no luck guaranteed)
+apsp,floyd-warshall,medium-neg,900,468.4109,9720000,42.1229,1,all pairs incl. n^2 tables
+sssp,bellman-ford,large,3600,0.1904,0,233.169,1,single source; 7 passes
+sssp,dijkstra,large,3600,0.2385,230192,233.169,1,single source
+apsp,dijkstra-x-n,large,3600,944.3345,230192,0,1,all sources
+apsp,floyd-warshall,large,3600,32946.2476,155520000,233.169,1,all pairs incl. n^2 tables
+sssp,bellman-ford,large-neg,3600,0.1606,0,92.4369,1,single source; 6 passes
+sssp,dijkstra(on-negative),large-neg,3600,0.0000,0,93.2548,1,WRONG answer: negative arcs break Dijkstra
+apsp,floyd-warshall,large-neg,3600,34288.1670,155520000,92.4369,1,all pairs incl. n^2 tables
+sssp,bellman-ford,adversarial,3000,19.9263,0,2999,1,reverse-ordered path; 3000 passes
+sssp,dijkstra,adversarial,3000,0.0359,51016,2999,1,
+mst,prim-dense,small,100,0.0740,900,680.665,1,complete graph; quality=weight
+mst,kruskal,small,100,0.9021,158400,680.665,1,
+mst,prim-dense,medium,500,1.3381,4500,1475.72,1,complete graph; quality=weight
+mst,kruskal,medium,500,31.5867,3992000,1475.72,1,
+mst,prim-dense,large,1500,11.0403,13500,2556.5,1,complete graph; quality=weight
+mst,kruskal,large,1500,309.5994,35976000,2556.5,1,
+mst,prim-dense,adversarial,1500,4.0186,13500,1499,1,complete graph; quality=weight
+mst,kruskal,adversarial,1500,24.6167,35976000,1499,1,all weights equal
+knapsack,dp-table,small,20,0.0134,4396,1,1,verified by brute force
+knapsack,bnb-FIFO,small,20,0.0088,45216,1,1,generated=42 frontier=2
+knapsack,bnb-LIFO,small,20,0.0037,45216,1,1,generated=42 frontier=3
+knapsack,bnb-LC,small,20,0.0032,45216,1,1,generated=42 frontier=3
+knapsack,greedy-ratio,small,20,0.0007,0,1,1,quality=value/optimum
+knapsack,dp-table,medium,60,0.1150,20948,1,1,reference optimum
+knapsack,bnb-FIFO,medium,60,0.0129,45536,1,1,generated=215 frontier=15
+knapsack,bnb-LIFO,medium,60,0.0112,45536,1,1,generated=208 frontier=9
+knapsack,bnb-LC,medium,60,0.0120,45536,1,1,generated=151 frontier=12
+knapsack,greedy-ratio,medium,60,0.0022,0,0.99868,1,quality=value/optimum
+knapsack,dp-table,large,200,1.5945,183728,1,1,reference optimum
+knapsack,bnb-FIFO,large,200,0.0508,46656,1,1,generated=708 frontier=135
+knapsack,bnb-LIFO,large,200,0.0667,46656,1,1,generated=708 frontier=13
+knapsack,bnb-LC,large,200,0.0435,46656,1,1,generated=353 frontier=26
+knapsack,greedy-ratio,large,200,0.0149,0,0.999409,1,quality=value/optimum
+knapsack,dp-table,weak-corr,60,0.1729,25528,1,1,reference optimum
+knapsack,bnb-FIFO,weak-corr,60,0.0256,45536,1,1,generated=776 frontier=105
+knapsack,bnb-LIFO,weak-corr,60,0.0129,45536,1,1,generated=321 frontier=18
+knapsack,bnb-LC,weak-corr,60,0.0288,45536,1,1,generated=385 frontier=60
+knapsack,greedy-ratio,weak-corr,60,0.0022,0,0.998556,1,quality=value/optimum
+knapsack,dp-table,adversarial,40,0.0801,14944,1,1,reference optimum
+knapsack,bnb-FIFO,adversarial,40,0.2581,721216,1,1,generated=14886 frontier=3609
+knapsack,bnb-LIFO,adversarial,40,0.0081,45376,1,1,generated=191 frontier=28
+knapsack,bnb-LC,adversarial,40,0.0173,45376,1,1,generated=252 frontier=36
+knapsack,greedy-ratio,adversarial,40,0.0010,0,0.992237,1,quality=value/optimum
+matrixchain,dp-n3,small,10,0.0015,800,5.03424,1,quality=left-to-right/optimal
+matrixchain,dp-n3,medium,100,0.3254,80000,14.2753,1,quality=left-to-right/optimal
+matrixchain,dp-n3,large,300,6.2407,720000,8.16939,1,quality=left-to-right/optimal
+lcs,dp-table,small,1000,3.9277,4008004,242,1,quality=LCS length
+lcs,dp-table,medium,3000,49.1016,36024004,725,1,quality=LCS length
+lcs,dp-table,large,8000,285.0994,256064004,1941,1,quality=LCS length
+lcs,dp-table,adversarial,3000,41.7361,36024004,0,1,quality=LCS length
+obst,dp-n3,small,50,0.0669,43264,1.17616,1,quality=balanced/optimal probes
+obst,dp-n3,medium,200,2.7358,652864,1.10232,1,quality=balanced/optimal probes
+obst,dp-n3,large,400,19.4050,2585664,1.09587,1,quality=balanced/optimal probes
+obst,dp-n3,adversarial,400,10.7808,2585664,3.15136,1,quality=balanced/optimal probes
+tsp,held-karp,n6,6,0.0056,1440,100.964,1,verified by brute force
+tsp,brute-force,n6,6,0.0015,0,100.964,1,
+tsp,held-karp,n8,8,0.0251,8064,96.4199,1,verified by brute force
+tsp,brute-force,n8,8,0.0332,0,96.4199,1,
+tsp,held-karp,n10,10,0.1313,41472,131.753,1,verified by brute force
+tsp,brute-force,n10,10,1.3247,0,131.753,1,
+tsp,held-karp,n13,13,1.8611,442368,173.326,1,
+tsp,held-karp,n15,15,9.9351,2064384,168.032,1,
+tsp,held-karp,n16,16,23.1123,4423680,180.427,1,
+nqueens,backtracking,n6,6,0.0032,24,4,1,nodes=153
+nqueens,backtracking,n8,8,0.0374,32,92,1,nodes=2057
+nqueens,backtracking,n10,10,0.8662,40,724,1,nodes=35539
+nqueens,backtracking,n12,12,17.3806,48,14200,1,nodes=856189
+subsetsum,backtracking,small,20,0.0039,568,1,1,nodes=259 result=found
+subsetsum,dp-oracle,small,20,0.0225,964,1,1,
+subsetsum,backtracking,medium,30,0.0027,848,1,1,nodes=72 result=found
+subsetsum,dp-oracle,medium,30,0.0481,1620,1,1,
+subsetsum,backtracking,large,60,0.0049,1688,1,1,nodes=190 result=found
+subsetsum,dp-oracle,large,60,0.1636,3092,1,1,
+subsetsum,backtracking,adversarial,26,15.4509,736,0,1,nodes=6363282 result=none
+subsetsum,dp-oracle,adversarial,26,0.2083,7476,0,1,
+flow,bipartite-kuhn,small,100,0.0151,400,99,1,unit-capacity assignment
+flow,ford-fulkerson-dfs,small,100,0.1094,3232,99,1,same network as matching
+flow,edmonds-karp-bfs,small,100,0.1477,3232,99,1,
+flow,bipartite-kuhn,medium,500,0.2727,2000,495,1,unit-capacity assignment
+flow,ford-fulkerson-dfs,medium,500,1.7874,16032,495,1,same network as matching
+flow,edmonds-karp-bfs,medium,500,2.7817,16032,495,1,
+flow,bipartite-kuhn,large,2000,4.6423,8000,1986,1,unit-capacity assignment
+flow,ford-fulkerson-dfs,large,2000,23.3916,64032,1986,1,same network as matching
+flow,edmonds-karp-bfs,large,2000,51.1565,64032,1986,1,
+flow,ford-fulkerson-dfs,adversarial,600,170.0164,19232,260704,1,capacities 1..1000; augmenting paths=9207
+flow,edmonds-karp-bfs,adversarial,600,32.4480,19232,260704,1,capacities 1..1000; augmenting paths=2380
+strings,naive,small,10000,0.0300,0,11941,1,matches=1 preprocess=0 m=6
+strings,rabin-karp,small,10000,0.0737,0,6,1,matches=1 preprocess=12 m=6
+strings,finite-automaton,small,10000,0.0281,7168,10000,1,matches=1 preprocess=1536 m=6
+strings,kmp,small,10000,0.0325,48,11598,1,matches=1 preprocess=6 m=6
+strings,naive,medium,1000000,3.8054,0,1.20012e+06,1,matches=2 preprocess=0 m=8
+strings,rabin-karp,medium,1000000,8.2188,0,16,1,matches=2 preprocess=16 m=8
+strings,finite-automaton,medium,1000000,3.0203,9216,1e+06,1,matches=2 preprocess=2048 m=8
+strings,kmp,medium,1000000,4.3787,64,1.16691e+06,1,matches=2 preprocess=7 m=8
+strings,naive,large,10000000,39.2546,0,1.20006e+07,1,matches=1 preprocess=0 m=12
+strings,rabin-karp,large,10000000,77.4768,0,12,1,matches=1 preprocess=24 m=12
+strings,finite-automaton,large,10000000,27.4661,13312,1e+07,1,matches=1 preprocess=3072 m=12
+strings,kmp,large,10000000,39.0457,96,1.16602e+07,1,matches=1 preprocess=13 m=12
+strings,naive,adversarial,1000000,133.5706,0,1.9996e+08,1,matches=0 preprocess=0 m=200
+strings,rabin-karp,adversarial,1000000,7.3218,0,0,1,matches=0 preprocess=400 m=200
+strings,finite-automaton,adversarial,1000000,2.7498,205824,1e+06,1,matches=0 preprocess=51200 m=200
+strings,kmp,adversarial,1000000,1.9802,1600,1.9998e+06,1,matches=0 preprocess=397 m=200
+crt,generalized-crt,coprime,4,2.3416,0,1,1,x=1073 M=1155 (x10000 calls)
+crt,generalized-crt,non-coprime,3,1.6753,0,1,1,x=130 M=144 (x10000 calls)
+crt,generalized-crt,inconsistent,2,0.7881,0,0,1,x=-1 M=-1 (x10000 calls)
+crt,generalized-crt,large,4,4.1626,0,1,1,x=63550204503165015 M=97871629773008477 (x10000 calls)
+crt,generalized-crt,overflow,3,3.2317,0,-1,1,x=-1 M=-1 (x10000 calls)
+select,greedy,small,12,0.0015,288,1,1,stations=3 cost=191 nodes=0
+select,dp,small,12,0.0029,2112,1,1,stations=3 cost=191 nodes=0
+select,bnb-lc,small,12,0.0054,45344,1,1,stations=3 cost=191 nodes=15
+select,bnb-fifo,small,12,0.0022,45344,1,1,stations=3 cost=191 nodes=15
+select,bnb-lifo,small,12,0.0020,45344,1,1,stations=3 cost=191 nodes=15
+route,dijkstra,small,36,0.0994,40846,88.3333,1,feasible=53/60 avg_km=23.34 avg_kwh=4.658 sssp=30
+route,floyd,small,36,0.0938,40522,88.3333,1,feasible=53/60 avg_km=23.34 avg_kwh=4.658 sssp=36
+route,bellman,small,36,0.0803,38506,88.3333,1,feasible=53/60 avg_km=23.37 avg_kwh=4.634 sssp=30
+select,greedy,medium,60,0.0063,1440,0.974597,1,stations=10 cost=862 nodes=0
+select,dp,medium,60,0.0645,14948,1,1,stations=10 cost=899 nodes=0
+select,bnb-lc,medium,60,0.0129,46496,1,1,stations=10 cost=899 nodes=84
+select,bnb-fifo,medium,60,0.0093,46496,1,1,stations=10 cost=899 nodes=128
+select,bnb-lifo,medium,60,0.0117,46496,1,1,stations=10 cost=899 nodes=285
+route,dijkstra,medium,256,8.1809,1260118,98.4167,1,feasible=1181/1200 avg_km=47.20 avg_kwh=9.320 sssp=243
+route,floyd,medium,256,19.4661,1278454,98.4167,1,feasible=1181/1200 avg_km=47.20 avg_kwh=9.320 sssp=256
+route,bellman,medium,256,7.7131,1242614,98.4167,1,feasible=1181/1200 avg_km=47.31 avg_kwh=9.261 sssp=243
+select,greedy,shock,60,0.0061,1440,0.964399,1,stations=6 cost=462 nodes=0
+select,dp,shock,60,0.0293,8648,1,1,stations=6 cost=491 nodes=0
+select,bnb-lc,shock,60,0.0095,46496,1,1,stations=6 cost=491 nodes=69
+select,bnb-fifo,shock,60,0.0071,46496,1,1,stations=6 cost=491 nodes=86
+select,bnb-lifo,shock,60,0.0059,46496,1,1,stations=6 cost=491 nodes=121
+route,dijkstra,shock,256,5.8457,1585594,96.6667,1,feasible=1856/1920 avg_km=50.72 avg_kwh=9.924 sssp=254
+route,floyd,shock,256,12.6187,1570906,96.6667,1,feasible=1856/1920 avg_km=50.72 avg_kwh=9.924 sssp=256
+route,bellman,shock,256,7.0933,1568858,96.6667,1,feasible=1856/1920 avg_km=50.74 avg_kwh=9.899 sssp=254
+select,greedy,large,220,0.0347,5280,1,1,stations=26 cost=2499 nodes=0
+select,dp,large,220,1.0066,92388,1,1,stations=26 cost=2499 nodes=0
+select,bnb-lc,large,220,0.0415,50336,1,1,stations=26 cost=2499 nodes=208
+select,bnb-fifo,large,220,0.0347,50336,1,1,stations=26 cost=2499 nodes=208
+select,bnb-lifo,large,220,0.0317,50336,1,1,stations=26 cost=2499 nodes=208
+route,dijkstra,large,1024,131.6887,14775942,97.1167,1,feasible=5827/6000 avg_km=72.11 avg_kwh=13.939 sssp=995
+route,floyd,large,1024,729.7517,15044006,97.1167,1,feasible=5827/6000 avg_km=72.11 avg_kwh=13.939 sssp=1024
+route,bellman,large,1024,264.1775,14704038,97.1167,1,feasible=5827/6000 avg_km=72.16 avg_kwh=13.927 sssp=995
+select,greedy,adversarial,80,0.0100,1920,1,1,stations=24 cost=600 nodes=0
+select,dp,adversarial,80,0.0750,12168,1,1,stations=24 cost=600 nodes=0
+select,bnb-lc,adversarial,80,0.0083,46976,1,1,stations=24 cost=600 nodes=1
+select,bnb-fifo,adversarial,80,0.0046,46976,1,1,stations=24 cost=600 nodes=1
+select,bnb-lifo,adversarial,80,0.0037,46976,1,1,stations=24 cost=600 nodes=1
+route,dijkstra,adversarial,400,33.2620,956452,0,1,feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=64
+route,floyd,adversarial,400,134.1526,2543284,0,1,feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=400
+route,bellman,adversarial,400,47.6294,936884,0,1,feasible=0/1500 avg_km=0.00 avg_kwh=0.000 sssp=64

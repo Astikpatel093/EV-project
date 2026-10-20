@@ -1,0 +1,302 @@
+{
+  "scenario": "large",
+  "size": {
+    "nodes": 1024,
+    "roads": 2214,
+    "candidates": 220,
+    "trips": 6000,
+    "budget": 2500
+  },
+  "strategy": {
+    "selection": "dp",
+    "routing": "dijkstra"
+  },
+  "selection": {
+    "stations": 26,
+    "cost": 2499,
+    "value": 30996,
+    "optimal": true,
+    "search_nodes": 0,
+    "ms": 0.54248,
+    "peak_bytes": 92388,
+    "station_ids": [
+      527,
+      535,
+      548,
+      570,
+      571,
+      573,
+      598,
+      606,
+      607,
+      617,
+      619,
+      624,
+      626,
+      638,
+      639,
+      641,
+      659,
+      664,
+      665,
+      673,
+      675,
+      684,
+      692,
+      702,
+      718,
+      719
+    ]
+  },
+  "service": {
+    "trips": 6000,
+    "feasible": 5827,
+    "feasible_pct": 97.1167,
+    "need_charge": 3594,
+    "charged_ok": 3421,
+    "avg_km": 72.1141,
+    "avg_kwh": 13.9386,
+    "avg_stops": 0.621418,
+    "avg_charge_min": 12.2083,
+    "avg_detour_km": 1.37619,
+    "avg_travel_min": 120.379
+  },
+  "performance": {
+    "values_ms": 69.1702,
+    "router_ms": 1.68652,
+    "plan_ms": 127.919,
+    "route_peak_bytes": 14775942,
+    "sssp_runs": 995
+  },
+  "capacity": {
+    "trips_needing": 3594,
+    "slots": 532,
+    "maxflow_ff_dfs": 532,
+    "maxflow_edmonds_karp": 532,
+    "bipartite_matching": 532,
+    "augmentations_dfs": 532,
+    "augmentations_bfs": 532,
+    "ms_dfs": 4.64941,
+    "ms_bfs": 65.5908,
+    "ms_match": 227.493,
+    "bottleneck_station_id": 684
+  },
+  "sessions": {
+    "sessions": 3621,
+    "served_with_ports": 2628,
+    "overloaded_stations": 20,
+    "surge_from_h": 8,
+    "surge_to_h": 10,
+    "surge_excess_kwh": 7762.76,
+    "hourly_kwh": [
+      596.218,
+      462.626,
+      582.464,
+      507.909,
+      357.759,
+      625.844,
+      990.547,
+      2869.84,
+      6998.14,
+      8275.79,
+      4488.83,
+      1626.89,
+      665.149,
+      693.914,
+      635.556,
+      848.583,
+      2204.67,
+      4861.68,
+      7637.29,
+      6137.21,
+      3151.65,
+      1616.89,
+      769.549,
+      652.46
+    ],
+    "stations": [
+      {
+        "id": 527,
+        "ports": 2,
+        "sessions": 205,
+        "chargers_needed": 15,
+        "served": 87
+      },
+      {
+        "id": 535,
+        "ports": 4,
+        "sessions": 202,
+        "chargers_needed": 10,
+        "served": 171
+      },
+      {
+        "id": 548,
+        "ports": 3,
+        "sessions": 126,
+        "chargers_needed": 16,
+        "served": 57
+      },
+      {
+        "id": 570,
+        "ports": 3,
+        "sessions": 94,
+        "chargers_needed": 8,
+        "served": 78
+      },
+      {
+        "id": 571,
+        "ports": 6,
+        "sessions": 194,
+        "chargers_needed": 7,
+        "served": 188
+      },
+      {
+        "id": 573,
+        "ports": 6,
+        "sessions": 60,
+        "chargers_needed": 10,
+        "served": 56
+      },
+      {
+        "id": 598,
+        "ports": 3,
+        "sessions": 56,
+        "chargers_needed": 5,
+        "served": 47
+      },
+      {
+        "id": 606,
+        "ports": 5,
+        "sessions": 200,
+        "chargers_needed": 14,
+        "served": 146
+      },
+      {
+        "id": 607,
+        "ports": 8,
+        "sessions": 124,
+        "chargers_needed": 22,
+        "served": 89
+      },
+      {
+        "id": 617,
+        "ports": 6,
+        "sessions": 26,
+        "chargers_needed": 4,
+        "served": 26
+      },
+      {
+        "id": 619,
+        "ports": 6,
+        "sessions": 95,
+        "chargers_needed": 5,
+        "served": 95
+      },
+      {
+        "id": 624,
+        "ports": 8,
+        "sessions": 78,
+        "chargers_needed": 5,
+        "served": 78
+      },
+      {
+        "id": 626,
+        "ports": 6,
+        "sessions": 180,
+        "chargers_needed": 25,
+        "served": 113
+      },
+      {
+        "id": 638,
+        "ports": 8,
+        "sessions": 202,
+        "chargers_needed": 22,
+        "served": 139
+      },
+      {
+        "id": 639,
+        "ports": 6,
+        "sessions": 98,
+        "chargers_needed": 5,
+        "served": 98
+      },
+      {
+        "id": 641,
+        "ports": 4,
+        "sessions": 76,
+        "chargers_needed": 11,
+        "served": 58
+      },
+      {
+        "id": 659,
+        "ports": 5,
+        "sessions": 159,
+        "chargers_needed": 8,
+        "served": 150
+      },
+      {
+        "id": 664,
+        "ports": 2,
+        "sessions": 144,
+        "chargers_needed": 6,
+        "served": 105
+      },
+      {
+        "id": 665,
+        "ports": 8,
+        "sessions": 67,
+        "chargers_needed": 6,
+        "served": 67
+      },
+      {
+        "id": 673,
+        "ports": 7,
+        "sessions": 178,
+        "chargers_needed": 19,
+        "served": 130
+      },
+      {
+        "id": 675,
+        "ports": 2,
+        "sessions": 315,
+        "chargers_needed": 19,
+        "served": 108
+      },
+      {
+        "id": 684,
+        "ports": 4,
+        "sessions": 166,
+        "chargers_needed": 14,
+        "served": 95
+      },
+      {
+        "id": 692,
+        "ports": 3,
+        "sessions": 168,
+        "chargers_needed": 22,
+        "served": 66
+      },
+      {
+        "id": 702,
+        "ports": 6,
+        "sessions": 158,
+        "chargers_needed": 7,
+        "served": 157
+      },
+      {
+        "id": 718,
+        "ports": 5,
+        "sessions": 105,
+        "chargers_needed": 20,
+        "served": 79
+      },
+      {
+        "id": 719,
+        "ports": 7,
+        "sessions": 145,
+        "chargers_needed": 6,
+        "served": 145
+      }
+    ]
+  }
+}

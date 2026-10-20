@@ -1,0 +1,142 @@
+{
+  "scenario": "shock",
+  "size": {
+    "nodes": 256,
+    "roads": 514,
+    "candidates": 60,
+    "trips": 1920,
+    "budget": 495
+  },
+  "strategy": {
+    "selection": "greedy",
+    "routing": "bellman"
+  },
+  "selection": {
+    "stations": 6,
+    "cost": 462,
+    "value": 3332,
+    "optimal": false,
+    "search_nodes": 0,
+    "ms": 0.00634766,
+    "peak_bytes": 1440,
+    "station_ids": [
+      500,
+      505,
+      506,
+      526,
+      551,
+      553
+    ]
+  },
+  "service": {
+    "trips": 1920,
+    "feasible": 1834,
+    "feasible_pct": 95.5208,
+    "need_charge": 744,
+    "charged_ok": 658,
+    "avg_km": 50.8537,
+    "avg_kwh": 9.91292,
+    "avg_stops": 0.397492,
+    "avg_charge_min": 11.1365,
+    "avg_detour_km": 2.01647,
+    "avg_travel_min": 87.4171
+  },
+  "performance": {
+    "values_ms": 0,
+    "router_ms": 0.128662,
+    "plan_ms": 6.80981,
+    "route_peak_bytes": 1568858,
+    "sssp_runs": 254
+  },
+  "capacity": {
+    "trips_needing": 787,
+    "slots": 116,
+    "maxflow_ff_dfs": 116,
+    "maxflow_edmonds_karp": 116,
+    "bipartite_matching": 116,
+    "augmentations_dfs": 116,
+    "augmentations_bfs": 116,
+    "ms_dfs": 0.193359,
+    "ms_bfs": 0.858154,
+    "ms_match": 3.86084,
+    "bottleneck_station_id": 500
+  },
+  "sessions": {
+    "sessions": 729,
+    "served_with_ports": 398,
+    "overloaded_stations": 5,
+    "surge_from_h": 17,
+    "surge_to_h": 20,
+    "surge_excess_kwh": 4742.63,
+    "hourly_kwh": [
+      50.8477,
+      70.7892,
+      67.8587,
+      17.4095,
+      36.9868,
+      99.6148,
+      112.272,
+      503.787,
+      1059.49,
+      1215.77,
+      743.891,
+      249.296,
+      131.197,
+      15.6925,
+      10.0905,
+      36.0314,
+      494.78,
+      2263.92,
+      2771.07,
+      1324.05,
+      543.59,
+      155.118,
+      75.2572,
+      57.114
+    ],
+    "stations": [
+      {
+        "id": 500,
+        "ports": 7,
+        "sessions": 185,
+        "chargers_needed": 31,
+        "served": 96
+      },
+      {
+        "id": 505,
+        "ports": 6,
+        "sessions": 136,
+        "chargers_needed": 13,
+        "served": 115
+      },
+      {
+        "id": 506,
+        "ports": 3,
+        "sessions": 235,
+        "chargers_needed": 36,
+        "served": 64
+      },
+      {
+        "id": 526,
+        "ports": 5,
+        "sessions": 109,
+        "chargers_needed": 25,
+        "served": 64
+      },
+      {
+        "id": 551,
+        "ports": 7,
+        "sessions": 45,
+        "chargers_needed": 4,
+        "served": 45
+      },
+      {
+        "id": 553,
+        "ports": 1,
+        "sessions": 19,
+        "chargers_needed": 4,
+        "served": 14
+      }
+    ]
+  }
+}
