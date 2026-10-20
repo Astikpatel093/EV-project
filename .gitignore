@@ -1,7 +1,23 @@
-build/
+# build trees
+build*/
 cmake-build-*/
+out/
+dist/
 *.o
+*.obj
 *.a
+*.lib
 *.exe
-.vscode/
+*.pdb
+# editors
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea/
+# benchmark datasets are regenerated with benchmark_data_generator (seed 12345); keep only the manifest
+data/generated/**
+!data/generated/
+!data/generated/metadata.json
+!data/generated/README.md
+# run outputs
+results/
