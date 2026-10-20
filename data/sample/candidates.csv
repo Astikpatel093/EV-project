@@ -1,0 +1,8 @@
+# ILLUSTRATIVE SYNTHETIC DATA (see README.md) - candidate sites; budget 1 crore = 100 lakh
+id,name,node,install_cost_inr,benefit,suitability,power_kw,ports,connector,maint_period_h,maint_offset_h
+501,Junction A site,2,4000000,60,,60,2,CCS2|Type2,24,7
+502,Junction B site,4,3000000,50,,60,2,CCS2|Type2,36,4
+503,Ring North site,7,5000000,70,,60,2,CCS2|Type2,48,11
+504,Ring South site,8,2000000,30,,30,1,CCS2|Type2,60,2
+505,Hill Pass site,6,6000000,65,,60,2,CCS2|Type2,72,30
+506,Depot East site,5,3000000,45,,60,2,CCS2|Type2,24,20

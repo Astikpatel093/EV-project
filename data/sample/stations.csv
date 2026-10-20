@@ -1,0 +1,5 @@
+# ILLUSTRATIVE SYNTHETIC DATA (see README.md) - existing stations
+id,name,node,power_kw,ports,connector,status,install_cost_inr,maint_period_h,maint_offset_h
+101,Town Centre Charger,3,50,2,CCS2|Type2,available,4000000,24,3
+102,Junction B Charger,4,50,1,CCS2|Type2,offline,3000000,36,10
+103,Ring North CHAdeMO,7,40,1,CHAdeMO,available,2500000,48,5

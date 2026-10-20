@@ -1,0 +1,5 @@
+# ILLUSTRATIVE SYNTHETIC DATA (see README.md) - generic vehicles, not real products
+id,model,battery_kwh,charge_kwh,consumption_kwh_per_km,reserve_kwh,connector,max_charge_kw
+SV1,Sample hatchback,20,12,0.2,2,CCS2,50
+SV2,Sample micro car,8,8,0.2,1,CCS2,20
+SV3,Sample long-range car,60,50,0.15,6,CCS2,100

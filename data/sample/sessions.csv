@@ -1,0 +1,10 @@
+# ILLUSTRATIVE SYNTHETIC DATA (see README.md) - booked sessions at the Town Centre Charger (2 bays)
+id,station,start_min,end_min
+1,101,480,540
+2,101,500,560
+3,101,520,600
+4,101,540,570
+5,101,560,620
+6,101,600,660
+7,101,610,640
+8,101,650,700

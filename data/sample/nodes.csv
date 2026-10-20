@@ -1,0 +1,12 @@
+# ILLUSTRATIVE SYNTHETIC DATA (see README.md). Coordinates are placed near 0,0 on purpose.
+id,lat,lon,elev_m,type,name
+1,0.000000,0.000000,100,depot,Depot West
+2,0.000000,0.179856,100,junction,Junction A
+3,0.000000,0.359712,100,town,Town Centre
+4,0.000000,0.539568,100,junction,Junction B
+5,0.000000,0.719424,100,depot,Depot East
+6,0.090000,0.179856,700,pass,Hill Pass
+7,-0.090000,0.269784,100,junction,Ring North
+8,-0.060000,0.629496,100,junction,Ring South
+9,0.400000,0.000000,0,port,Island Port
+10,0.400000,0.044964,0,village,Island Village
