@@ -1,0 +1,231 @@
+EV33 benchmarks: seed 12345, gcc 13.3.0, Release (NDEBUG), 5 repetitions (median reported)
+merge_sort             sorting          keys-random                  n=1000      median      0.053 ms  [pass]
+quick_sort_median3     sorting          keys-random                  n=1000      median      0.052 ms  [pass]
+quick_sort_first       sorting          keys-random                  n=1000      median      0.051 ms  [pass]
+quick_sort_random      sorting          keys-random                  n=1000      median      0.068 ms  [pass]
+merge_sort             sorting          keys-random                  n=10000     median      0.691 ms  [pass]
+quick_sort_median3     sorting          keys-random                  n=10000     median      0.697 ms  [pass]
+quick_sort_first       sorting          keys-random                  n=10000     median      0.738 ms  [pass]
+quick_sort_random      sorting          keys-random                  n=10000     median      0.914 ms  [pass]
+merge_sort             sorting          keys-random                  n=100000    median      9.629 ms  [pass]
+quick_sort_median3     sorting          keys-random                  n=100000    median      8.406 ms  [pass]
+quick_sort_first       sorting          keys-random                  n=100000    median      8.499 ms  [pass]
+quick_sort_random      sorting          keys-random                  n=100000    median     10.026 ms  [pass]
+merge_sort             sorting          keys-random                  n=1000000   median    137.866 ms  [pass]
+quick_sort_median3     sorting          keys-random                  n=1000000   median    118.632 ms  [pass]
+quick_sort_first       sorting          keys-random                  n=1000000   median    104.655 ms  [pass]
+quick_sort_random      sorting          keys-random                  n=1000000   median    136.410 ms  [pass]
+merge_sort             sorting          keys-sorted                  n=1000      median      0.010 ms  [pass]
+quick_sort_median3     sorting          keys-sorted                  n=1000      median      0.012 ms  [pass]
+quick_sort_first       sorting          keys-sorted                  n=1000      median      0.234 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-sorted                  n=1000      median      0.035 ms  [pass]
+merge_sort             sorting          keys-sorted                  n=10000     median      0.087 ms  [pass]
+quick_sort_median3     sorting          keys-sorted                  n=10000     median      0.123 ms  [pass]
+quick_sort_first       sorting          keys-sorted                  n=10000     median     23.463 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-sorted                  n=10000     median      0.446 ms  [pass]
+merge_sort             sorting          keys-sorted                  n=100000    median      0.763 ms  [pass]
+quick_sort_median3     sorting          keys-sorted                  n=100000    median      1.585 ms  [pass]
+quick_sort_random      sorting          keys-sorted                  n=100000    median      4.735 ms  [pass]
+merge_sort             sorting          keys-sorted                  n=1000000   median     18.134 ms  [pass]
+quick_sort_median3     sorting          keys-sorted                  n=1000000   median     25.773 ms  [pass]
+quick_sort_random      sorting          keys-sorted                  n=1000000   median     67.865 ms  [pass]
+merge_sort             sorting          keys-reversed                n=1000      median      0.017 ms  [pass]
+quick_sort_median3     sorting          keys-reversed                n=1000      median      0.012 ms  [pass]
+quick_sort_first       sorting          keys-reversed                n=1000      median      0.217 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-reversed                n=1000      median      0.038 ms  [pass]
+merge_sort             sorting          keys-reversed                n=10000     median      0.189 ms  [pass]
+quick_sort_median3     sorting          keys-reversed                n=10000     median      0.128 ms  [pass]
+quick_sort_first       sorting          keys-reversed                n=10000     median     21.233 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-reversed                n=10000     median      0.422 ms  [pass]
+merge_sort             sorting          keys-reversed                n=100000    median      2.486 ms  [pass]
+quick_sort_median3     sorting          keys-reversed                n=100000    median      1.612 ms  [pass]
+quick_sort_random      sorting          keys-reversed                n=100000    median      4.676 ms  [pass]
+merge_sort             sorting          keys-reversed                n=1000000   median     41.411 ms  [pass]
+quick_sort_median3     sorting          keys-reversed                n=1000000   median     23.087 ms  [pass]
+quick_sort_random      sorting          keys-reversed                n=1000000   median     60.963 ms  [pass]
+merge_sort             sorting          keys-few-distinct            n=1000      median      0.035 ms  [pass]
+quick_sort_median3     sorting          keys-few-distinct            n=1000      median      0.025 ms  [pass]
+quick_sort_first       sorting          keys-few-distinct            n=1000      median      0.024 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-few-distinct            n=1000      median      0.034 ms  [pass]
+merge_sort             sorting          keys-few-distinct            n=10000     median      0.447 ms  [pass]
+quick_sort_median3     sorting          keys-few-distinct            n=10000     median      0.287 ms  [pass]
+quick_sort_first       sorting          keys-few-distinct            n=10000     median      0.308 ms  [pass]  worst case (first-element pivot)
+quick_sort_random      sorting          keys-few-distinct            n=10000     median      0.386 ms  [pass]
+merge_sort             sorting          keys-few-distinct            n=100000    median      6.221 ms  [pass]
+quick_sort_median3     sorting          keys-few-distinct            n=100000    median      4.491 ms  [pass]
+quick_sort_random      sorting          keys-few-distinct            n=100000    median      5.520 ms  [pass]
+merge_sort             sorting          keys-few-distinct            n=1000000   median     68.115 ms  [pass]
+quick_sort_median3     sorting          keys-few-distinct            n=1000000   median     40.755 ms  [pass]
+quick_sort_random      sorting          keys-few-distinct            n=1000000   median     52.787 ms  [pass]
+binary_search_iterative searching        keys-sorted                  n=1000      median      4.119 ms  [pass]  50000 hits
+binary_search_recursive searching        keys-sorted                  n=1000      median      3.395 ms  [pass]  50000 hits
+binary_search_iterative searching        keys-sorted                  n=10000     median      6.884 ms  [pass]  50001 hits
+binary_search_recursive searching        keys-sorted                  n=10000     median      5.176 ms  [pass]  50001 hits
+binary_search_iterative searching        keys-sorted                  n=100000    median      8.542 ms  [pass]  50005 hits
+binary_search_recursive searching        keys-sorted                  n=100000    median      7.244 ms  [pass]  50005 hits
+binary_search_iterative searching        keys-sorted                  n=1000000   median     23.695 ms  [pass]  50068 hits
+binary_search_recursive searching        keys-sorted                  n=1000000   median     25.303 ms  [pass]  50068 hits
+dijkstra               shortest_path    B1-connected-varied          n=100       median      0.015 ms  [pass]  source 0; 100 vertices reachable
+bellman_ford           shortest_path    B1-connected-varied          n=100       median      0.011 ms  [pass]  source 0; 6 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B1-connected-varied          n=100       median      1.232 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B1-connected-varied          n=100       median      0.028 ms  [pass]  spanning tree, weight 19337; Prim = Kruskal
+kruskal                spanning_tree    B1-connected-varied          n=100       median      0.020 ms  [pass]  spanning tree, weight 19337; Prim = Kruskal
+dijkstra               shortest_path    B1-connected-equal           n=100       median      0.009 ms  [pass]  source 0; 100 vertices reachable
+bellman_ford           shortest_path    B1-connected-equal           n=100       median      0.005 ms  [pass]  source 0; 3 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B1-connected-equal           n=100       median      1.031 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B1-connected-equal           n=100       median      0.022 ms  [pass]  spanning tree, weight 990; Prim = Kruskal
+kruskal                spanning_tree    B1-connected-equal           n=100       median      0.004 ms  [pass]  spanning tree, weight 990; Prim = Kruskal
+dijkstra               shortest_path    B1-disconnected              n=100       median      0.002 ms  [pass]  source 0; 25 vertices reachable
+bellman_ford           shortest_path    B1-disconnected              n=100       median      0.002 ms  [pass]  source 0; 4 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B1-disconnected              n=100       median      0.272 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B1-disconnected              n=100       median      0.019 ms  [pass]  spanning forest of 4 trees, weight 20193; Prim = Kruskal
+kruskal                spanning_tree    B1-disconnected              n=100       median      0.019 ms  [pass]  spanning forest of 4 trees, weight 20193; Prim = Kruskal
+dijkstra               shortest_path    B2-connected-varied          n=500       median      0.092 ms  [pass]  source 0; 500 vertices reachable
+bellman_ford           shortest_path    B2-connected-varied          n=500       median      0.079 ms  [pass]  source 0; 7 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B2-connected-varied          n=500       median    145.041 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B2-connected-varied          n=500       median      0.180 ms  [pass]  spanning tree, weight 101183; Prim = Kruskal
+kruskal                spanning_tree    B2-connected-varied          n=500       median      0.133 ms  [pass]  spanning tree, weight 101183; Prim = Kruskal
+dijkstra               shortest_path    B2-connected-equal           n=500       median      0.063 ms  [pass]  source 0; 500 vertices reachable
+bellman_ford           shortest_path    B2-connected-equal           n=500       median      0.040 ms  [pass]  source 0; 4 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B2-connected-equal           n=500       median    150.621 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B2-connected-equal           n=500       median      0.133 ms  [pass]  spanning tree, weight 4990; Prim = Kruskal
+kruskal                spanning_tree    B2-connected-equal           n=500       median      0.015 ms  [pass]  spanning tree, weight 4990; Prim = Kruskal
+dijkstra               shortest_path    B2-disconnected              n=500       median      0.018 ms  [pass]  source 0; 125 vertices reachable
+bellman_ford           shortest_path    B2-disconnected              n=500       median      0.017 ms  [pass]  source 0; 6 rounds; equals Dijkstra
+floyd_warshall         shortest_path    B2-disconnected              n=500       median     21.177 ms  [pass]  all pairs; row 0 equals Dijkstra
+prim                   spanning_tree    B2-disconnected              n=500       median      0.154 ms  [pass]  spanning forest of 4 trees, weight 98535; Prim = Kruskal
+kruskal                spanning_tree    B2-disconnected              n=500       median      0.128 ms  [pass]  spanning forest of 4 trees, weight 98535; Prim = Kruskal
+dijkstra               shortest_path    B3-connected-varied          n=1000      median      0.212 ms  [pass]  source 0; 1000 vertices reachable
+bellman_ford           shortest_path    B3-connected-varied          n=1000      median      0.182 ms  [pass]  source 0; 8 rounds; equals Dijkstra
+prim                   spanning_tree    B3-connected-varied          n=1000      median      0.396 ms  [pass]  spanning tree, weight 207040; Prim = Kruskal
+kruskal                spanning_tree    B3-connected-varied          n=1000      median      0.285 ms  [pass]  spanning tree, weight 207040; Prim = Kruskal
+dijkstra               shortest_path    B3-connected-equal           n=1000      median      0.132 ms  [pass]  source 0; 1000 vertices reachable
+bellman_ford           shortest_path    B3-connected-equal           n=1000      median      0.085 ms  [pass]  source 0; 4 rounds; equals Dijkstra
+prim                   spanning_tree    B3-connected-equal           n=1000      median      0.293 ms  [pass]  spanning tree, weight 9990; Prim = Kruskal
+kruskal                spanning_tree    B3-connected-equal           n=1000      median      0.029 ms  [pass]  spanning tree, weight 9990; Prim = Kruskal
+dijkstra               shortest_path    B3-disconnected              n=1000      median      0.042 ms  [pass]  source 0; 250 vertices reachable
+bellman_ford           shortest_path    B3-disconnected              n=1000      median      0.036 ms  [pass]  source 0; 6 rounds; equals Dijkstra
+prim                   spanning_tree    B3-disconnected              n=1000      median      0.334 ms  [pass]  spanning forest of 4 trees, weight 192881; Prim = Kruskal
+kruskal                spanning_tree    B3-disconnected              n=1000      median      0.287 ms  [pass]  spanning forest of 4 trees, weight 192881; Prim = Kruskal
+dijkstra               shortest_path    B4-connected-varied          n=5000      median      1.679 ms  [pass]  source 0; 5000 vertices reachable
+bellman_ford           shortest_path    B4-connected-varied          n=5000      median      1.714 ms  [pass]  source 0; 11 rounds; equals Dijkstra
+prim                   spanning_tree    B4-connected-varied          n=5000      median      3.511 ms  [pass]  spanning tree, weight 982987; Prim = Kruskal
+kruskal                spanning_tree    B4-connected-varied          n=5000      median      1.927 ms  [pass]  spanning tree, weight 982987; Prim = Kruskal
+dijkstra               shortest_path    B4-connected-equal           n=5000      median      1.067 ms  [pass]  source 0; 5000 vertices reachable
+bellman_ford           shortest_path    B4-connected-equal           n=5000      median      0.965 ms  [pass]  source 0; 6 rounds; equals Dijkstra
+prim                   spanning_tree    B4-connected-equal           n=5000      median      2.440 ms  [pass]  spanning tree, weight 49990; Prim = Kruskal
+kruskal                spanning_tree    B4-connected-equal           n=5000      median      0.236 ms  [pass]  spanning tree, weight 49990; Prim = Kruskal
+dijkstra               shortest_path    B4-disconnected              n=5000      median      0.346 ms  [pass]  source 0; 1250 vertices reachable
+bellman_ford           shortest_path    B4-disconnected              n=5000      median      0.297 ms  [pass]  source 0; 9 rounds; equals Dijkstra
+prim                   spanning_tree    B4-disconnected              n=5000      median      2.945 ms  [pass]  spanning forest of 4 trees, weight 988709; Prim = Kruskal
+kruskal                spanning_tree    B4-disconnected              n=5000      median      8.689 ms  [pass]  spanning forest of 4 trees, weight 988709; Prim = Kruskal
+dijkstra               shortest_path    B5-connected-varied          n=10000     median      5.448 ms  [pass]  source 0; 10000 vertices reachable
+prim                   spanning_tree    B5-connected-varied          n=10000     median      7.388 ms  [pass]  spanning tree, weight 1983016; Prim = Kruskal
+kruskal                spanning_tree    B5-connected-varied          n=10000     median      3.919 ms  [pass]  spanning tree, weight 1983016; Prim = Kruskal
+dijkstra               shortest_path    B5-connected-equal           n=10000     median      2.389 ms  [pass]  source 0; 10000 vertices reachable
+prim                   spanning_tree    B5-connected-equal           n=10000     median      6.467 ms  [pass]  spanning tree, weight 99990; Prim = Kruskal
+kruskal                spanning_tree    B5-connected-equal           n=10000     median      0.299 ms  [pass]  spanning tree, weight 99990; Prim = Kruskal
+dijkstra               shortest_path    B5-disconnected              n=10000     median      0.718 ms  [pass]  source 0; 2500 vertices reachable
+prim                   spanning_tree    B5-disconnected              n=10000     median      6.779 ms  [pass]  spanning forest of 4 trees, weight 1961771; Prim = Kruskal
+kruskal                spanning_tree    B5-disconnected              n=10000     median      3.943 ms  [pass]  spanning forest of 4 trees, weight 1961771; Prim = Kruskal
+dijkstra               shortest_path    B6-connected-varied          n=50000     median     35.341 ms  [pass]  source 0; 50000 vertices reachable
+prim                   spanning_tree    B6-connected-varied          n=50000     median     52.243 ms  [pass]  spanning tree, weight 9901465; Prim = Kruskal
+kruskal                spanning_tree    B6-connected-varied          n=50000     median     22.213 ms  [pass]  spanning tree, weight 9901465; Prim = Kruskal
+dijkstra               shortest_path    B6-connected-equal           n=50000     median     23.149 ms  [pass]  source 0; 50000 vertices reachable
+prim                   spanning_tree    B6-connected-equal           n=50000     median     61.830 ms  [pass]  spanning tree, weight 499990; Prim = Kruskal
+kruskal                spanning_tree    B6-connected-equal           n=50000     median      1.953 ms  [pass]  spanning tree, weight 499990; Prim = Kruskal
+dijkstra               shortest_path    B6-disconnected              n=50000     median      5.847 ms  [pass]  source 0; 12500 vertices reachable
+prim                   spanning_tree    B6-disconnected              n=50000     median     38.067 ms  [pass]  spanning forest of 4 trees, weight 9878346; Prim = Kruskal
+kruskal                spanning_tree    B6-disconnected              n=50000     median     21.497 ms  [pass]  spanning forest of 4 trees, weight 9878346; Prim = Kruskal
+floyd_warshall         dense_graph      D100-dense-small             n=100       median      1.739 ms  [pass]  all n x n distances agree
+dijkstra_all_sources   dense_graph      D100-dense-small             n=100       median      5.955 ms  [pass]  all n x n distances agree
+prim                   dense_graph      D100-dense-small             n=100       median      0.321 ms  [pass]  tree weight 2237; heap Prim = matrix Prim
+prim_dense             dense_graph      D100-dense-small             n=100       median      0.057 ms  [pass]  tree weight 2237; heap Prim = matrix Prim
+floyd_warshall         dense_graph      D200-dense-small             n=200       median     11.986 ms  [pass]  all n x n distances agree
+dijkstra_all_sources   dense_graph      D200-dense-small             n=200       median     37.872 ms  [pass]  all n x n distances agree
+prim                   dense_graph      D200-dense-small             n=200       median      1.472 ms  [pass]  tree weight 2535; heap Prim = matrix Prim
+prim_dense             dense_graph      D200-dense-small             n=200       median      0.228 ms  [pass]  tree weight 2535; heap Prim = matrix Prim
+floyd_warshall         dense_graph      D400-dense-small             n=400       median    109.573 ms  [pass]  all n x n distances agree
+dijkstra_all_sources   dense_graph      D400-dense-small             n=400       median    268.644 ms  [pass]  all n x n distances agree
+prim                   dense_graph      D400-dense-small             n=400       median      7.372 ms  [pass]  tree weight 2591; heap Prim = matrix Prim
+prim_dense             dense_graph      D400-dense-small             n=400       median      1.042 ms  [pass]  tree weight 2591; heap Prim = matrix Prim
+knapsack_dp            placement        candidates-25                n=25        median      0.006 ms  [pass]  benefit 479; table 25 x 164
+knapsack_bnb_lc        placement        candidates-25                n=25        median      0.018 ms  [pass]  271 nodes, optimal
+greedy_ratio           placement        candidates-25                n=25        median      0.001 ms  [pass]  benefit 441 = 92.07% of optimal
+knapsack_dp            placement        candidates-25                n=25        median      0.014 ms  [pass]  benefit 1146; table 25 x 410
+knapsack_bnb_lc        placement        candidates-25                n=25        median      0.008 ms  [pass]  149 nodes, optimal
+greedy_ratio           placement        candidates-25                n=25        median      0.000 ms  [pass]  benefit 1136 = 99.13% of optimal
+knapsack_dp            placement        candidates-25                n=25        median      0.030 ms  [pass]  benefit 2145; table 25 x 819
+knapsack_bnb_lc        placement        candidates-25                n=25        median      0.005 ms  [pass]  102 nodes, optimal
+greedy_ratio           placement        candidates-25                n=25        median      0.000 ms  [pass]  benefit 2121 = 98.88% of optimal
+knapsack_dp            placement        candidates-50                n=50        median      0.021 ms  [pass]  benefit 989; table 50 x 297
+knapsack_bnb_lc        placement        candidates-50                n=50        median      0.010 ms  [pass]  137 nodes, optimal
+greedy_ratio           placement        candidates-50                n=50        median      0.002 ms  [pass]  benefit 984 = 99.49% of optimal
+knapsack_dp            placement        candidates-50                n=50        median      0.054 ms  [pass]  benefit 2202; table 50 x 743
+knapsack_bnb_lc        placement        candidates-50                n=50        median      0.017 ms  [pass]  268 nodes, optimal
+greedy_ratio           placement        candidates-50                n=50        median      0.001 ms  [pass]  benefit 2196 = 99.73% of optimal
+knapsack_dp            placement        candidates-50                n=50        median      0.113 ms  [pass]  benefit 4076; table 50 x 1485
+knapsack_bnb_lc        placement        candidates-50                n=50        median      0.050 ms  [pass]  455 nodes, optimal
+greedy_ratio           placement        candidates-50                n=50        median      0.002 ms  [pass]  benefit 4060 = 99.61% of optimal
+knapsack_dp            placement        candidates-100               n=100       median      0.066 ms  [pass]  benefit 1939; table 100 x 581
+knapsack_bnb_lc        placement        candidates-100               n=100       median      0.008 ms  [pass]  46 nodes, optimal
+greedy_ratio           placement        candidates-100               n=100       median      0.003 ms  [pass]  benefit 1926 = 99.33% of optimal
+knapsack_dp            placement        candidates-100               n=100       median      0.258 ms  [pass]  benefit 4293; table 100 x 1453
+knapsack_bnb_lc        placement        candidates-100               n=100       median      0.031 ms  [pass]  395 nodes, optimal
+greedy_ratio           placement        candidates-100               n=100       median      0.004 ms  [pass]  benefit 4287 = 99.86% of optimal
+knapsack_dp            placement        candidates-100               n=100       median      0.443 ms  [pass]  benefit 7868; table 100 x 2905
+knapsack_bnb_lc        placement        candidates-100               n=100       median      0.018 ms  [pass]  174 nodes, optimal
+greedy_ratio           placement        candidates-100               n=100       median      0.004 ms  [pass]  benefit 7866 = 99.97% of optimal
+knapsack_dp            placement        candidates-200               n=200       median      0.289 ms  [pass]  benefit 3795; table 200 x 1120
+knapsack_bnb_lc        placement        candidates-200               n=200       median      0.108 ms  [pass]  990 nodes, optimal
+greedy_ratio           placement        candidates-200               n=200       median      0.009 ms  [pass]  benefit 3778 = 99.55% of optimal
+knapsack_dp            placement        candidates-200               n=200       median      0.730 ms  [pass]  benefit 8350; table 200 x 2800
+knapsack_bnb_lc        placement        candidates-200               n=200       median      0.042 ms  [pass]  290 nodes, optimal
+greedy_ratio           placement        candidates-200               n=200       median      0.009 ms  [pass]  benefit 8342 = 99.90% of optimal
+knapsack_dp            placement        candidates-200               n=200       median      1.598 ms  [pass]  benefit 15290; table 200 x 5599
+knapsack_bnb_lc        placement        candidates-200               n=200       median      0.140 ms  [pass]  1048 nodes, optimal
+greedy_ratio           placement        candidates-200               n=200       median      0.009 ms  [pass]  benefit 15283 = 99.95% of optimal
+knapsack_dp            placement        candidates-400               n=400       median      0.913 ms  [pass]  benefit 7541; table 400 x 2129
+knapsack_bnb_lc        placement        candidates-400               n=400       median      0.088 ms  [pass]  477 nodes, optimal
+greedy_ratio           placement        candidates-400               n=400       median      0.026 ms  [pass]  benefit 7524 = 99.77% of optimal
+knapsack_dp            placement        candidates-400               n=400       median      2.684 ms  [pass]  benefit 16295; table 400 x 5322
+knapsack_bnb_lc        placement        candidates-400               n=400       median      0.039 ms  [pass]  1 nodes, optimal
+greedy_ratio           placement        candidates-400               n=400       median      0.025 ms  [pass]  benefit 16295 = 100.00% of optimal
+knapsack_dp            placement        candidates-400               n=400       median      5.796 ms  [pass]  benefit 29513; table 400 x 10644
+knapsack_bnb_lc        placement        candidates-400               n=400       median      0.376 ms  [pass]  1566 nodes, optimal
+greedy_ratio           placement        candidates-400               n=400       median      0.023 ms  [pass]  benefit 29502 = 99.96% of optimal
+knapsack_dp            placement        candidates-800               n=800       median      3.848 ms  [pass]  benefit 15218; table 800 x 4300
+knapsack_bnb_lc        placement        candidates-800               n=800       median      0.178 ms  [pass]  367 nodes, optimal
+greedy_ratio           placement        candidates-800               n=800       median      0.057 ms  [pass]  benefit 15218 = 100.00% of optimal
+knapsack_dp            placement        candidates-800               n=800       median     10.785 ms  [pass]  benefit 32905; table 800 x 10750
+knapsack_bnb_lc        placement        candidates-800               n=800       median      0.429 ms  [pass]  696 nodes, optimal
+greedy_ratio           placement        candidates-800               n=800       median      0.057 ms  [pass]  benefit 32884 = 99.94% of optimal
+knapsack_dp            placement        candidates-800               n=800       median     25.293 ms  [pass]  benefit 59367; table 800 x 21499
+knapsack_bnb_lc        placement        candidates-800               n=800       median      0.849 ms  [pass]  1349 nodes, optimal
+greedy_ratio           placement        candidates-800               n=800       median      0.057 ms  [pass]  benefit 59353 = 99.98% of optimal
+activity_selection     scheduling       sessions-1000                n=1000      median      0.083 ms  [pass]  65 sessions on one bay
+interval_partitioning  scheduling       sessions-1000                n=1000      median      0.136 ms  [pass]  50 bays = maximum overlap 50
+activity_selection     scheduling       sessions-10000               n=10000     median      1.328 ms  [pass]  107 sessions on one bay
+interval_partitioning  scheduling       sessions-10000               n=10000     median      2.005 ms  [pass]  429 bays = maximum overlap 429
+activity_selection     scheduling       sessions-100000              n=100000    median     21.412 ms  [pass]  137 sessions on one bay
+interval_partitioning  scheduling       sessions-100000              n=100000    median     46.131 ms  [pass]  3606 bays = maximum overlap 3606
+activity_selection     scheduling       sessions-1000000             n=1000000   median    358.874 ms  [pass]  144 sessions on one bay
+interval_partitioning  scheduling       sessions-1000000             n=1000000   median    537.864 ms  [pass]  35156 bays = maximum overlap 35156
+matmul_classical       matrix           random-32x32                 n=32        median      0.016 ms  [pass]  max |classical - Strassen| = 0.00e+00
+matmul_strassen_cutoff64 matrix           random-32x32                 n=32        median      0.018 ms  [pass]  max |classical - Strassen| = 0.00e+00
+matmul_classical       matrix           random-64x64                 n=64        median      0.113 ms  [pass]  max |classical - Strassen| = 0.00e+00
+matmul_strassen_cutoff64 matrix           random-64x64                 n=64        median      0.131 ms  [pass]  max |classical - Strassen| = 0.00e+00
+matmul_classical       matrix           random-128x128               n=128       median      0.790 ms  [pass]  max |classical - Strassen| = 1.60e-14
+matmul_strassen_cutoff64 matrix           random-128x128               n=128       median      0.911 ms  [pass]  max |classical - Strassen| = 1.60e-14
+matmul_classical       matrix           random-256x256               n=256       median      6.646 ms  [pass]  max |classical - Strassen| = 5.24e-14
+matmul_strassen_cutoff64 matrix           random-256x256               n=256       median      6.775 ms  [pass]  max |classical - Strassen| = 5.24e-14
+matmul_classical       matrix           random-512x512               n=512       median     65.159 ms  [pass]  max |classical - Strassen| = 1.51e-13
+matmul_strassen_cutoff64 matrix           random-512x512               n=512       median     52.520 ms  [pass]  max |classical - Strassen| = 1.51e-13
+leg_planner_dijkstra   trip_planning    scenario-small               n=60        median      0.475 ms  [pass]  55 feasible (battery step n/a)
+exact_state_space      trip_planning    scenario-small               n=60        median      1.740 ms  [pass]  53 feasible (battery step 0.25 kWh)
+leg_planner_dijkstra   trip_planning    scenario-medium              n=200       median     12.484 ms  [pass]  198 feasible (battery step n/a)
+exact_state_space      trip_planning    scenario-medium              n=200       median    280.080 ms  [pass]  198 feasible (battery step 0.25 kWh)
+leg_planner_dijkstra   trip_planning    scenario-large               n=200       median    141.740 ms  [pass]  199 feasible (battery step n/a)
+exact_state_space      trip_planning    scenario-large               n=200       median   1897.826 ms  [pass]  198 feasible (battery step 0.25 kWh)
+
+228 measurements, 0 validation failures, 21.4 s; written to benchmarks/results.csv

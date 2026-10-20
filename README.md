@@ -1,166 +1,291 @@
 # EV33 — EV Charging Station Placement and Trip Planning System
 
-Project 33 · 8 weeks · C11 engine, C++17 desktop app · student product with individual algorithm ownership
+EV33 answers two questions for an electric-vehicle network:
 
-EV33 decides **where to install charging stations under a budget** and **how each electric
-vehicle trip should be routed and recharged** so that it never drops below its battery reserve.
-Every mandatory syllabus algorithm is implemented from scratch in a reusable library and is
-mapped to a concrete electric-mobility decision, benchmarked against a sibling algorithm, and
-verified against an oracle.
+1. **Where should new charging stations be installed** within an installation budget?
+2. **How should each trip be driven and recharged** so that the battery never falls below the
+   vehicle's reserve — and, when that is impossible, why?
 
-Everything is written in **C and C++ only**: the engine, CLI, benchmark runner, generator and tests
-in C11, the desktop app and the website server in C++17.
+The whole system is **C++17** (engine, command line, tests, benchmarks, website server and desktop
+app). Every assessed algorithm is written by hand; the engine uses only the C++ standard library.
+Live website: <https://ev-project-84u5.onrender.com>.
 
-```
-make            # builds ev33, ev33_bench, ev33_gen, ev33_tests (gcc or clang, C11, no dependencies)
-make test       # 59,000+ checks: unit, oracle, integration, invalid input, regression, leak balance
-make demo       # the three demonstration scenarios -> results/demo/ (runs ./build/ev33 demo)
-make run-gui    # builds and opens the desktop app (C++17, CMake, OpenGL)
-make web        # builds the website server build/web/ev33_web (C++17, deployed on Render)
-```
+Contents: [1 Features](#1-features) · [2 Data honesty](#2-data-honesty) · [3 Repository layout](#3-repository-layout) ·
+[4 Requirements](#4-requirements) · [5 Build on Linux or macOS](#5-build-on-linux-or-macos) ·
+[6 Build on Windows (MinGW-w64)](#6-build-on-windows-mingw-w64) · [7 Command-line use](#7-command-line-use) ·
+[8 Input data](#8-input-data) · [9 Website and desktop app](#9-website-and-desktop-app) ·
+[10 Tests](#10-tests) · [11 Benchmarks](#11-benchmarks) · [12 Algorithms](#12-algorithms) ·
+[13 Results](#13-results) · [14 Limitations and responsible use](#14-limitations-and-responsible-use) ·
+[15 Documentation and checklist](#15-documentation-and-checklist)
 
-## What it does
+## 1. Features
 
 | Stage | Decision | Algorithms |
 |---|---|---|
-| Load & index | parse 5 typed CSV/config files, reject bad data with `file:line: reason` | merge sort + binary search node-id index |
-| Service value | how much each candidate site is worth | Dijkstra trees, trip traversal counts |
-| **Station selection** | which sites to build within the budget | greedy ratio, **0/1 knapsack DP**, **branch-and-bound FIFO / LIFO / least-cost** |
-| **Trip planning** | route + charging stops that respect battery range and reserve | **Dijkstra** (km), **Floyd-Warshall** (all pairs), **Bellman-Ford** (energy with regenerative braking ⇒ negative arcs) over a "charging-leg graph" |
-| Capacity allocation | how many charge-needing trips the installed ports can absorb | **Ford-Fulkerson (DFS)**, **Edmonds-Karp (BFS)**, **bipartite matching** (cross-checked) |
-| Charger sessions | chargers each station needs; sessions servable | **interval partitioning**, **activity selection** |
-| Grid surge | worst consecutive hours of load above grid supply | **max-subarray (divide & conquer)** |
-| Operations | backbone cable, maintenance tour, maintenance alignment, lookups | **Prim / Kruskal**, **Held-Karp TSP**, **CRT**, **optimal BST**, **celebrity** (overflow hub) |
-| Analytics | log compression, fault-pattern detection, route adherence, demand propagation | **Huffman**, **naive / Rabin-Karp / automaton / KMP**, **LCS**, **Strassen vs classical**, **matrix-chain**, **fast power** |
-| Validation | backtracking framework | **N-Queens**, **subset sum** |
+| Load and validate | typed CSV records; any problem reported as `file:line: reason` | CSV parser by column name, merge sort + binary search indexes |
+| Benefit | how much each candidate site is worth (given, or estimated from the trips) | shortest-path trees over all trips |
+| **Placement** | which candidates to build within the budget (exact integer paise) | **0/1 knapsack DP**, **branch and bound (FIFO / LIFO / least cost)**, greedy ratio |
+| **Trip planning** | route + charging stops that keep the battery above the reserve, or a stated reason why not | **exact state-space Dijkstra** over (junction, battery), fleet **charging-leg planner** with **Dijkstra / Floyd–Warshall / Bellman–Ford** legs |
+| Capacity | how many charge-needing trips the ports can absorb | **Ford–Fulkerson**, **Edmonds–Karp**, **bipartite matching**, min cut (must agree) |
+| Sessions | bays each station needs; sessions it can serve | **interval partitioning**, **activity selection** |
+| Grid surge | worst run of hours above grid supply | **maximum subarray (divide and conquer)** |
+| Day simulation | queues and delays with the real port counts; drivers wait or divert | event heap, FIFO queues |
+| Analysis report | backbone cable, maintenance tour and windows, station index, event log | **Prim / Kruskal**, **Held–Karp**, **CRT**, **optimal BST**, **Huffman**, **KMP / Rabin–Karp / automaton / naive**, **LCS**, **Strassen**, **matrix chain**, **fast power**, **celebrity**, **N-Queens**, **subset sum** |
 
-## Demonstration results (from `results/demo/transcript.txt`)
+Every trip result has a status — `direct`, `with-charging`, `zero-length`, `no-road-connection`,
+`start-below-reserve`, `out-of-range` or `charging-insufficient` — and a sentence explaining it.
+Existing stations can be offline or have incompatible connectors; vehicles have their own battery,
+consumption, reserve and connector.
 
-| Scenario | Data | Exact (DP + Dijkstra) | Alternative (greedy + Bellman-Ford) |
-|---|---|---|---|
-| Normal operation | 256 junctions, 60 sites, 1,200 trips, budget 900 | 10 stations, value 2,480, **1,181/1,200 trips feasible** | value 2,417 (97.5 %), 1,177 feasible, 0.4 % less energy per trip |
-| Constraint shock | budget −45 %, 30 % port outages, bridge closures, +60 % evening demand | 6 stations, 1,856/1,920 feasible; flow shows only **144 of 751** charge-needing trips fit the ports; 5 stations overloaded; grid surge 17:00–20:00 | 1,834 feasible (−22 trips) |
-| Large-data stress | 1,024 junctions, 220 sites, 6,000 trips | 26 stations, 5,827/6,000 feasible; whole pipeline < 1 s | Floyd-Warshall routing 5.5× slower (730 ms vs 132 ms) with identical plans |
+## 2. Data honesty
 
-Full numbers: [docs/COMPLEXITY_REPORT.md](docs/COMPLEXITY_REPORT.md) and `results/bench.csv` (242 benchmark rows, all checks passing).
+All bundled data is **synthetic**: a hand-made 10-node sample whose answers are worked out by
+hand (`data/sample/README.md`), five generated cities (`data/scenarios/`, seed 33) and generated
+benchmark datasets (seed 12345). Every generated file starts with a `# SYNTHETIC` comment, the
+scenario files record `data_source = synthetic`, and coordinates sit near 0° N 0° E on purpose.
+They are not real places, operators or vehicles. Every number in this README and in `docs/` was
+produced by running the programs; nothing is estimated by hand. See `docs/data.md` for how to use
+real data (for example OpenStreetMap roads) and the privacy rules that come with it.
 
-## Website (`ev33_web`, hosted on Render)
-
-`server/web.cpp` is a small HTTP server in C++17 on the same engine. It generates every page
-itself: HTML for the layout, SVG for the map and charts, CSS from a string in the source. There is
-no JavaScript; choices are links and forms, and the live day plays by reloading once a second. It
-has the same seven views as the desktop app (Planner, Live day, Strategies, Capacity, Algorithms,
-Data model, Benchmarks), and the plan travels in the address, so any view can be bookmarked or
-shared.
+## 3. Repository layout
 
 ```
-make web                      # build/web/ev33_web (CMake, no graphics libraries needed)
-./build/web/ev33_web          # http://127.0.0.1:8033 (PORT in the environment changes the port)
+include/ev/            public headers, one folder per layer
+  core/                  Paise money type, Rng, Stopwatch, DataError
+  algorithms/            sorting, searching, divide & conquer, greedy, DP, backtracking,
+                         branch and bound, number theory, string matching, binary heap
+  graph/                 Graph, Dijkstra / Bellman-Ford / Floyd-Warshall, Prim / Kruskal, max flow
+  models/                RoadNetwork, ChargingStation, CandidateStation, ElectricVehicle, TripRequest, Scenario
+  io/                    CSV reader, scenario loader/writer, JSON writer
+  planner/               EnergyModel, Router, ExactPlanner, LegPlanner, TripPlan
+  placement/             benefits and budgeted placement
+  operations/            capacity, sessions, day simulation
+  analysis/              PlanningRun pipeline, reports, comparison, textbook demos
+  datagen/               scenario and benchmark-dataset generators
+src/                   implementations (same folders) + app/ (the ev33 command line)
+tools/ev33_gen.cpp     scenario generator
+tests/                 unit/, integration/ (IT01-IT08), adversarial/ (AD01-AD25), fixtures/
+benchmarks/            benchmark.cpp (ev33_bench), gbench.cpp (Google Benchmark),
+                       generator.cpp (benchmark_data_generator), results.csv
+shared/ server/ gui/   website and desktop app (shared adapter, web.cpp, Dear ImGui views)
+data/                  sample/, scenarios/, generated/ (benchmark data, regenerated on demand)
+docs/                  architecture, algorithms, testing, benchmark methodology, data, user guide
+third_party/           googletest, benchmark, imgui, implot, glfw (vendored, licences included)
+cmake/                 MinGW-w64 cross-compilation toolchain file
+Dockerfile render.yaml website image and Render blueprint
 ```
 
-**Deploying on Render.** The repository contains a `Dockerfile` (builds the server, runs the test
-suite, then makes a small runtime image with the data and fonts) and `render.yaml` (one free web
-service). In Render choose *New → Blueprint*, pick this GitHub repository and apply; Render builds
-the image and gives the site an `onrender.com` address. `/health` answers `ok` for the health
-check. Free instances sleep when idle, so the first visit after a while takes a few seconds.
+## 4. Requirements
 
-## Desktop app (`ev33_gui`)
+* A C++17 compiler: GCC ≥ 9, Clang ≥ 10, or MinGW-w64 GCC ≥ 9 / llvm-mingw (tested: GCC 13.3 on
+  Linux, llvm-mingw Clang 19.1 for Windows x64). MSVC 2019+ should work but has not been tested.
+* CMake ≥ 3.16 and a build tool (Ninja recommended, or Make).
+* Nothing else to install: GoogleTest, Google Benchmark, Dear ImGui, ImPlot and GLFW are in
+  `third_party/`. The desktop app needs OpenGL (always present on Windows; on Linux install
+  `libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl-dev`).
 
-A C++17 window app that links the C engine directly and recomputes as you change anything. It
-uses [Dear ImGui](https://github.com/ocornut/imgui) and [ImPlot](https://github.com/epezent/implot)
-(C++) on [GLFW](https://github.com/glfw/glfw) (C) with OpenGL; all three are vendored in
-`third_party/`, so the build needs only CMake and a C/C++ compiler.
+## 5. Build on Linux or macOS
 
 ```
-make gui                                    # or: cmake -S . -B build/gui && cmake --build build/gui --target ev33_gui
-./build/gui/ev33_gui                        # run from the project folder (it finds data/, results/, assets/)
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-On Linux install the X11 development headers once (`sudo apt install libx11-dev libxrandr-dev
-libxinerama-dev libxcursor-dev libxi-dev libgl-dev`). On Windows use Visual Studio or MinGW with
-CMake; no extra packages are needed. (macOS builds the C programs only: GLFW's macOS backend is
-Objective-C, so it is left out.)
+Options (all `ON` unless noted): `EV33_BUILD_TESTS`, `EV33_BUILD_BENCHMARKS`, `EV33_BUILD_GBENCH`,
+`EV33_BUILD_WEB`, `EV33_GUI` (`OFF`; desktop app), `EV33_SANITIZE` (`OFF`; AddressSanitizer +
+UndefinedBehaviorSanitizer). Programs land in `build/` (`ev33`, `ev33_gen`, `ev33_web`,
+`ev33_gui`), `build/tests/` and `build/benchmarks/`.
 
-The left sidebar holds the plan (city, selection method, routing method, budget, what-if edits)
-and every tab uses it:
+## 6. Build on Windows (MinGW-w64)
 
-| Tab | What it shows |
+Use a 64-bit MinGW-w64 toolchain. The old 32-bit MinGW.org GCC 6.x is **too old** for C++17.
+
+1. Install MSYS2 from <https://www.msys2.org>, open the **MSYS2 UCRT64** shell and run
+   `pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja`.
+2. Add `C:\msys64\ucrt64\bin` to `PATH` (so PowerShell and VS Code find `g++`, `cmake`, `ninja`).
+3. In the project folder (PowerShell or the UCRT64 shell):
+
+```
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DEV33_GUI=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Executables:
+
+| Program | Path |
 |---|---|
-| Planner | five headline figures, map with built stations, what-if editing of any site, baseline comparison, copy built sites as CSV, trip inspector with an animated route and a battery chart |
-| Live day | the day simulation: vehicles drive, queue and charge on the map; play at real time up to 1 h/s, scrub, jump to now; drivers wait or switch station after 20 min; busiest stations with +2 ports; grid draw over the day |
-| Strategies | all 15 selection × routing pairings, coloured by trips completed, energy, routing time or selection value |
-| Capacity | charging energy by hour against grid supply, busiest stations against their ports, the three max-flow checks |
-| Algorithms | every decision, the algorithm behind it, its result on this city and its independent check, plus the engine's full report |
-| Data model | the typed records (nodes, roads, stations, trips, battery and budget) with real values, and the arrays, trees and weighted or capacitated graphs built from them |
-| Benchmarks | log-log scaling charts from `results/bench.csv` and the adversarial inputs |
+| command line | `build\ev33.exe` |
+| scenario generator | `build\ev33_gen.exe` |
+| website server | `build\ev33_web.exe` (then open <http://localhost:8033>) |
+| desktop app | `build\ev33_gui.exe` |
+| tests | `build\tests\ev33_unit_tests.exe`, `ev33_integration_tests.exe`, `ev33_adversarial_tests.exe` |
+| benchmarks | `build\benchmarks\ev33_bench.exe`, `benchmark_data_generator.exe`, `ev33_gbench.exe` |
 
-Map: wheel to zoom at the pointer, drag to pan, double-click to zoom in, *Fit* to reset; *Traffic*
-colours each road by planned trips. *Save screenshot* writes the window to a PNG. *Dark theme*
-switches colours.
+Run the programs from the project folder so they find `data\`, `benchmarks\` and `assets\`.
+Cross-compiling from Linux works too:
+`cmake -S . -B build-win -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake -DMINGW_ROOT=/path/to/mingw`
+(this is how the Windows executables in the release ZIP were built; they link statically and need
+no DLLs).
 
-Command-line options open a given state, which is useful for reports:
-`./build/gui/ev33_gui --city shock --page live --time 19:10 --policy divert --shot shock.png`
-saves that view as a PNG and exits (`--help` lists every option).
-
-## Repository layout
+## 7. Command-line use
 
 ```
-include/        public headers - one per algorithm family + domain
-src/lib/        reusable algorithm library (no domain knowledge)
-  ev_mem.c        tracked allocator (peak-heap metric), timer, deterministic RNG
-  ev_sort.c       merge sort, quick sort (median-of-3 / first / random pivot), binary search
-  ev_dnc.c        max subarray, fast power, celebrity, classical + Strassen matmul
-  ev_greedy.c     activity selection, interval partitioning, Huffman
-  ev_graph.c      CSR graph, Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, Kruskal, union-find
-  ev_dp.c         0/1 knapsack, matrix chain, LCS, optimal BST, Held-Karp TSP
-  ev_search.c     N-Queens, subset sum, knapsack branch-and-bound (FIFO/LIFO/LC)
-  ev_flow.c       Ford-Fulkerson, Edmonds-Karp, min-cut, bipartite matching
-  ev_nt.c         gcd / extended gcd / CRT, naive, Rabin-Karp, finite automaton, KMP
-src/domain/     EV model, loader + validation, router, planner, capacity, sessions, reports
-src/app/        main.c (CLI, interactive menu, demo), bench.c (benchmark runner)
-shared/         C++17 layer used by both front ends: engine.cpp (calls the C library), content.cpp
-                (report rows, data-model tables, summaries), fmt.cpp (number formatting), json.h
-gui/            desktop app: main.cpp (window, tabs), map.cpp (city map), views.cpp (the seven
-                tabs), ui.cpp (theme, text, PNG export)
-server/         web.cpp - the website: HTTP server that generates HTML + SVG pages
-Dockerfile      image Render builds; render.yaml is the Render blueprint
-third_party/    Dear ImGui, ImPlot, GLFW (vendored, licences included)
-assets/fonts/   IBM Plex Sans and Mono (SIL Open Font License)
-tools/          ev33_gen.c - deterministic scenario generator (5 profiles)
-tests/          test_main.c + regression fixtures
-data/           small, medium, shock, large, adversarial scenarios (seed 33)
-results/        bench.csv, bench_console.txt, demo/ (transcript, CSV, JSON)
-docs/           DESIGN, USER_GUIDE, COMPLEXITY_REPORT, DEMO_SCRIPT, OWNERSHIP, PROJECT_PLAN
+ev33 validate  --data DIR                               load and validate a scenario
+ev33 run       --data DIR [--place M] [--route R] [--budget INR] [--out DIR]
+ev33 plan      --data DIR --trip ID [--method exact|leg|both]
+ev33 plan      --data DIR --from NODE --to NODE --vehicle V [--charge KWH] [--depart HH:MM]
+ev33 place     --data DIR [--place M] [--budget INR] [--out DIR]
+ev33 schedule  --data DIR [--station ID]                booked sessions: bays needed, sessions served
+ev33 compare   --data DIR [--out DIR]                   every placement x routing method
+ev33 analyze   --data DIR [--out DIR]                   every algorithm on the scenario
+ev33 verify    --data DIR [--samples N] [--route R]     fleet planner vs exact planner
+ev33 algorithms                                         textbook example of every algorithm
+ev33 demo      [--data ROOT] [--out DIR]                the demonstration script
+ev33 menu      [--data DIR]                             interactive menu
+    M = greedy | dp | bnb-lc | bnb-fifo | bnb-lifo   R = dijkstra | floyd | bellman
 ```
 
-## Quick CLI tour
+Examples:
 
 ```
-./build/ev33 validate --data data/medium
-./build/ev33 run      --data data/shock --select bnb-lc --route bellman --out out/shock
-./build/ev33 compare  --data data/large --out out/large          # 5 x 3 strategy matrix
-./build/ev33 analyze  --data data/medium --out out/medium        # every syllabus module on real data
-./build/ev33 plan     --data data/large --trip 22                # explain one trip's stops
-./build/ev33 menu     --data data/small                          # interactive
-./build/ev33 demo                                               # three scenarios -> results/demo/
-./build/ev33_bench    [--quick] [--only knapsack]                # -> results/bench.csv
-./build/ev33_gen      --profile large --seed 7 --out data/my_city
+build/ev33 plan --data data/sample --trip 2 --method both     # a trip that needs one charging stop
+build/ev33 run  --data data/scenarios/shock --place bnb-lc --route bellman --out out/shock
+build/ev33_gen  --profile large --seed 7 --out data/my_city   # a new synthetic city
 ```
 
-Windows: build with CMake (`cmake -S . -B build && cmake --build build --config Release`) using
-MSVC or MinGW; the C code uses only C11 + `<sys/stat.h>`/`<direct.h>`. The same CMake build also
-makes `ev33_gui` (turn it off with `-DEV33_GUI=OFF`).
+`run` writes `placement.csv`, `plans.csv` and `summary.json`. Exit codes: 0 success, 1 data or
+usage error, 2 internal error. More in `docs/USER_GUIDE.md`.
 
-## Release
+## 8. Input data
 
-`make release TAG=v1.0.0` runs the tests, makes the first commit under your own Git identity
-and creates the release tag.
+A scenario is a folder with `scenario.cfg`, `nodes.csv`, `roads.csv` and optionally
+`stations.csv`, `candidates.csv`, `vehicles.csv`, `trips.csv`, `sessions.csv`, `events.txt`.
+Columns are matched by name; money is in rupees (stored exactly as paise). Full formats,
+validation rules and real-data guidance: `docs/data.md`.
 
-## Documentation
+## 9. Website and desktop app
 
-- [docs/DESIGN.md](docs/DESIGN.md) — architecture, data model, energy model, planning algorithm, interfaces
-- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — build, data formats, every command, outputs
-- [docs/COMPLEXITY_REPORT.md](docs/COMPLEXITY_REPORT.md) — recurrences, asymptotics vs measurements, correctness evidence, complexity classes, reductions, production recommendation
-- [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) — 15-minute demonstration walkthrough
-- [docs/OWNERSHIP.md](docs/OWNERSHIP.md) — per-member algorithm ownership matrix
-- [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) — 8-week milestone plan
+Both show the same seven views on the same engine code (`shared/engine.*`):
+
+| View | What it shows |
+|---|---|
+| Planner | headline figures, map of existing, offline, candidate and new stations, what-if edits (force or forbid a site, change ports), baseline comparison, trip inspector with route, battery and elevation |
+| Live day | the day simulation on the map: vehicles drive, queue and charge; wait or divert policy; grid draw |
+| Strategies | all 15 placement × routing pairings on identical data |
+| Capacity | charging energy by hour against grid supply, busiest stations, the three max-flow checks |
+| Algorithms | each decision, its algorithm, the result on this city and the independent check |
+| Data model | the typed C++ records with real values and the graphs and trees built from them |
+| Benchmarks | log–log scaling charts from `benchmarks/results.csv` with notes on worst cases |
+
+**Website** — `build/ev33_web` serves <http://localhost:8033> (the `PORT` variable overrides). Pages
+are HTML + SVG generated in C++ with no JavaScript; the plan travels in the address, so any view
+can be bookmarked. Deployment: the `Dockerfile` builds the server, **runs all three test suites**
+(a failing test stops the deploy), and copies the scenarios, benchmark results and fonts into a
+small image; `render.yaml` is the Render blueprint (*New → Blueprint* on render.com). `/health`
+answers `ok`.
+
+**Desktop app** — `build/ev33_gui` (Dear ImGui + ImPlot on GLFW/OpenGL). Wheel to zoom, drag to
+pan; `--help` lists options such as `--city shock --page live --shot view.png` to save a view.
+
+## 10. Tests
+
+```
+ctest --test-dir build --output-on-failure        # all suites
+ctest --test-dir build -L unit                    # 154 unit tests
+ctest --test-dir build -L integration -V          # IT01-IT08 + regression, prints ACTUAL lines
+ctest --test-dir build -L adversarial             # AD01-AD25
+```
+
+Unit tests cover each algorithm's normal, boundary and invalid cases against independent oracles
+(brute force, a second algorithm, `std::sort`, textbook answers). Integration tests run complete
+workflows on the hand-checked sample. Adversarial tests feed malformed and extreme input and check
+for a precise rejection or a controlled result. The suites also pass under ASan + UBSan
+(`-DEV33_SANITIZE=ON`). Tables with input, procedure, expected and actual results:
+`docs/testing.md`.
+
+## 11. Benchmarks
+
+```
+build/benchmarks/benchmark_data_generator --seed 12345 --size all --out data/generated
+build/benchmarks/benchmark_data_generator --out data/generated --verify
+build/benchmarks/ev33_bench --out benchmarks/results.csv          # ~25 s, Release build
+build/benchmarks/ev33_bench --only dense                          # one family
+build/benchmarks/ev33_gbench                                      # Google Benchmark
+```
+
+Datasets B1–B6 (100–50,000 vertices; connected-varied, connected-equal, disconnected) and dense
+D100–D400, all from seed 12345 with checksums in `data/generated/metadata.json`. Each measurement
+reports the median of repeated runs, min, max and peak heap bytes, and is validated outside the
+timed region. Columns and procedure: `docs/benchmark_methodology.md`.
+
+## 12. Algorithms
+
+`docs/algorithms.md` has the full algorithm → file → test mapping, complexities, correctness
+arguments, the energy model, both trip planners, the placement model and a selection guide.
+In short: the engine never calls `std::sort`, `qsort`, `std::priority_queue` or a graph library
+for assessed work; the binary heap, sorts, searches and graph algorithms are all in
+`include/ev/algorithms` and `include/ev/graph`.
+
+## 13. Results
+
+From `ev33 run` (DP placement, Dijkstra legs) on the generated cities, and `ev33 verify`:
+
+| City | New stations | Trips feasible | Shortest route beyond the starting charge → completed | Capacity (3 methods agree) | Grid surge |
+|---|---|---|---|---|---|
+| small | 2 (₹1.66 Cr of 2 Cr) | 55 / 60 | 21 → 16 | 16 trips in 60 port slots | none |
+| medium | 9 (₹8.97 Cr of 9 Cr) | 1,195 / 1,200 | 463 → 458 | 250 in 264 | 18:00–19:00, 382 kWh over |
+| shock | 5 (₹4.91 Cr of 4.95 Cr) | 1,869 / 1,920 | 817 → 766 | 128 in 128 | 16:00–20:00, 5,882 kWh over |
+| large | 29 (₹25 Cr of 25 Cr) | 5,951 / 6,000 | 3,719 → 3,670 | 872 in 872 | 08:00–11:00, 9,736 kWh over |
+| adversarial | 24 (₹6 Cr of 6 Cr) | **0 / 1,500** | 1,500 → 0 | 40 in 464 | none |
+
+* Exact and greedy placement on medium: benefit 3,335 vs 3,305; on the sample greedy gets 140
+  where the optimum is 155.
+* Planner cross-check (`ev33 verify`): medium 200 of 200 sampled trips agree; large 298 of 300
+  both feasible, 1 only by the fleet planner, 1 by neither, 0 only by the exact planner, and no
+  fleet plan longer or with more stops than the exact plan.
+* The adversarial corridor shows the placement model's blind spot: additive benefits cluster
+  stations in the middle and leave the ends out of range (`docs/algorithms.md`, section 5).
+
+## 14. Limitations and responsible use
+
+* The energy model is simple (distance × consumption plus climb and regeneration); no speed,
+  temperature, payload or charging-curve effects. Results are model outputs.
+* Placement maximises additive benefit scores, not geographic coverage; a coverage-aware objective
+  is future work and **not implemented**.
+* The fleet planner is sound but not complete; the exact planner discretises the battery
+  conservatively. `ev33 verify` measures the difference.
+* All bundled data is synthetic. With real data, protect trip privacy (aggregate, anonymise),
+  check that under-served areas are not ignored, and keep a safety margin in any driver-facing use
+  (`docs/data.md`).
+
+## 15. Documentation and checklist
+
+| Document | Content |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | layers, data flow, error handling, build targets |
+| [docs/algorithms.md](docs/algorithms.md) | algorithm → file → test table, complexity, correctness, energy model, planners, placement, selection guide, limitations |
+| [docs/testing.md](docs/testing.md) | unit coverage, IT01–IT08 and AD01–AD25 tables with actual results, sanitizers |
+| [docs/benchmark_methodology.md](docs/benchmark_methodology.md) | datasets, procedure, CSV columns, environment, results |
+| [docs/data.md](docs/data.md) | file formats, synthetic labelling, real-world data and privacy |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | every command with examples and outputs |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | a 15-minute demonstration |
+| [docs/OWNERSHIP.md](docs/OWNERSHIP.md) | who owns which algorithm, test and benchmark |
+
+| Requirement | Status |
+|---|---|
+| C++17, CMake, STL; Windows (MinGW-w64) and Linux builds | done (GCC 13.3 Linux; llvm-mingw Clang 19.1 Windows x64) |
+| Assessed algorithms hand-written, no library replacements | done (`docs/algorithms.md`) |
+| Domain model: nodes with lat/lon, roads, stations with status/connector/cost, candidates, vehicles with own consumption, trips | done |
+| Energy-feasible planning with charging stops and clear failure reasons | done (exact + fleet planner, 7 statuses) |
+| Placement under budget with exact money | done (integer paise, DP / branch and bound / greedy) |
+| CSV ingestion with `file:line` validation | done |
+| Unit tests, integration IT01–IT08, adversarial AD01–AD25 (GoogleTest, CTest labels) | done, all passing |
+| ASan + UBSan run | done, clean |
+| Benchmark datasets B1–B6, seed 12345, metadata with checksums | done |
+| Benchmark CSV with median/min/max, peak bytes, validation; Google Benchmark | done (228 rows, 0 failures) |
+| Documentation set | done (this README + `docs/`) |
+| Synthetic data clearly labelled; no fabricated results | done |
+| Coverage-aware placement objective | **not done** (optional; documented as future work) |
+| MSVC build | **not tested** |

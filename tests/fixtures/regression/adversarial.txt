@@ -1,0 +1,2 @@
+0 129064 24
+# feasible trips, placement benefit, new stations - recorded from ev33 run (dp + dijkstra) on data/scenarios/adversarial

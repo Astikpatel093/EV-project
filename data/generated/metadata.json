@@ -1,0 +1,419 @@
+{
+  "generator": "benchmark_data_generator (EV33)",
+  "data": "SYNTHETIC - generated, not measured",
+  "seed": 12345,
+  "rng": "xorshift64* seeded through splitmix64 (ev/core/rng.hpp); integer arithmetic only",
+  "parameters": {
+    "graph_construction": "random spanning tree per component, then random extra edges; no self-loops, no duplicate edges",
+    "weights": "connected-varied / disconnected: integers 1..1000; connected-equal: all 10",
+    "disconnected": "4 components of equal size, edges split in proportion",
+    "dense_small": "n(n-1)/4 edges (half of all pairs)",
+    "placement_items": "cost_lakh 10..100, benefit = 2*cost + 0..50 (weakly correlated)",
+    "sessions": "start 0..1439 min, duration 10..90 min"
+  },
+  "sizes": [
+    {
+      "name": "B1",
+      "vertices": 100,
+      "edges": 300
+    },
+    {
+      "name": "B2",
+      "vertices": 500,
+      "edges": 1500
+    },
+    {
+      "name": "B3",
+      "vertices": 1000,
+      "edges": 3000
+    },
+    {
+      "name": "B4",
+      "vertices": 5000,
+      "edges": 15000
+    },
+    {
+      "name": "B5",
+      "vertices": 10000,
+      "edges": 30000
+    },
+    {
+      "name": "B6",
+      "vertices": 50000,
+      "edges": 150000
+    }
+  ],
+  "files": [
+    {
+      "path": "graphs/B1-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 300,
+      "vertices": 100,
+      "bytes": 2980,
+      "fnv1a64": "d72b1e530fc18ba3"
+    },
+    {
+      "path": "graphs/B1-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 300,
+      "vertices": 100,
+      "bytes": 2703,
+      "fnv1a64": "0e547328b3b155e7"
+    },
+    {
+      "path": "graphs/B1-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 300,
+      "vertices": 100,
+      "bytes": 2978,
+      "fnv1a64": "d6d0bdea00ba45f6"
+    },
+    {
+      "path": "graphs/B2-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 1500,
+      "vertices": 500,
+      "bytes": 17269,
+      "fnv1a64": "c3b5848806411468"
+    },
+    {
+      "path": "graphs/B2-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 1500,
+      "vertices": 500,
+      "bytes": 15896,
+      "fnv1a64": "6f8e6a83a4492588"
+    },
+    {
+      "path": "graphs/B2-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 1500,
+      "vertices": 500,
+      "bytes": 17260,
+      "fnv1a64": "24a159d49939cbe2"
+    },
+    {
+      "path": "graphs/B3-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 3000,
+      "vertices": 1000,
+      "bytes": 35080,
+      "fnv1a64": "4a0e8a1ada8e7882"
+    },
+    {
+      "path": "graphs/B3-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 3000,
+      "vertices": 1000,
+      "bytes": 32412,
+      "fnv1a64": "4254f7888560957a"
+    },
+    {
+      "path": "graphs/B3-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 3000,
+      "vertices": 1000,
+      "bytes": 35004,
+      "fnv1a64": "ab7fb987422f4476"
+    },
+    {
+      "path": "graphs/B4-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 15000,
+      "vertices": 5000,
+      "bytes": 201699,
+      "fnv1a64": "e34405d609cb307d"
+    },
+    {
+      "path": "graphs/B4-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 15000,
+      "vertices": 5000,
+      "bytes": 188382,
+      "fnv1a64": "9675e209d361ee73"
+    },
+    {
+      "path": "graphs/B4-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 15000,
+      "vertices": 5000,
+      "bytes": 201668,
+      "fnv1a64": "ab92aa48b7e7d4ca"
+    },
+    {
+      "path": "graphs/B5-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 30000,
+      "vertices": 10000,
+      "bytes": 410140,
+      "fnv1a64": "b6b6a34c37cdd45b"
+    },
+    {
+      "path": "graphs/B5-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 30000,
+      "vertices": 10000,
+      "bytes": 383371,
+      "fnv1a64": "a0a3d72284b99513"
+    },
+    {
+      "path": "graphs/B5-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 30000,
+      "vertices": 10000,
+      "bytes": 410150,
+      "fnv1a64": "3b86183b0cd041e0"
+    },
+    {
+      "path": "graphs/B6-connected-varied.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 150000,
+      "vertices": 50000,
+      "bytes": 2316756,
+      "fnv1a64": "637c174a70aa8b33"
+    },
+    {
+      "path": "graphs/B6-connected-equal.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 150000,
+      "vertices": 50000,
+      "bytes": 2183406,
+      "fnv1a64": "9279fea1fa206b32"
+    },
+    {
+      "path": "graphs/B6-disconnected.csv",
+      "kind": "graph",
+      "components": 4,
+      "edges": 150000,
+      "vertices": 50000,
+      "bytes": 2317241,
+      "fnv1a64": "039768003044f27e"
+    },
+    {
+      "path": "graphs/D100-dense-small.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 2475,
+      "vertices": 100,
+      "bytes": 24065,
+      "fnv1a64": "e92221bf6d760a67"
+    },
+    {
+      "path": "graphs/D200-dense-small.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 9950,
+      "vertices": 200,
+      "bytes": 107303,
+      "fnv1a64": "1437ad439b5efe5b"
+    },
+    {
+      "path": "graphs/D400-dense-small.csv",
+      "kind": "graph",
+      "components": 1,
+      "edges": 39900,
+      "vertices": 400,
+      "bytes": 452569,
+      "fnv1a64": "9c079f02860f274c"
+    },
+    {
+      "path": "sort/keys-random-1000.csv",
+      "kind": "sort",
+      "n": 1000,
+      "bytes": 9918,
+      "fnv1a64": "bff9e1d0cba7e44a"
+    },
+    {
+      "path": "sort/keys-random-10000.csv",
+      "kind": "sort",
+      "n": 10000,
+      "bytes": 98877,
+      "fnv1a64": "1ae387d5da883e5b"
+    },
+    {
+      "path": "sort/keys-random-100000.csv",
+      "kind": "sort",
+      "n": 100000,
+      "bytes": 988868,
+      "fnv1a64": "c959a23c0c7efa51"
+    },
+    {
+      "path": "sort/keys-random-1000000.csv",
+      "kind": "sort",
+      "n": 1000000,
+      "bytes": 9888920,
+      "fnv1a64": "5b8af1e89eb2f99c"
+    },
+    {
+      "path": "sort/keys-sorted-1000.csv",
+      "kind": "sort",
+      "n": 1000,
+      "bytes": 6827,
+      "fnv1a64": "dfed8b42a1b7d3bc"
+    },
+    {
+      "path": "sort/keys-sorted-10000.csv",
+      "kind": "sort",
+      "n": 10000,
+      "bytes": 77857,
+      "fnv1a64": "a6c19a9a4b0ba99f"
+    },
+    {
+      "path": "sort/keys-sorted-100000.csv",
+      "kind": "sort",
+      "n": 100000,
+      "bytes": 877906,
+      "fnv1a64": "51ced6f304951ae1"
+    },
+    {
+      "path": "sort/keys-sorted-1000000.csv",
+      "kind": "sort",
+      "n": 1000000,
+      "bytes": 9777705,
+      "fnv1a64": "ef722109549d2409"
+    },
+    {
+      "path": "sort/keys-reversed-1000.csv",
+      "kind": "sort",
+      "n": 1000,
+      "bytes": 6829,
+      "fnv1a64": "becb68c07f01d7af"
+    },
+    {
+      "path": "sort/keys-reversed-10000.csv",
+      "kind": "sort",
+      "n": 10000,
+      "bytes": 77859,
+      "fnv1a64": "5570b66ed923f488"
+    },
+    {
+      "path": "sort/keys-reversed-100000.csv",
+      "kind": "sort",
+      "n": 100000,
+      "bytes": 877908,
+      "fnv1a64": "c4de760ffc6b7904"
+    },
+    {
+      "path": "sort/keys-reversed-1000000.csv",
+      "kind": "sort",
+      "n": 1000000,
+      "bytes": 9777707,
+      "fnv1a64": "4938eeb9d6f0306a"
+    },
+    {
+      "path": "sort/keys-few-distinct-1000.csv",
+      "kind": "sort",
+      "n": 1000,
+      "bytes": 2056,
+      "fnv1a64": "5cdd29ff12e073f9"
+    },
+    {
+      "path": "sort/keys-few-distinct-10000.csv",
+      "kind": "sort",
+      "n": 10000,
+      "bytes": 20056,
+      "fnv1a64": "f2b098b4060765fb"
+    },
+    {
+      "path": "sort/keys-few-distinct-100000.csv",
+      "kind": "sort",
+      "n": 100000,
+      "bytes": 200056,
+      "fnv1a64": "94ac24664f094b65"
+    },
+    {
+      "path": "sort/keys-few-distinct-1000000.csv",
+      "kind": "sort",
+      "n": 1000000,
+      "bytes": 2000056,
+      "fnv1a64": "727ead2e225fac3e"
+    },
+    {
+      "path": "placement/candidates-25.csv",
+      "kind": "placement",
+      "n": 25,
+      "bytes": 304,
+      "fnv1a64": "b29ff6dfd93abe00"
+    },
+    {
+      "path": "placement/candidates-50.csv",
+      "kind": "placement",
+      "n": 50,
+      "bytes": 549,
+      "fnv1a64": "ac180368a42e77f3"
+    },
+    {
+      "path": "placement/candidates-100.csv",
+      "kind": "placement",
+      "n": 100,
+      "bytes": 1038,
+      "fnv1a64": "4ede17720503005c"
+    },
+    {
+      "path": "placement/candidates-200.csv",
+      "kind": "placement",
+      "n": 200,
+      "bytes": 2110,
+      "fnv1a64": "12794f6313bdd6c6"
+    },
+    {
+      "path": "placement/candidates-400.csv",
+      "kind": "placement",
+      "n": 400,
+      "bytes": 4239,
+      "fnv1a64": "b0305249d5125e5a"
+    },
+    {
+      "path": "placement/candidates-800.csv",
+      "kind": "placement",
+      "n": 800,
+      "bytes": 8513,
+      "fnv1a64": "9f7a5536eb1b8977"
+    },
+    {
+      "path": "sessions/sessions-1000.csv",
+      "kind": "sessions",
+      "n": 1000,
+      "bytes": 12501,
+      "fnv1a64": "2985dd25f91be93a"
+    },
+    {
+      "path": "sessions/sessions-10000.csv",
+      "kind": "sessions",
+      "n": 10000,
+      "bytes": 134309,
+      "fnv1a64": "0f432acbdd42aba3"
+    },
+    {
+      "path": "sessions/sessions-100000.csv",
+      "kind": "sessions",
+      "n": 100000,
+      "bytes": 1442487,
+      "fnv1a64": "464634aa508c4ad3"
+    },
+    {
+      "path": "sessions/sessions-1000000.csv",
+      "kind": "sessions",
+      "n": 1000000,
+      "bytes": 15422127,
+      "fnv1a64": "e7eda2805130eb58"
+    }
+  ]
+}

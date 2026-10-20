@@ -1,0 +1,229 @@
+algorithm,family,dataset,variant,input_size,vertices,edges,candidates,budget,seed,compiler,build_type,repetitions,median_ms,min_ms,max_ms,peak_bytes,validation,note
+merge_sort,sorting,keys-random,random,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.052605,0.046983,0.083393,16000,pass,
+quick_sort_median3,sorting,keys-random,random,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.052075,0.045416,0.059965,16000,pass,
+quick_sort_first,sorting,keys-random,random,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.051231,0.044646,0.057909,16000,pass,
+quick_sort_random,sorting,keys-random,random,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.068322,0.061374,0.092208,16000,pass,
+merge_sort,sorting,keys-random,random,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.691047,0.659897,0.913664,160000,pass,
+quick_sort_median3,sorting,keys-random,random,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.697190,0.684199,0.779572,160000,pass,
+quick_sort_first,sorting,keys-random,random,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.738365,0.665618,0.748682,160000,pass,
+quick_sort_random,sorting,keys-random,random,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.914493,0.887628,0.932123,160000,pass,
+merge_sort,sorting,keys-random,random,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,9.628706,9.536173,10.287727,1600000,pass,
+quick_sort_median3,sorting,keys-random,random,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,8.406017,8.344367,9.273621,1600000,pass,
+quick_sort_first,sorting,keys-random,random,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,8.498765,8.359784,9.336720,1600000,pass,
+quick_sort_random,sorting,keys-random,random,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,10.026160,9.846684,10.539838,1600000,pass,
+merge_sort,sorting,keys-random,random,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,137.866449,135.076535,151.119554,16000000,pass,
+quick_sort_median3,sorting,keys-random,random,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,118.631583,103.632771,127.969160,16000000,pass,
+quick_sort_first,sorting,keys-random,random,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,104.654918,104.440590,112.160694,16000000,pass,
+quick_sort_random,sorting,keys-random,random,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,136.409585,131.892373,144.487582,16000000,pass,
+merge_sort,sorting,keys-sorted,sorted,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.010429,0.006052,0.030131,16000,pass,
+quick_sort_median3,sorting,keys-sorted,sorted,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.011578,0.011167,0.014870,16000,pass,
+quick_sort_first,sorting,keys-sorted,sorted,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.233702,0.233531,0.257322,16000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-sorted,sorted,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.034781,0.031731,0.043782,16000,pass,
+merge_sort,sorting,keys-sorted,sorted,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.086601,0.060214,0.167640,160000,pass,
+quick_sort_median3,sorting,keys-sorted,sorted,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.123405,0.122927,0.163048,160000,pass,
+quick_sort_first,sorting,keys-sorted,sorted,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,23.463080,23.281729,23.784927,160000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-sorted,sorted,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.445901,0.403649,0.482313,160000,pass,
+merge_sort,sorting,keys-sorted,sorted,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.762633,0.705868,6.765016,1600000,pass,
+quick_sort_median3,sorting,keys-sorted,sorted,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.584588,1.508021,1.684720,1600000,pass,
+quick_sort_random,sorting,keys-sorted,sorted,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,4.734580,4.690029,4.825133,1600000,pass,
+merge_sort,sorting,keys-sorted,sorted,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,18.133572,12.539553,21.310788,16000000,pass,
+quick_sort_median3,sorting,keys-sorted,sorted,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,25.772971,23.193111,33.793292,16000000,pass,
+quick_sort_random,sorting,keys-sorted,sorted,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,67.864549,55.037543,77.845772,16000000,pass,
+merge_sort,sorting,keys-reversed,reversed,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.016665,0.016220,0.044742,16000,pass,
+quick_sort_median3,sorting,keys-reversed,reversed,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.011895,0.011426,0.014658,16000,pass,
+quick_sort_first,sorting,keys-reversed,reversed,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.216624,0.215846,0.283217,16000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-reversed,reversed,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.037710,0.033674,0.047511,16000,pass,
+merge_sort,sorting,keys-reversed,reversed,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.188846,0.181216,0.230916,160000,pass,
+quick_sort_median3,sorting,keys-reversed,reversed,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.128312,0.124594,0.148395,160000,pass,
+quick_sort_first,sorting,keys-reversed,reversed,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,21.232503,21.100752,21.265884,160000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-reversed,reversed,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.422129,0.416422,0.461203,160000,pass,
+merge_sort,sorting,keys-reversed,reversed,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,2.485587,2.336442,3.137159,1600000,pass,
+quick_sort_median3,sorting,keys-reversed,reversed,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.611756,1.570263,1.678640,1600000,pass,
+quick_sort_random,sorting,keys-reversed,reversed,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,4.675680,4.651116,4.694921,1600000,pass,
+merge_sort,sorting,keys-reversed,reversed,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,41.410720,37.645769,45.955191,16000000,pass,
+quick_sort_median3,sorting,keys-reversed,reversed,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,23.086698,22.947201,32.325925,16000000,pass,
+quick_sort_random,sorting,keys-reversed,reversed,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,60.963339,56.088282,70.975859,16000000,pass,
+merge_sort,sorting,keys-few-distinct,few-distinct,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.035271,0.032362,0.050945,16000,pass,
+quick_sort_median3,sorting,keys-few-distinct,few-distinct,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.024637,0.021527,0.031829,16000,pass,
+quick_sort_first,sorting,keys-few-distinct,few-distinct,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.023577,0.019836,0.036189,16000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-few-distinct,few-distinct,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.033639,0.029292,0.039817,16000,pass,
+merge_sort,sorting,keys-few-distinct,few-distinct,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.446916,0.426338,0.481914,160000,pass,
+quick_sort_median3,sorting,keys-few-distinct,few-distinct,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.287057,0.280184,0.358490,160000,pass,
+quick_sort_first,sorting,keys-few-distinct,few-distinct,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.307957,0.285266,0.311515,160000,pass,worst case (first-element pivot)
+quick_sort_random,sorting,keys-few-distinct,few-distinct,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.385884,0.377342,0.437755,160000,pass,
+merge_sort,sorting,keys-few-distinct,few-distinct,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,6.221291,5.535462,7.218766,1600000,pass,
+quick_sort_median3,sorting,keys-few-distinct,few-distinct,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,4.491424,4.400533,4.708986,1600000,pass,
+quick_sort_random,sorting,keys-few-distinct,few-distinct,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,5.520219,4.707125,5.621440,1600000,pass,
+merge_sort,sorting,keys-few-distinct,few-distinct,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,68.114611,64.815215,75.293723,16000000,pass,
+quick_sort_median3,sorting,keys-few-distinct,few-distinct,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,40.755404,40.229291,49.143789,16000000,pass,
+quick_sort_random,sorting,keys-few-distinct,few-distinct,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,52.787120,51.616484,61.388220,16000000,pass,
+binary_search_iterative,searching,keys-sorted,100000 queries,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,4.119409,4.084126,4.202430,64,pass,50000 hits
+binary_search_recursive,searching,keys-sorted,100000 queries,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,3.395400,3.337056,3.603582,64,pass,50000 hits
+binary_search_iterative,searching,keys-sorted,100000 queries,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,6.883699,6.370475,7.304430,64,pass,50001 hits
+binary_search_recursive,searching,keys-sorted,100000 queries,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,5.176199,5.071889,5.551782,64,pass,50001 hits
+binary_search_iterative,searching,keys-sorted,100000 queries,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,8.542143,8.391695,8.937632,64,pass,50005 hits
+binary_search_recursive,searching,keys-sorted,100000 queries,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,7.243512,6.976430,7.643818,64,pass,50005 hits
+binary_search_iterative,searching,keys-sorted,100000 queries,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,23.694875,22.541331,24.362665,64,pass,50068 hits
+binary_search_recursive,searching,keys-sorted,100000 queries,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,25.303102,22.478116,34.095310,64,pass,50068 hits
+dijkstra,shortest_path,B1-connected-varied,connected-varied,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.014826,0.009115,0.020443,4688,pass,source 0; 100 vertices reachable
+bellman_ford,shortest_path,B1-connected-varied,connected-varied,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.010925,0.009622,0.014183,1608,pass,source 0; 6 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B1-connected-varied,connected-varied,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),3,1.231578,1.214646,1.314100,120008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B1-connected-varied,connected-varied,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.028148,0.019666,0.042614,10000,pass,"spanning tree, weight 19337; Prim = Kruskal"
+kruskal,spanning_tree,B1-connected-varied,connected-varied,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.019836,0.016079,0.026627,4048,pass,"spanning tree, weight 19337; Prim = Kruskal"
+dijkstra,shortest_path,B1-connected-equal,connected-equal,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.008840,0.006632,0.013664,3152,pass,source 0; 100 vertices reachable
+bellman_ford,shortest_path,B1-connected-equal,connected-equal,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.005152,0.004363,0.007022,1608,pass,source 0; 3 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B1-connected-equal,connected-equal,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),3,1.031340,0.976237,1.036776,120008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B1-connected-equal,connected-equal,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.022142,0.017788,0.034039,9616,pass,"spanning tree, weight 990; Prim = Kruskal"
+kruskal,spanning_tree,B1-connected-equal,connected-equal,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.003591,0.003326,0.005023,4048,pass,"spanning tree, weight 990; Prim = Kruskal"
+dijkstra,shortest_path,B1-disconnected,disconnected,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.002403,0.001744,0.004958,2384,pass,source 0; 25 vertices reachable
+bellman_ford,shortest_path,B1-disconnected,disconnected,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.001944,0.001649,0.003177,1608,pass,source 0; 4 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B1-disconnected,disconnected,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.272234,0.269819,0.318949,120008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B1-disconnected,disconnected,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.018519,0.013954,0.027501,3600,pass,"spanning forest of 4 trees, weight 20193; Prim = Kruskal"
+kruskal,spanning_tree,B1-disconnected,disconnected,100,100,300,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.019386,0.016216,0.025052,4048,pass,"spanning forest of 4 trees, weight 20193; Prim = Kruskal"
+dijkstra,shortest_path,B2-connected-varied,connected-varied,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.092031,0.089129,0.117339,20352,pass,source 0; 500 vertices reachable
+bellman_ford,shortest_path,B2-connected-varied,connected-varied,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.079039,0.077787,0.080345,8008,pass,source 0; 7 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B2-connected-varied,connected-varied,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),3,145.041137,137.950201,146.516645,3000008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B2-connected-varied,connected-varied,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.180225,0.174499,0.263902,38464,pass,"spanning tree, weight 101183; Prim = Kruskal"
+kruskal,spanning_tree,B2-connected-varied,connected-varied,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.132569,0.123952,0.150095,18192,pass,"spanning tree, weight 101183; Prim = Kruskal"
+dijkstra,shortest_path,B2-connected-equal,connected-equal,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.063073,0.055683,0.069123,20352,pass,source 0; 500 vertices reachable
+bellman_ford,shortest_path,B2-connected-equal,connected-equal,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.040210,0.037831,0.042107,8008,pass,source 0; 4 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B2-connected-equal,connected-equal,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),3,150.621046,139.696602,156.099570,3000008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B2-connected-equal,connected-equal,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.133474,0.130569,0.226477,79936,pass,"spanning tree, weight 4990; Prim = Kruskal"
+kruskal,spanning_tree,B2-connected-equal,connected-equal,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.015317,0.014742,0.021230,18192,pass,"spanning tree, weight 4990; Prim = Kruskal"
+dijkstra,shortest_path,B2-disconnected,disconnected,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.017695,0.014753,0.026104,11136,pass,source 0; 125 vertices reachable
+bellman_ford,shortest_path,B2-disconnected,disconnected,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.016718,0.015087,0.019263,8008,pass,source 0; 6 rounds; equals Dijkstra
+floyd_warshall,shortest_path,B2-disconnected,disconnected,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),3,21.176842,20.880322,21.622050,3000008,pass,all pairs; row 0 equals Dijkstra
+prim,spanning_tree,B2-disconnected,disconnected,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.153874,0.150239,0.232867,14400,pass,"spanning forest of 4 trees, weight 98535; Prim = Kruskal"
+kruskal,spanning_tree,B2-disconnected,disconnected,500,500,1500,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.128036,0.122057,0.140590,18192,pass,"spanning forest of 4 trees, weight 98535; Prim = Kruskal"
+dijkstra,shortest_path,B3-connected-varied,connected-varied,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.212179,0.204823,0.232903,40704,pass,source 0; 1000 vertices reachable
+bellman_ford,shortest_path,B3-connected-varied,connected-varied,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.182041,0.178598,0.204067,16008,pass,source 0; 8 rounds; equals Dijkstra
+prim,spanning_tree,B3-connected-varied,connected-varied,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.395934,0.383389,0.458743,76928,pass,"spanning tree, weight 207040; Prim = Kruskal"
+kruskal,spanning_tree,B3-connected-varied,connected-varied,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.284794,0.273044,0.374801,36384,pass,"spanning tree, weight 207040; Prim = Kruskal"
+dijkstra,shortest_path,B3-connected-equal,connected-equal,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.131769,0.125986,0.215448,40704,pass,source 0; 1000 vertices reachable
+bellman_ford,shortest_path,B3-connected-equal,connected-equal,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.085394,0.083937,0.104705,16008,pass,source 0; 4 rounds; equals Dijkstra
+prim,spanning_tree,B3-connected-equal,connected-equal,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.293256,0.282528,0.306789,159872,pass,"spanning tree, weight 9990; Prim = Kruskal"
+kruskal,spanning_tree,B3-connected-equal,connected-equal,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.028570,0.028133,0.036834,36384,pass,"spanning tree, weight 9990; Prim = Kruskal"
+dijkstra,shortest_path,B3-disconnected,disconnected,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.041965,0.038807,0.058730,22272,pass,source 0; 250 vertices reachable
+bellman_ford,shortest_path,B3-disconnected,disconnected,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.036451,0.034291,0.038738,16008,pass,source 0; 6 rounds; equals Dijkstra
+prim,spanning_tree,B3-disconnected,disconnected,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.333556,0.327129,0.400787,28800,pass,"spanning forest of 4 trees, weight 192881; Prim = Kruskal"
+kruskal,spanning_tree,B3-disconnected,disconnected,1000,1000,3000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.286524,0.273267,0.318049,36384,pass,"spanning forest of 4 trees, weight 192881; Prim = Kruskal"
+dijkstra,shortest_path,B4-connected-varied,connected-varied,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.679262,1.480135,2.558243,277240,pass,source 0; 5000 vertices reachable
+bellman_ford,shortest_path,B4-connected-varied,connected-varied,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),1,1.713683,1.713683,1.713683,80008,pass,source 0; 11 rounds; equals Dijkstra
+prim,spanning_tree,B4-connected-varied,connected-varied,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,3.511242,2.753685,3.844663,639608,pass,"spanning tree, weight 982987; Prim = Kruskal"
+kruskal,spanning_tree,B4-connected-varied,connected-varied,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.927029,1.742423,3.041326,231072,pass,"spanning tree, weight 982987; Prim = Kruskal"
+dijkstra,shortest_path,B4-connected-equal,connected-equal,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.066977,0.984535,1.339842,178936,pass,source 0; 5000 vertices reachable
+bellman_ford,shortest_path,B4-connected-equal,connected-equal,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),1,0.965041,0.965041,0.965041,80008,pass,source 0; 6 rounds; equals Dijkstra
+prim,spanning_tree,B4-connected-equal,connected-equal,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,2.440331,2.207361,2.534210,615032,pass,"spanning tree, weight 49990; Prim = Kruskal"
+kruskal,spanning_tree,B4-connected-equal,connected-equal,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.236498,0.146619,0.328617,231072,pass,"spanning tree, weight 49990; Prim = Kruskal"
+dijkstra,shortest_path,B4-disconnected,disconnected,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.346362,0.287184,0.530870,129784,pass,source 0; 1250 vertices reachable
+bellman_ford,shortest_path,B4-disconnected,disconnected,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),1,0.297352,0.297352,0.297352,80008,pass,source 0; 9 rounds; equals Dijkstra
+prim,spanning_tree,B4-disconnected,disconnected,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,2.945154,2.804997,3.144849,230008,pass,"spanning forest of 4 trees, weight 988709; Prim = Kruskal"
+kruskal,spanning_tree,B4-disconnected,disconnected,5000,5000,15000,,,12345,gcc 13.3.0,Release (NDEBUG),5,8.689091,1.677566,13.873766,231072,pass,"spanning forest of 4 trees, weight 988709; Prim = Kruskal"
+dijkstra,shortest_path,B5-connected-varied,connected-varied,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,5.448291,4.315504,9.813527,554472,pass,source 0; 10000 vertices reachable
+prim,spanning_tree,B5-connected-varied,connected-varied,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,7.387849,6.922538,7.666933,1279208,pass,"spanning tree, weight 1983016; Prim = Kruskal"
+kruskal,spanning_tree,B5-connected-varied,connected-varied,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,3.918591,3.586998,4.033460,462144,pass,"spanning tree, weight 1983016; Prim = Kruskal"
+dijkstra,shortest_path,B5-connected-equal,connected-equal,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,2.389150,2.339451,3.131914,357864,pass,source 0; 10000 vertices reachable
+prim,spanning_tree,B5-connected-equal,connected-equal,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,6.466939,6.166458,7.176464,1230056,pass,"spanning tree, weight 99990; Prim = Kruskal"
+kruskal,spanning_tree,B5-connected-equal,connected-equal,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.298645,0.294232,0.475004,462144,pass,"spanning tree, weight 99990; Prim = Kruskal"
+dijkstra,shortest_path,B5-disconnected,disconnected,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.718348,0.673300,0.952785,259560,pass,source 0; 2500 vertices reachable
+prim,spanning_tree,B5-disconnected,disconnected,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,6.779352,6.186139,7.614093,460008,pass,"spanning forest of 4 trees, weight 1961771; Prim = Kruskal"
+kruskal,spanning_tree,B5-disconnected,disconnected,10000,10000,30000,,,12345,gcc 13.3.0,Release (NDEBUG),5,3.943312,3.691913,4.012618,462144,pass,"spanning forest of 4 trees, weight 1961771; Prim = Kruskal"
+dijkstra,shortest_path,B6-connected-varied,connected-varied,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,35.341473,33.704863,38.420609,2379120,pass,source 0; 50000 vertices reachable
+prim,spanning_tree,B6-connected-varied,connected-varied,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,52.243237,51.155569,56.496354,5118064,pass,"spanning tree, weight 9901465; Prim = Kruskal"
+kruskal,spanning_tree,B6-connected-varied,connected-varied,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,22.213107,21.491856,32.244649,2048576,pass,"spanning tree, weight 9901465; Prim = Kruskal"
+dijkstra,shortest_path,B6-connected-equal,connected-equal,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,23.148912,22.153730,23.401792,1592688,pass,source 0; 50000 vertices reachable
+prim,spanning_tree,B6-connected-equal,connected-equal,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,61.829696,54.607345,70.975104,4921456,pass,"spanning tree, weight 499990; Prim = Kruskal"
+kruskal,spanning_tree,B6-connected-equal,connected-equal,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.952607,1.769012,3.820120,2048576,pass,"spanning tree, weight 499990; Prim = Kruskal"
+dijkstra,shortest_path,B6-disconnected,disconnected,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,5.847424,5.474547,7.138440,1199472,pass,source 0; 12500 vertices reachable
+prim,spanning_tree,B6-disconnected,disconnected,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,38.066883,36.789667,38.546300,1841264,pass,"spanning forest of 4 trees, weight 9878346; Prim = Kruskal"
+kruskal,spanning_tree,B6-disconnected,disconnected,50000,50000,150000,,,12345,gcc 13.3.0,Release (NDEBUG),5,21.496806,21.166624,21.711182,2048576,pass,"spanning forest of 4 trees, weight 9878346; Prim = Kruskal"
+floyd_warshall,dense_graph,D100-dense-small,dense,100,100,2475,,,12345,gcc 13.3.0,Release (NDEBUG),3,1.738597,1.715669,1.765860,120008,pass,all n x n distances agree
+dijkstra_all_sources,dense_graph,D100-dense-small,dense,100,100,2475,,,12345,gcc 13.3.0,Release (NDEBUG),3,5.954578,5.877196,5.973389,185616,pass,all n x n distances agree
+prim,dense_graph,D100-dense-small,dense,100,100,2475,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.321147,0.300553,0.371779,148240,pass,tree weight 2237; heap Prim = matrix Prim
+prim_dense,dense_graph,D100-dense-small,dense,100,100,2475,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.057268,0.052965,0.081214,2752,pass,tree weight 2237; heap Prim = matrix Prim
+floyd_warshall,dense_graph,D200-dense-small,dense,200,200,9950,,,12345,gcc 13.3.0,Release (NDEBUG),3,11.985572,11.624426,12.240636,480008,pass,all n x n distances agree
+dijkstra_all_sources,dense_graph,D200-dense-small,dense,200,200,9950,,,12345,gcc 13.3.0,Release (NDEBUG),3,37.871630,37.587109,38.100651,691232,pass,all n x n distances agree
+prim,dense_graph,D200-dense-small,dense,200,200,9950,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.472401,1.443726,1.625585,591392,pass,tree weight 2535; heap Prim = matrix Prim
+prim_dense,dense_graph,D200-dense-small,dense,200,200,9950,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.227688,0.222344,0.275473,5504,pass,tree weight 2535; heap Prim = matrix Prim
+floyd_warshall,dense_graph,D400-dense-small,dense,400,400,39900,,,12345,gcc 13.3.0,Release (NDEBUG),3,109.573430,106.781705,119.377806,1920008,pass,all n x n distances agree
+dijkstra_all_sources,dense_graph,D400-dense-small,dense,400,400,39900,,,12345,gcc 13.3.0,Release (NDEBUG),3,268.644197,266.407485,280.020300,2662456,pass,all n x n distances agree
+prim,dense_graph,D400-dense-small,dense,400,400,39900,,,12345,gcc 13.3.0,Release (NDEBUG),5,7.371714,7.169330,7.853462,2362424,pass,tree weight 2591; heap Prim = matrix Prim
+prim_dense,dense_graph,D400-dense-small,dense,400,400,39900,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.041952,0.964884,1.337476,11000,pass,tree weight 2591; heap Prim = matrix Prim
+knapsack_dp,placement,candidates-25,budget 10% of total cost,25,,,25,163,12345,gcc 13.3.0,Release (NDEBUG),5,0.006469,0.005997,0.098625,2944,pass,benefit 479; table 25 x 164
+knapsack_bnb_lc,placement,candidates-25,budget 10% of total cost,25,,,25,163,12345,gcc 13.3.0,Release (NDEBUG),5,0.017657,0.014426,0.038824,37336,pass,"271 nodes, optimal"
+greedy_ratio,placement,candidates-25,budget 10% of total cost,25,,,25,163,12345,gcc 13.3.0,Release (NDEBUG),5,0.000642,0.000493,0.001838,400,pass,benefit 441 = 92.07% of optimal
+knapsack_dp,placement,candidates-25,budget 25% of total cost,25,,,25,409,12345,gcc 13.3.0,Release (NDEBUG),5,0.013781,0.013329,0.018386,5744,pass,benefit 1146; table 25 x 410
+knapsack_bnb_lc,placement,candidates-25,budget 25% of total cost,25,,,25,409,12345,gcc 13.3.0,Release (NDEBUG),5,0.008470,0.006925,0.013565,18904,pass,"149 nodes, optimal"
+greedy_ratio,placement,candidates-25,budget 25% of total cost,25,,,25,409,12345,gcc 13.3.0,Release (NDEBUG),5,0.000483,0.000454,0.000713,400,pass,benefit 1136 = 99.13% of optimal
+knapsack_dp,placement,candidates-25,budget 50% of total cost,25,,,25,818,12345,gcc 13.3.0,Release (NDEBUG),5,0.030043,0.029290,0.034600,10264,pass,benefit 2145; table 25 x 819
+knapsack_bnb_lc,placement,candidates-25,budget 50% of total cost,25,,,25,818,12345,gcc 13.3.0,Release (NDEBUG),5,0.005346,0.004636,0.009920,9688,pass,"102 nodes, optimal"
+greedy_ratio,placement,candidates-25,budget 50% of total cost,25,,,25,818,12345,gcc 13.3.0,Release (NDEBUG),5,0.000491,0.000459,0.000839,400,pass,benefit 2121 = 98.88% of optimal
+knapsack_dp,placement,candidates-50,budget 10% of total cost,50,,,50,296,12345,gcc 13.3.0,Release (NDEBUG),5,0.020508,0.019648,0.023015,6424,pass,benefit 989; table 50 x 297
+knapsack_bnb_lc,placement,candidates-50,budget 10% of total cost,50,,,50,296,12345,gcc 13.3.0,Release (NDEBUG),5,0.010012,0.007473,0.039611,18976,pass,"137 nodes, optimal"
+greedy_ratio,placement,candidates-50,budget 10% of total cost,50,,,50,296,12345,gcc 13.3.0,Release (NDEBUG),5,0.002164,0.001950,0.003528,800,pass,benefit 984 = 99.49% of optimal
+knapsack_dp,placement,candidates-50,budget 25% of total cost,50,,,50,742,12345,gcc 13.3.0,Release (NDEBUG),5,0.053672,0.052478,0.061338,12848,pass,benefit 2202; table 50 x 743
+knapsack_bnb_lc,placement,candidates-50,budget 25% of total cost,50,,,50,742,12345,gcc 13.3.0,Release (NDEBUG),5,0.016641,0.013838,0.024858,37536,pass,"268 nodes, optimal"
+greedy_ratio,placement,candidates-50,budget 25% of total cost,50,,,50,742,12345,gcc 13.3.0,Release (NDEBUG),5,0.001219,0.001027,0.002256,800,pass,benefit 2196 = 99.73% of optimal
+knapsack_dp,placement,candidates-50,budget 50% of total cost,50,,,50,1484,12345,gcc 13.3.0,Release (NDEBUG),5,0.112622,0.110984,0.142292,23680,pass,benefit 4076; table 50 x 1485
+knapsack_bnb_lc,placement,candidates-50,budget 50% of total cost,50,,,50,1484,12345,gcc 13.3.0,Release (NDEBUG),5,0.049882,0.049045,0.061203,38304,pass,"455 nodes, optimal"
+greedy_ratio,placement,candidates-50,budget 50% of total cost,50,,,50,1484,12345,gcc 13.3.0,Release (NDEBUG),5,0.001845,0.001413,0.003148,800,pass,benefit 4060 = 99.61% of optimal
+knapsack_dp,placement,candidates-100,budget 10% of total cost,100,,,100,580,12345,gcc 13.3.0,Release (NDEBUG),5,0.066408,0.065181,0.105951,16744,pass,benefit 1939; table 100 x 581
+knapsack_bnb_lc,placement,candidates-100,budget 10% of total cost,100,,,100,580,12345,gcc 13.3.0,Release (NDEBUG),5,0.007851,0.006635,0.015813,5568,pass,"46 nodes, optimal"
+greedy_ratio,placement,candidates-100,budget 10% of total cost,100,,,100,580,12345,gcc 13.3.0,Release (NDEBUG),5,0.003310,0.002689,0.005534,1600,pass,benefit 1926 = 99.33% of optimal
+knapsack_dp,placement,candidates-100,budget 25% of total cost,100,,,100,1452,12345,gcc 13.3.0,Release (NDEBUG),5,0.258340,0.216135,0.300476,34224,pass,benefit 4293; table 100 x 1453
+knapsack_bnb_lc,placement,candidates-100,budget 25% of total cost,100,,,100,1452,12345,gcc 13.3.0,Release (NDEBUG),5,0.030541,0.026592,0.048956,37952,pass,"395 nodes, optimal"
+greedy_ratio,placement,candidates-100,budget 25% of total cost,100,,,100,1452,12345,gcc 13.3.0,Release (NDEBUG),5,0.003542,0.002463,0.006499,1600,pass,benefit 4287 = 99.86% of optimal
+knapsack_dp,placement,candidates-100,budget 50% of total cost,100,,,100,2904,12345,gcc 13.3.0,Release (NDEBUG),5,0.443075,0.411330,0.517037,64424,pass,benefit 7868; table 100 x 2905
+knapsack_bnb_lc,placement,candidates-100,budget 50% of total cost,100,,,100,2904,12345,gcc 13.3.0,Release (NDEBUG),5,0.018008,0.016557,0.029605,19328,pass,"174 nodes, optimal"
+greedy_ratio,placement,candidates-100,budget 50% of total cost,100,,,100,2904,12345,gcc 13.3.0,Release (NDEBUG),5,0.003529,0.002598,0.006093,1600,pass,benefit 7866 = 99.97% of optimal
+knapsack_dp,placement,candidates-200,budget 10% of total cost,200,,,200,1119,12345,gcc 13.3.0,Release (NDEBUG),5,0.289015,0.259106,0.403958,45936,pass,benefit 3795; table 200 x 1120
+knapsack_bnb_lc,placement,candidates-200,budget 10% of total cost,200,,,200,1119,12345,gcc 13.3.0,Release (NDEBUG),5,0.107545,0.102687,0.130252,76416,pass,"990 nodes, optimal"
+greedy_ratio,placement,candidates-200,budget 10% of total cost,200,,,200,1119,12345,gcc 13.3.0,Release (NDEBUG),5,0.008793,0.006796,0.014146,3200,pass,benefit 3778 = 99.55% of optimal
+knapsack_dp,placement,candidates-200,budget 25% of total cost,200,,,200,2799,12345,gcc 13.3.0,Release (NDEBUG),5,0.730276,0.721758,0.740083,101184,pass,benefit 8350; table 200 x 2800
+knapsack_bnb_lc,placement,candidates-200,budget 25% of total cost,200,,,200,2799,12345,gcc 13.3.0,Release (NDEBUG),5,0.042047,0.037682,0.055506,39040,pass,"290 nodes, optimal"
+greedy_ratio,placement,candidates-200,budget 25% of total cost,200,,,200,2799,12345,gcc 13.3.0,Release (NDEBUG),5,0.008984,0.006762,0.013037,3200,pass,benefit 8342 = 99.90% of optimal
+knapsack_dp,placement,candidates-200,budget 50% of total cost,200,,,200,5598,12345,gcc 13.3.0,Release (NDEBUG),5,1.597928,1.563891,1.686753,194328,pass,benefit 15290; table 200 x 5599
+knapsack_bnb_lc,placement,candidates-200,budget 50% of total cost,200,,,200,5598,12345,gcc 13.3.0,Release (NDEBUG),5,0.139513,0.135035,0.204224,151168,pass,"1048 nodes, optimal"
+greedy_ratio,placement,candidates-200,budget 50% of total cost,200,,,200,5598,12345,gcc 13.3.0,Release (NDEBUG),5,0.008639,0.006439,0.014180,3200,pass,benefit 15283 = 99.95% of optimal
+knapsack_dp,placement,candidates-400,budget 10% of total cost,400,,,400,2128,12345,gcc 13.3.0,Release (NDEBUG),5,0.913133,0.894319,1.023606,142160,pass,benefit 7541; table 400 x 2129
+knapsack_bnb_lc,placement,candidates-400,budget 10% of total cost,400,,,400,2128,12345,gcc 13.3.0,Release (NDEBUG),5,0.087663,0.084456,0.104823,41200,pass,"477 nodes, optimal"
+greedy_ratio,placement,candidates-400,budget 10% of total cost,400,,,400,2128,12345,gcc 13.3.0,Release (NDEBUG),5,0.026381,0.020420,0.029342,6400,pass,benefit 7524 = 99.77% of optimal
+knapsack_dp,placement,candidates-400,budget 25% of total cost,400,,,400,5321,12345,gcc 13.3.0,Release (NDEBUG),5,2.683766,2.576460,2.771725,328104,pass,benefit 16295; table 400 x 5322
+knapsack_bnb_lc,placement,candidates-400,budget 25% of total cost,400,,,400,5321,12345,gcc 13.3.0,Release (NDEBUG),5,0.039104,0.035557,0.052214,6400,pass,"1 nodes, optimal"
+greedy_ratio,placement,candidates-400,budget 25% of total cost,400,,,400,5321,12345,gcc 13.3.0,Release (NDEBUG),5,0.024926,0.022570,0.029677,6400,pass,benefit 16295 = 100.00% of optimal
+knapsack_dp,placement,candidates-400,budget 50% of total cost,400,,,400,10643,12345,gcc 13.3.0,Release (NDEBUG),5,5.795810,5.676634,6.193912,636944,pass,benefit 29513; table 400 x 10644
+knapsack_bnb_lc,placement,candidates-400,budget 50% of total cost,400,,,400,10643,12345,gcc 13.3.0,Release (NDEBUG),5,0.376478,0.334798,0.894349,152816,pass,"1566 nodes, optimal"
+greedy_ratio,placement,candidates-400,budget 50% of total cost,400,,,400,10643,12345,gcc 13.3.0,Release (NDEBUG),5,0.023437,0.020891,0.029643,6400,pass,benefit 29502 = 99.96% of optimal
+knapsack_dp,placement,candidates-800,budget 10% of total cost,800,,,800,4299,12345,gcc 13.3.0,Release (NDEBUG),5,3.847697,3.490614,4.148560,502248,pass,benefit 15218; table 800 x 4300
+knapsack_bnb_lc,placement,candidates-800,budget 10% of total cost,800,,,800,4299,12345,gcc 13.3.0,Release (NDEBUG),5,0.177967,0.173747,0.195833,43480,pass,"367 nodes, optimal"
+greedy_ratio,placement,candidates-800,budget 10% of total cost,800,,,800,4299,12345,gcc 13.3.0,Release (NDEBUG),5,0.057187,0.055675,0.063718,12800,pass,benefit 15218 = 100.00% of optimal
+knapsack_dp,placement,candidates-800,budget 25% of total cost,800,,,800,10749,12345,gcc 13.3.0,Release (NDEBUG),5,10.785143,10.428130,11.666557,1194648,pass,benefit 32905; table 800 x 10750
+knapsack_bnb_lc,placement,candidates-800,budget 25% of total cost,800,,,800,10749,12345,gcc 13.3.0,Release (NDEBUG),5,0.429056,0.401556,0.446281,82384,pass,"696 nodes, optimal"
+greedy_ratio,placement,candidates-800,budget 25% of total cost,800,,,800,10749,12345,gcc 13.3.0,Release (NDEBUG),5,0.057188,0.055214,0.063425,12800,pass,benefit 32884 = 99.94% of optimal
+knapsack_dp,placement,candidates-800,budget 50% of total cost,800,,,800,21498,12345,gcc 13.3.0,Release (NDEBUG),5,25.292575,24.910355,30.709107,2357184,pass,benefit 59367; table 800 x 21499
+knapsack_bnb_lc,placement,candidates-800,budget 50% of total cost,800,,,800,21498,12345,gcc 13.3.0,Release (NDEBUG),5,0.848942,0.807511,1.320114,156112,pass,"1349 nodes, optimal"
+greedy_ratio,placement,candidates-800,budget 50% of total cost,800,,,800,21498,12345,gcc 13.3.0,Release (NDEBUG),5,0.056798,0.054386,0.079433,12800,pass,benefit 59353 = 99.98% of optimal
+activity_selection,scheduling,sessions-1000,one day,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.083230,0.079149,0.134765,16000,pass,65 sessions on one bay
+interval_partitioning,scheduling,sessions-1000,one day,1000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,0.135761,0.129458,0.161654,20000,pass,50 bays = maximum overlap 50
+activity_selection,scheduling,sessions-10000,one day,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,1.328091,1.297206,1.375281,160000,pass,107 sessions on one bay
+interval_partitioning,scheduling,sessions-10000,one day,10000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,2.005122,1.940093,2.097025,200000,pass,429 bays = maximum overlap 429
+activity_selection,scheduling,sessions-100000,one day,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,21.412118,19.598405,24.148627,1600000,pass,137 sessions on one bay
+interval_partitioning,scheduling,sessions-100000,one day,100000,,,,,12345,gcc 13.3.0,Release (NDEBUG),5,46.130987,31.089477,56.589565,2000000,pass,3606 bays = maximum overlap 3606
+activity_selection,scheduling,sessions-1000000,one day,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,358.874045,332.811214,372.173409,16000000,pass,144 sessions on one bay
+interval_partitioning,scheduling,sessions-1000000,one day,1000000,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,537.864353,517.426246,572.040943,20000000,pass,35156 bays = maximum overlap 35156
+matmul_classical,matrix,random-32x32,dense,32,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.015982,0.014462,0.016765,8200,pass,max |classical - Strassen| = 0.00e+00
+matmul_strassen_cutoff64,matrix,random-32x32,dense,32,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.017884,0.016284,0.035777,32768,pass,max |classical - Strassen| = 0.00e+00
+matmul_classical,matrix,random-64x64,dense,64,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.113068,0.107554,0.120410,32776,pass,max |classical - Strassen| = 0.00e+00
+matmul_strassen_cutoff64,matrix,random-64x64,dense,64,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.131362,0.108894,0.140408,131072,pass,max |classical - Strassen| = 0.00e+00
+matmul_classical,matrix,random-128x128,dense,128,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.789737,0.732370,0.844908,131080,pass,max |classical - Strassen| = 1.60e-14
+matmul_strassen_cutoff64,matrix,random-128x128,dense,128,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,0.911199,0.819358,1.015057,950272,pass,max |classical - Strassen| = 1.60e-14
+matmul_classical,matrix,random-256x256,dense,256,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,6.646361,6.624336,7.772781,524296,pass,max |classical - Strassen| = 5.24e-14
+matmul_strassen_cutoff64,matrix,random-256x256,dense,256,,,,,12345,gcc 13.3.0,Release (NDEBUG),3,6.775309,6.761584,7.245446,4358144,pass,max |classical - Strassen| = 5.24e-14
+matmul_classical,matrix,random-512x512,dense,512,,,,,12345,gcc 13.3.0,Release (NDEBUG),2,65.158635,62.796076,67.521193,2097160,pass,max |classical - Strassen| = 1.51e-13
+matmul_strassen_cutoff64,matrix,random-512x512,dense,512,,,,,12345,gcc 13.3.0,Release (NDEBUG),2,52.520477,52.326359,52.714594,17989632,pass,max |classical - Strassen| = 1.51e-13
+leg_planner_dijkstra,trip_planning,scenario-small,60 trips,60,36,72,12,200,12345,gcc 13.3.0,Release (NDEBUG),3,0.475171,0.452943,0.487460,57456,pass,55 feasible (battery step n/a)
+exact_state_space,trip_planning,scenario-small,60 trips,60,36,72,12,200,12345,gcc 13.3.0,Release (NDEBUG),3,1.740394,1.704225,1.769792,324460,pass,53 feasible (battery step 0.25 kWh)
+leg_planner_dijkstra,trip_planning,scenario-medium,200 trips,200,256,518,60,900,12345,gcc 13.3.0,Release (NDEBUG),3,12.483722,12.298118,12.626283,1258028,pass,198 feasible (battery step n/a)
+exact_state_space,trip_planning,scenario-medium,200 trips,200,256,518,60,900,12345,gcc 13.3.0,Release (NDEBUG),3,280.079800,275.372687,288.992859,2085076,pass,198 feasible (battery step 0.25 kWh)
+leg_planner_dijkstra,trip_planning,scenario-large,200 trips,200,1024,2226,220,2500,12345,gcc 13.3.0,Release (NDEBUG),3,141.739540,125.316942,195.863926,8452304,pass,199 feasible (battery step n/a)
+exact_state_space,trip_planning,scenario-large,200 trips,200,1024,2226,220,2500,12345,gcc 13.3.0,Release (NDEBUG),3,1897.826396,1894.112135,1927.872450,6535316,pass,198 feasible (battery step 0.25 kWh)

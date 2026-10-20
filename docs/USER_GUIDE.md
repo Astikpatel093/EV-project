@@ -1,198 +1,128 @@
-# EV33 User Guide
+# User guide
 
-## 1. Build
+All examples run from the project folder after a build (`README.md`, sections 5–6). On Windows
+write `build\ev33.exe` instead of `build/ev33`. Every command takes `--data DIR`, a scenario folder
+(`docs/data.md`). Output examples below are copied from real runs on the bundled synthetic data.
 
-| Platform | Commands |
+## validate — load and check a scenario
+
+```
+$ build/ev33 validate --data data/sample
+ok: 'sample' (synthetic data) 10 nodes, 11 roads, 3 existing stations (1 unavailable), 6 candidate sites,
+    3 vehicles, 8 trips, 8 booked sessions, budget INR 1,00,00,000
+    source: hand-written example for tests and the viva (data/sample/README.md)
+    note: the road network has 2 separate components
+```
+
+A bad file stops with one precise message and exit code 1, for example
+`error: it05_case_1/roads.csv:3: 'distance_km' must be a number, got 'twenty'`.
+
+## run — placement and every trip
+
+```
+build/ev33 run --data data/scenarios/medium [--place dp] [--route dijkstra] [--budget 90000000] [--out out/medium]
+```
+
+* `--place` greedy | dp | bnb-lc | bnb-fifo | bnb-lifo (default `dp`)
+* `--route` dijkstra | floyd | bellman (default `dijkstra`; Floyd–Warshall is refused above 1,600 junctions)
+* `--budget` in rupees (default: `budget_inr` from `scenario.cfg`)
+
+It prints the placement, the trip-planning summary, the capacity check (three max-flow methods),
+the sessions and the worst grid surge. With `--out` it writes:
+
+| File | Content |
 |---|---|
-| Linux / macOS (gcc or clang) | `make` → binaries in `build/` |
-| Any platform with CMake ≥ 3.16 | `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && ctest --test-dir build` (also builds `ev33_gui`; add `-DEV33_GUI=OFF` to skip it) |
-| Windows, MSVC | Developer Prompt: `cmake -S . -B build && cmake --build build --config Release` |
-| Windows, MinGW/MSYS2 | `mingw32-make` or the CMake commands above |
+| `placement.csv` | `candidate_id, name, node_id, install_cost_inr, benefit, benefit_estimated, ports, power_kw, connector` |
+| `plans.csv` | one row per trip: `trip_id, vehicle, from, to, status, feasible, needs_charge, distance_km, energy_kwh, shortest_km, depart_min, arrive_min, charge_min, stops, explanation` |
+| `summary.json` | scenario size, strategy, placement, KPIs, capacity, sessions |
 
-Extra targets: `make test`, `make bench`, `make bench-quick`, `make data`, `make demo`,
-`make sanitize` (ASan + UBSan test run), `make gui` and `make run-gui` (desktop app, through
-CMake), `make release TAG=v1.0.0`, `make clean`. Every source file is C (engine, tools, tests) or
-C++ (desktop app).
-
-Run every command from the repository root so relative paths such as `data/medium` resolve.
-
-## 2. Scenario format
-
-A scenario is a directory. Lines starting with `#` and blank lines are ignored; every CSV has a
-header row.
-
-**scenario.cfg** (`key = value`; unknown keys are an error)
-
-| key | default | meaning |
-|---|---|---|
-| name | unnamed | label in reports |
-| budget | 500 | installation budget (same unit as station cost) |
-| battery_kwh | 30 | usable pack size |
-| consumption_kwh_per_km | 0.18 | flat-road consumption |
-| reserve_frac | 0.10 | never plan below this state of charge |
-| target_frac | 0.80 | charge-to level at a station |
-| regen_eff | 0.60 | fraction of potential energy recovered downhill |
-| elev_kwh_per_m | 0.0045 | energy per metre climbed |
-| speed_kmh | 40 | average speed |
-| max_detour_km | 15 | eligibility radius for capacity allocation |
-| grid_kw | 400 | grid supply per hour for the surge analysis (kWh/h) |
-| window_min, session_min | 120, 30 | slots per port = ⌊window/session⌋ |
-| horizon_h | 24 | hours in the load profile |
-
-**nodes.csv** `id,name,x_km,y_km,elev_m,demand`
-**edges.csv** `u,v,km,capacity` (undirected; `u`,`v` are node ids)
-**stations.csv** `id,node,cost,ports,power_kw[,maint_period_h,maint_offset_h]`
-**trips.csv** `id,src,dst,depart_min,soc0`
-**events.txt** optional; one character per station event (`C` charge start, `E` end, `I` idle,
-`F` fault, `O` offline, `R` reset); whitespace ignored.
-
-Invalid data stops the program with `error: <file>:<line>: <reason>` and exit code 1.
-
-## 3. Commands
+## plan — explain one trip
 
 ```
-ev33 run      --data DIR [--select S] [--route R] [--out DIR]
-ev33 compare  --data DIR [--out DIR]
-ev33 analyze  --data DIR [--out DIR]
-ev33 plan     --data DIR --trip ID [--select S] [--route R]
-ev33 validate --data DIR
-ev33 menu     [--data DIR]
-ev33 demo     [--data ROOT] [--out DIR]
-S = greedy | dp | bnb-lc | bnb-fifo | bnb-lifo     (default dp)
-R = dijkstra | floyd | bellman                     (default dijkstra)
+build/ev33 plan --data data/sample --trip 2 --method both
+build/ev33 plan --data data/scenarios/large --from 1000 --to 8161 --vehicle V3 --charge 12 --depart 07:30
 ```
 
-* **run** – one strategy end to end; prints selection, service KPIs, capacity (FF / EK /
-  matching), sessions and grid surge. With `--out` writes `selection.csv`, `plans.csv`,
-  `summary.json`.
-* **compare** – all 15 strategy combinations on the same input; `--out` writes `compare.csv`
-  (Floyd is skipped above 1,600 nodes).
-* **analyze** – the syllabus report: every module applied to the scenario with its sibling
-  algorithm and an agreement check; `--out` writes `analysis.json`.
-* **plan** – explains one trip: direct route, stops, arrival energy, charging minutes, nodes.
-* **validate** – load and validate only.
-* **menu** – interactive: load, choose strategies, run, compare, plan, analyse, export.
-* **demo** – the demonstration: for the normal, shock and large cities it validates, runs exact
-  DP + Dijkstra and greedy + Bellman-Ford with exports, and the 15-strategy matrix; then the
-  analysis of the normal city and a two-stop trip on the large one. Output goes to
-  `results/demo/<city>/<strategy>/`, the console transcript to `results/demo/transcript.txt`
-  (`make demo` runs it).
-
-### Output files
-
-`plans.csv`: `trip_id,src_id,dst_id,feasible,needs_charge,km,kwh,direct_km,depart_min,arrive_min,charge_min,stops`
-(`stops` = station ids separated by `;`).
-`selection.csv`: `station_id,node_id,node_name,cost,ports,power_kw,value`.
-`summary.json`: scenario size, strategy, selection, service KPIs, performance, capacity,
-sessions (per station) and hourly load. `compare.csv` and `bench.csv` are documented in their
-header rows.
-
-## 4. Desktop app
+`--method exact` uses the battery-state planner, `leg` the fleet planner, `both` prints both.
+The answer shows the status, the reason, the plain shortest route and whether it is drivable, and
+each stop with arrival time, arrival charge, charging time and departure charge:
 
 ```
-make gui                 # CMake build of build/gui/ev33_gui (C++17; OpenGL; X11 headers on Linux)
-./build/gui/ev33_gui     # run from the project folder
+Trip 2 (vehicle SV1): with-charging
+  Needs 1 charging stop (Junction A site): 80.0 km, 10 min charging; the shortest road route (70.0 km)
+  needs 17.60 kWh but only 10.00 kWh is usable at departure.
+  depart 09:00 with 12.00 kWh
+  stop at Junction A site (node 2): arrive 09:24 with 8.00 kWh, charge 10 min to 16.00 kWh
+  arrive 10:46 with 4.00 kWh (lowest 4.00 kWh); 80.0 km, 5 nodes
 ```
 
-The app finds `data/`, `results/` and `assets/fonts/` in the working directory, next to the
-program, or in the source tree it was built from; `--data`, `--results` and `--assets` override
-that. Linux needs the X11 development headers to build (`libx11-dev libxrandr-dev libxinerama-dev
-libxcursor-dev libxi-dev libgl-dev`); Windows needs only CMake with Visual Studio or MinGW.
-
-**Layout.** The sidebar on the left holds the plan: the city, the site-selection method, the
-routing method, the installation budget (the plan recomputes while you drag), a site picker and the
-list of what-if edits. The tabs across the top show that plan seven ways: Planner, Live day,
-Strategies, Capacity, Algorithms, Data model and Benchmarks. The line at the bottom repeats the
-current plan. *Dark theme* switches colours; *Save screenshot* writes the window to a PNG in the
-working directory.
-
-**Planner.** Five headline figures (trips completed, charge-needing trips served, stations built
-and their cost, average trip, engine time), the map, and the trip inspector: choose a sample trip
-to replay its route on the map, read its itinerary, and see its battery along the way against the
-reserve and the charge target, with elevation behind.
-
-**Live day.** The simulation replays the day with the real port counts (`ev_sim.c`): events come
-off a binary min-heap, drivers who find every port busy join that station's FIFO queue, and the
-rest of their trip shifts later. Play, pause, scrub, pick a speed (real time, 1 min/s, 10 min/s,
-1 h/s) or jump to the current time of day; click the grid chart to jump to an hour. When queues
-spill past midnight the clock continues into day 2. The right column shows vehicles on the road,
-charging and waiting, arrivals, grid draw and energy delivered, the busiest stations, and a summary
-of the day.
-
-### What-if editing
-
-* **Pick a site.** Click a circle on the planner map, or choose it from *Edit a site*. A panel
-  shows its ports and power, cost, service value, planned sessions, chargers needed, and how long
-  drivers queue there in the simulated day.
-* **Change it.** *Always build* forces the site in (its cost comes off the budget before the
-  engine chooses the rest); *Never build* rules it out; the − / + buttons change its ports. Every
-  edit re-runs the engine and appears in the sidebar; × removes one, *Clear all* removes all of
-  them. On the live day, *+2 ports* next to a busy station does the same.
-* **Compare.** *Pin as baseline* stores the current headline figures; after any change each
-  figure shows its difference (green better, red worse), and the live-day summary compares
-  waiting with the baseline. Example on the normal city: always build station 501 and never build
-  522 gives 1,183 feasible trips against 1,181.
-* **Export.** *Copy built sites as CSV* puts id, junction, ports, power, cost, value, sessions
-  and chargers needed for every built site on the clipboard.
-
-### Map tools
-
-`+` / `−` / *Fit* zoom the map; the mouse wheel zooms at the pointer, drag to pan, double-click to
-zoom in. *Traffic* colours each road by how many planned trips use it. Hover a station for its
-details.
-
-### Driver policy in the live day
-
-*Drivers wait* keeps every driver at their planned station. *Drivers switch after 20 min* lets a
-driver who finds every port taken and an estimated wait above 20 minutes switch once to the built
-station that minimises drive time plus expected wait, provided the battery reaches it and the
-next leg is still possible after charging. The summary then reports the switches and the change.
-
-### Command-line options
+## place — placement only
 
 ```
-ev33_gui [--data DIR] [--results DIR] [--assets DIR] [--page NAME] [--city NAME]
-         [--select S] [--route R] [--budget N] [--edit l<id>,b<id>,p<id>=n]
-         [--station ID] [--trip ID] [--traffic] [--time HH:MM] [--play] [--policy wait|divert]
-         [--dark|--light] [--size WxH] [--scale F] [--shot FILE.png [--frames N]]
+build/ev33 place --data data/scenarios/adversarial --place bnb-lc --budget 60000000 --out out/adv
 ```
 
-`--shot` renders the requested view, saves it as a PNG and exits, so report figures can be
-regenerated with one command, for example
-`ev33_gui --city shock --page live --time 19:10 --policy divert --shot shock_live.png`.
+Lists the chosen candidates with cost, benefit and ports, the total, and the money left.
 
-## 5. Generating data
+## schedule — booked sessions at a station
 
 ```
-ev33_gen --profile small|medium|shock|large|adversarial [--seed N] --out DIR
+$ build/ev33 schedule --data data/sample
+Station 101: 8 booked sessions, 2 bays
+  one bay (activity selection, earliest finish first): 4 sessions can be served: ...
+  every session (interval partitioning): 3 bays needed (maximum overlap 3)
+  with the 2 installed bays: 6 of 8 sessions served (activity selection repeated per bay)
+  -> 1 more bay(s) needed to serve every booking
 ```
 
-| profile | junctions | sites | trips | purpose |
-|---|---|---|---|---|
-| small | 36 | 12 | 60 | hand-checkable |
-| medium | 256 | 60 | 1,200 | normal operation |
-| shock | 256 | 60 | 1,920 | budget −45 %, 30 % single-port outages, bridges closed, evening surge, grid −40 % |
-| large | 1,024 | 220 | 6,000 | stress |
-| adversarial | 400 (corridor) | 80 | 1,500 | equal costs, identical departure times, fault-burst log, 600 km corridor |
+## compare — every placement × routing pairing
 
-The same seed always yields the same files.
+`build/ev33 compare --data data/scenarios/medium --out out/cmp` prints one row per pairing
+(stations, cost, benefit, optimal, placement time, search nodes, trips feasible, average km and
+kWh, routing time) and writes `compare.csv`.
 
-## 6. Benchmarks
+## analyze — every algorithm on the scenario
+
+`build/ev33 analyze --data data/scenarios/medium --out out/an` runs sorting, searching, divide and
+conquer, greedy, dynamic programming, backtracking, branch and bound, flow, number theory and
+string matching on the scenario's own data, each with an independent check, and writes
+`analysis.json`. Items marked "illustrative" are teaching uses outside the core workflow.
+
+## verify — fleet planner against the exact planner
 
 ```
-ev33_bench [--quick] [--out results/bench.csv] [--data-root data] [--only FAMILY]
-families: sort search dnc greedy graph knapsack dp backtrack flow strings pipeline
+$ build/ev33 verify --data data/scenarios/large --samples 300
+Planner cross-check on 'large' (300 trips, dijkstra legs, battery step 0.25 kWh)
+  both feasible 298, exact only 0, leg only 1, neither 1
+  leg plan longer than the exact plan: 0 trips (0.0 km extra in total)
+  leg plan with more charging stops than the exact plan: 0 trips
 ```
 
-Each row: `family,algorithm,dataset,n,ms,peak_bytes,quality,check,note`. `quality` is
-family-specific (comparisons, value / optimum, km, bits per symbol…); `check = 1` means the
-result matched its oracle or sibling. The process exits with status 2 if any check fails. A full
-run takes about 80 s; `--quick` about 5 s.
+## algorithms, demo, menu
 
-## 7. Tests
+* `build/ev33 algorithms` — every algorithm on a textbook example, with the expected answer.
+* `build/ev33 demo --data data/scenarios --out out/demo` — the demonstration: medium, shock and
+  large with two strategies each and the full strategy matrix, the analysis report, booked
+  sessions and a two-stop trip; writes `transcript.txt` and the CSV/JSON exports (≈ 30 s).
+* `build/ev33 menu --data data/scenarios/small` — interactive menu for the same commands.
 
-`make test` (or `./build/ev33_tests`). Groups: sorting, searching, divide & conquer, greedy,
-graphs, DP, backtracking + BnB, flow, CRT + strings, hand-built 5-node scenario, 18 invalid
-inputs, invariants on four shipped datasets, regression fixtures, tracked-memory balance.
-After an intentional behaviour change, `./build/ev33_tests --record` rewrites
-`tests/regression/*_dp_dijkstra.txt`; review the diff before committing.
+## Generators
+
+```
+build/ev33_gen --profile large --seed 7 --out data/my_city      # one synthetic city
+build/ev33_gen --all --seed 33 --out data/scenarios             # the five bundled cities
+build/benchmarks/benchmark_data_generator --seed 12345 --size all --out data/generated
+```
+
+## Website and desktop app
+
+* `build/ev33_web` then open <http://localhost:8033>. Options: `--port N` (or `PORT`),
+  `--data DIR` (default `data/scenarios`), `--results DIR` (default `benchmarks`), `--assets DIR`.
+* `build/ev33_gui` opens the desktop app. `--help` lists the options; for example
+  `build/ev33_gui --city shock --page live --time 19:10 --policy divert --shot shock.png` saves
+  that view to a PNG and exits.
+
+In both, the sidebar holds the plan (city, placement method, routing method, budget). On the
+planner map, click a site to force it in, rule it out or change its ports; existing stations
+(green squares; red outline when offline) can only have their ports changed. "Pin as baseline"
+keeps the current figures so later changes show their difference.

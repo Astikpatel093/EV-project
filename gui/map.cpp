@@ -12,7 +12,7 @@ static float clampf(float v, float lo, float hi) { return v < lo ? lo : v > hi ?
 int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode, const LiveState *live, const SimView *sim) {
     Engine &E = app.eng;
     City &C = E.city();
-    const ev_scenario &sc = C.sc;
+    const Scene &sc = C.sc;
     const Palette &P = app.pal;
     Run *R = E.run();
     int picked = -1;
@@ -86,7 +86,7 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
     bool traffic = mode == MAP_PLANNER && app.traffic && R;
     float zk = std::pow(mv.z, 0.35f);
     for (int e = 0; e < sc.ne; e++) {
-        const ev_node &a = sc.nodes[sc.edges[e].u], &b = sc.nodes[sc.edges[e].v];
+        const NodeV &a = sc.nodes[sc.edges[e].u], &b = sc.nodes[sc.edges[e].v];
         ImVec2 A(X(a.x), Y(a.y)), B(X(b.x), Y(b.y));
         if (traffic) {
             float r = (float)R->edge_load[(size_t)e] / (float)R->edge_load_max;
@@ -106,7 +106,7 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
         float best = (12 * S) * (12 * S);
         for (int i = 0; i < sc.ns; i++) {
             if (mode == MAP_LIVE && (!R || !R->built[(size_t)i])) continue;
-            const ev_node &n = sc.nodes[sc.stations[i].node];
+            const NodeV &n = sc.nodes[sc.stations[i].node];
             float dx = X(n.x) - io.MousePos.x, dy = Y(n.y) - io.MousePos.y;
             if (dx * dx + dy * dy < best) { best = dx * dx + dy * dy; mv.hover = i; }
         }
@@ -137,7 +137,7 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
                 dl->AddCircleFilled(pts.back(), 6 * S, col(P.ink));
                 dl->AddCircle(pts.back(), 6 * S, col(P.paper), 0, 1.5f * S);
                 for (int k = 0; k < D.plan.n_stops; k++) {
-                    const ev_node &n = sc.nodes[sc.stations[D.plan.stop[k]].node];
+                    const NodeV &n = sc.nodes[sc.stations[D.plan.stop[k]].node];
                     ImVec2 c(X(n.x) - 12 * S, Y(n.y) - 12 * S);
                     dl->AddCircleFilled(c, 8 * S, col(P.ink));
                     std::string num = std::to_string(k + 1);
@@ -149,13 +149,26 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
         }
         // stations
         for (int i = 0; i < sc.ns; i++) {
-            const ev_node &n = sc.nodes[sc.stations[i].node];
+            const NodeV &n = sc.nodes[sc.stations[i].node];
             ImVec2 c(X(n.x), Y(n.y));
             bool built = R && R->built[(size_t)i];
             bool lock = E.plan.edits.lock.count(i) > 0, ban = E.plan.edits.ban.count(i) > 0;
             bool portEdit = E.plan.edits.ports.count(i) > 0;
             int ports = E.effectivePorts(i);
-            if (built) {
+            const SiteV &si = sc.stations[i];
+            if (si.existing) {
+                // existing station: square, green when online, red outline and cross when not
+                float r = (3.4f + std::sqrt((float)ports) * 1.3f) * S * std::pow(mv.z, 0.2f);
+                if (si.available) {
+                    dl->AddRectFilled(ImVec2(c.x - r, c.y - r), ImVec2(c.x + r, c.y + r), col(P.green), 1.5f * S);
+                    if (R && R->short_of[(size_t)i] > 0) dl->AddCircle(c, r + 3.5f * S, col(P.amber), 0, 2.2f * S);
+                } else {
+                    dl->AddRectFilled(ImVec2(c.x - r, c.y - r), ImVec2(c.x + r, c.y + r), col(P.paper), 1.5f * S);
+                    dl->AddRect(ImVec2(c.x - r, c.y - r), ImVec2(c.x + r, c.y + r), col(P.red), 1.5f * S, 0, 1.6f * S);
+                    dl->AddLine(ImVec2(c.x - 4 * S, c.y - 4 * S), ImVec2(c.x + 4 * S, c.y + 4 * S), col(P.red), 1.6f * S);
+                    dl->AddLine(ImVec2(c.x - 4 * S, c.y + 4 * S), ImVec2(c.x + 4 * S, c.y - 4 * S), col(P.red), 1.6f * S);
+                }
+            } else if (built) {
                 float r = (3.8f + std::sqrt((float)ports) * 1.5f) * S * std::pow(mv.z, 0.2f);
                 dl->AddCircleFilled(c, r + 4 * S, col(P.cobalt, 0.16f));
                 dl->AddCircleFilled(c, r, col(P.cobalt));
@@ -183,7 +196,7 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
         // station occupancy: ring of ports, arc of ports in use, badge of drivers waiting
         for (int k = 0; k < sim->sim.nst; k++) {
             int s = sim->sim.st[k].station;
-            const ev_node &n = sc.nodes[sc.stations[s].node];
+            const NodeV &n = sc.nodes[sc.stations[s].node];
             ImVec2 c(X(n.x), Y(n.y));
             int ports = R ? R->ports[(size_t)s] : sc.stations[s].ports;
             float r = 7.5f * S * std::pow(mv.z, 0.2f);
@@ -223,16 +236,18 @@ int drawCityMap(App &app, MapView &mv, const char *id, ImVec2 size, MapMode mode
     // tooltip
     if (mv.hover >= 0 && hovered) {
         int i = mv.hover;
-        const ev_station &st = sc.stations[i];
+        const SiteV &st = sc.stations[i];
         ImGui::BeginTooltip();
         ImGui::PushFont(app.fonts.semi);
-        ImGui::Text("Station %d", st.id);
+        ImGui::Text("%s (station %d)", st.name.c_str(), st.id);
         ImGui::PopFont();
-        ImGui::Text("Junction %s", sc.nodes[st.node].name);
-        ImGui::Text("%d ports at %g kW, %s", E.effectivePorts(i), st.power_kw, rupees(st.cost).c_str());
+        ImGui::Text("Junction %s", sc.nodes[st.node].name.c_str());
+        if (st.existing) ImGui::Text("%d ports at %g kW, %s", E.effectivePorts(i), st.power_kw, st.connector.c_str());
+        else ImGui::Text("%d ports at %g kW, %s", E.effectivePorts(i), st.power_kw, rupees(st.cost).c_str());
         if (mode == MAP_PLANNER) {
             bool built = R && R->built[(size_t)i];
-            ImGui::TextDisabled("%s. Click to edit.", built ? "Built" : "Not built");
+            if (st.existing) ImGui::TextDisabled("Existing station, %s. Click to edit ports.", st.status.c_str());
+            else ImGui::TextDisabled("%s. Click to edit.", built ? "Built" : "Not built");
         } else if (live && sim) {
             auto it = sim->local.find(i);
             if (it != sim->local.end()) {

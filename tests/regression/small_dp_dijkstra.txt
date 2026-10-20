@@ -1,1 +1,0 @@
-sel_n=3 sel_cost=191 sel_value=87 feasible=53 need=23 stops=0.301887 km=23.339491 kwh=4.657826 flow=16 sessions=16 served=16
