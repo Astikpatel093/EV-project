@@ -11,7 +11,7 @@
 
 namespace ev33 {
 
-extern const int SEL_ORDER[EV_SEL_COUNT];   // display order: DP, B&B LC, FIFO, LIFO, greedy
+extern const int SEL_ORDER[SEL_COUNT];   // display order: DP, B&B LC, FIFO, LIFO, greedy
 
 std::string lowerLabel(const City &c);
 
@@ -32,8 +32,8 @@ std::vector<RecordRow> modelRecords(const Engine &E, const Run &R, const TripDet
 std::vector<StructureRow> modelStructures(const Engine &E, const Run &R, const Analysis &A);
 
 /* Planner: trip summary and itinerary (time, text) */
-std::string tripFacts(const ev_scenario &sc, const TripDetail &D);
-std::vector<std::pair<std::string, std::string>> tripItinerary(const ev_scenario &sc, const TripDetail &D);
+std::string tripFacts(const Scene &sc, const TripDetail &D);
+std::vector<std::pair<std::string, std::string>> tripItinerary(const Scene &sc, const TripDetail &D);
 
 /* Live day: summary of the simulated day, comparison with the other policy and the baseline */
 std::string liveSummary(Engine &E, const SimView &cur, const SimView *other, int policy);
@@ -43,14 +43,14 @@ const CompareRow *findCompare(const Compare &C, int sel, int route);
 std::string strategiesFinding(const Compare &C);
 
 /* Capacity */
-std::string surgeNote(const ev_sessions &se);
-std::string flowNote(const ev_scenario &sc, const ev_capacity &c);
+std::string surgeNote(const SessV &se);
+std::string flowNote(const Scene &sc, const CapV &c);
 
 /* Benchmarks */
 struct Family { const char *label; std::vector<std::string> fam; };
 extern const std::vector<Family> FAMILIES;
 std::string algName(const std::string &a);
-bool benchSkip(const std::string &dataset);
+bool benchSkip(const BenchRow &row);
 std::vector<std::pair<std::string, std::string>> adversarialNotes(const std::vector<BenchRow> &rows);
 
 } // namespace ev33

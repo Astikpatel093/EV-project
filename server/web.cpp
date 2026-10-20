@@ -2,7 +2,7 @@
 //
 // Every page is generated here in C++: HTML for the layout, SVG for the map and the charts, CSS as
 // a string below. There is no JavaScript: clicks are links and forms, and the live day plays by
-// reloading the page once a second. The numbers come from the C engine through ../shared (the same
+// reloading the page once a second. The numbers come from the C++17 engine (include/ev, src/) through ../shared (the same
 // layer the desktop app uses).
 //
 //   ev33_web [--port N] [--data DIR] [--results DIR] [--assets DIR]     (PORT in the environment wins)
@@ -16,6 +16,8 @@
 #include <cstring>
 #include <ctime>
 #include <map>
+#include <mutex>
+#include <thread>
 #include <string>
 #include <vector>
 
@@ -145,7 +147,7 @@ struct Ctx {
     std::string get(const char *k, const char *def = "") const { auto it = q.find(k); return it == q.end() ? def : it->second; }
 };
 
-static std::string editKey(const ev_scenario &sc, const Edits &e) {
+static std::string editKey(const Scene &sc, const Edits &e) {
     std::vector<std::string> t;
     for (int i : e.lock) t.push_back("l" + std::to_string(sc.stations[i].id));
     for (int i : e.ban) t.push_back("b" + std::to_string(sc.stations[i].id));
@@ -156,12 +158,12 @@ static std::string editKey(const ev_scenario &sc, const Edits &e) {
     return o;
 }
 
-static int stationIndex(const ev_scenario &sc, long id) {
+static int stationIndex(const Scene &sc, long id) {
     for (int i = 0; i < sc.ns; i++) if (sc.stations[i].id == id) return i;
     return -1;
 }
 
-static Edits parseEdits(const ev_scenario &sc, const std::string &s) {
+static Edits parseEdits(const Scene &sc, const std::string &s) {
     Edits e;
     size_t p = 0;
     int count = 0;
@@ -186,8 +188,8 @@ static Edits parseEdits(const ev_scenario &sc, const std::string &s) {
 }
 
 // sel:route:budget:edits
-static std::string planCode(const ev_scenario &sc, const Plan &p) {
-    return std::string(ev_sel_name((ev_sel_mode)p.sel)) + ":" + ev_route_name((ev_route_mode)p.route) + ":" + std::to_string(p.budget) + ":" + editKey(sc, p.edits);
+static std::string planCode(const Scene &sc, const Plan &p) {
+    return std::string(selName(p.sel)) + ":" + routeName(p.route) + ":" + std::to_string(p.budget) + ":" + editKey(sc, p.edits);
 }
 
 static std::map<std::string, Baseline> g_baselines;   // keyed by city + plan code, keeps simulated waits
@@ -201,11 +203,11 @@ static void applyRequest(Ctx &c) {
     Plan p;
     p.city = city;
     const City &C = E.cities[(size_t)city];
-    int s = ev_sel_parse(c.get("sel", "dp").c_str());
-    p.sel = s >= 0 ? s : EV_SEL_DP;
-    int r = ev_route_parse(c.get("route", "dijkstra").c_str());
-    p.route = r >= 0 ? r : EV_ROUTE_DIJKSTRA;
-    if (p.route == EV_ROUTE_FLOYD && C.sc.nn > 1600) p.route = EV_ROUTE_DIJKSTRA;
+    int s = selParse(c.get("sel", "dp").c_str());
+    p.sel = s >= 0 ? s : SEL_DP;
+    int r = routeParse(c.get("route", "dijkstra").c_str());
+    p.route = r >= 0 ? r : ROUTE_DIJKSTRA;
+    if (p.route == ROUTE_FLOYD && C.sc.nn > 1600) p.route = ROUTE_DIJKSTRA;
     std::string b = c.get("budget");
     p.budget = b.empty() ? C.default_budget : std::max(0, std::min(1000000, std::atoi(b.c_str())));
     p.edits = parseEdits(C.sc, c.get("edit"));
@@ -223,9 +225,9 @@ static void applyRequest(Ctx &c) {
             size_t q = 0;
             for (int k = 0; k < 3; k++) { size_t col = base.find(':', q); f.push_back(base.substr(q, col == std::string::npos ? std::string::npos : col - q)); q = col == std::string::npos ? base.size() : col + 1; }
             std::string ed = q < base.size() ? base.substr(q) : "";
-            int bs = ev_sel_parse(f[0].c_str()), br = ev_route_parse(f.size() > 1 ? f[1].c_str() : "");
-            bp.sel = bs >= 0 ? bs : EV_SEL_DP;
-            bp.route = br >= 0 ? br : EV_ROUTE_DIJKSTRA;
+            int bs = selParse(f[0].c_str()), br = routeParse(f.size() > 1 ? f[1].c_str() : "");
+            bp.sel = bs >= 0 ? bs : SEL_DP;
+            bp.route = br >= 0 ? br : ROUTE_DIJKSTRA;
             bp.budget = f.size() > 2 && !f[2].empty() ? std::atoi(f[2].c_str()) : C.default_budget;
             bp.edits = parseEdits(C.sc, ed);
             Baseline B;
@@ -288,7 +290,7 @@ button,.btn{cursor:pointer;background:var(--paper2);text-decoration:none;color:v
 .legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.82rem;color:var(--ink2);margin:6px 2px}.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .terrain{fill:var(--contour)}.contour{stroke:var(--contour);fill:none}.road{stroke:var(--ink3);stroke-opacity:.6;fill:none}
 .tr0{stroke:var(--ink3);stroke-opacity:.25}.tr1{stroke:var(--cobalt);stroke-opacity:.4}.tr2{stroke:var(--cobalt);stroke-opacity:.75}.tr3{stroke:var(--cobalt)}.tr4{stroke:var(--red)}
-.site{fill:var(--paper);stroke:var(--ink3);stroke-width:1.3}.built{fill:var(--cobalt)}.halo{fill:var(--cobalt);fill-opacity:.16}.short{fill:none;stroke:var(--amber);stroke-width:2.2}
+.site{fill:var(--paper);stroke:var(--ink3);stroke-width:1.3}.exist{fill:var(--green)}.off{fill:var(--paper);stroke:var(--red);stroke-width:1.6}.built{fill:var(--cobalt)}.halo{fill:var(--cobalt);fill-opacity:.16}.short{fill:none;stroke:var(--amber);stroke-width:2.2}
 .sel{fill:none;stroke:var(--ink);stroke-width:2}.lock{fill:none;stroke:var(--ink);stroke-width:1.6}.ban{stroke:var(--red);stroke-width:2.2}
 .route{fill:none;stroke:var(--cobalt);stroke-width:3.4;stroke-linejoin:round}.route.bad{stroke:var(--red)}.start{fill:var(--paper);stroke:var(--cobalt);stroke-width:2.5}.end{fill:var(--ink)}
 .badge{fill:var(--ink)}.badgeT{fill:var(--paper);font-size:11px;font-weight:700}.lbl{fill:var(--ink);font-size:11px}
@@ -340,7 +342,7 @@ static MapT mapFor(const City &C, int W) {
 }
 
 static void mapBase(std::string &o, const City &C, const MapT &m, const Run *R, bool traffic) {
-    const ev_scenario &sc = C.sc;
+    const Scene &sc = C.sc;
     const Terrain &T = C.terrain;
     double dw = C.maxx - C.minx, dh = C.maxy - C.miny;
     if (T.ok) {
@@ -371,7 +373,7 @@ static void mapBase(std::string &o, const City &C, const MapT &m, const Run *R, 
         for (int e = 0; e < sc.ne; e++) {
             double r = (double)R->edge_load[(size_t)e] / R->edge_load_max;
             int b = r <= 0 ? 0 : r < 0.25 ? 1 : r < 0.5 ? 2 : r < 0.75 ? 3 : 4;
-            const ev_node &a = sc.nodes[sc.edges[e].u], &n = sc.nodes[sc.edges[e].v];
+            const NodeV &a = sc.nodes[sc.edges[e].u], &n = sc.nodes[sc.edges[e].v];
             appf(buckets[b], "M%.1f %.1fL%.1f %.1f", m.X(a.x), m.Y(a.y), m.X(n.x), m.Y(n.y));
         }
         for (int b = 0; b < 5; b++)
@@ -379,7 +381,7 @@ static void mapBase(std::string &o, const City &C, const MapT &m, const Run *R, 
     } else {
         o += "<path class=\"road\" stroke-width=\"1.1\" d=\"";
         for (int e = 0; e < sc.ne; e++) {
-            const ev_node &a = sc.nodes[sc.edges[e].u], &n = sc.nodes[sc.edges[e].v];
+            const NodeV &a = sc.nodes[sc.edges[e].u], &n = sc.nodes[sc.edges[e].v];
             appf(o, "M%.1f %.1fL%.1f %.1f", m.X(a.x), m.Y(a.y), m.X(n.x), m.Y(n.y));
         }
         o += "\"/>";
@@ -404,7 +406,7 @@ static std::string frame(Ctx &c, int page, const std::string &body, const std::s
 
     // ---- the plan
     const City &C = E.city();
-    const ev_scenario &sc = C.sc;
+    const Scene &sc = C.sc;
     std::string here = PAGES[page].path;
     o += "<div><h3>City</h3><div class=\"cities\">";
     for (int i = 0; i < (int)E.cities.size(); i++) {
@@ -412,17 +414,17 @@ static std::string frame(Ctx &c, int page, const std::string &body, const std::s
         E.load(i);
         o += "<a class=\"city" + std::string(i == E.plan.city ? " on" : "") + "\" title=\"" + esc(ci.blurb) + "\" href=\"" +
              c.url(here, { { "city", ci.name }, { "budget", "" }, { "edit", "" }, { "base", "" }, { "trip", "" }, { "station", "" } }) + "\"><b>" + esc(ci.label) + "</b><span>" +
-             fint(ci.sc.nn) + " junctions, " + fint(ci.sc.ns) + " sites, " + fint(ci.sc.nt) + " trips</span></a>";
+             fint(ci.sc.nn) + " junctions, " + fint(ci.sc.nexist) + " stations, " + fint(ci.sc.candidates()) + " sites, " + fint(ci.sc.nt) + " trips</span></a>";
     }
-    o += "</div></div><div><h3>Site selection</h3><div class=\"stack\">";
-    for (int k = 0; k < EV_SEL_COUNT; k++) {
+    o += "</div><p class=\"small muted\">All five cities are synthetic test data (generated, not real places).</p></div><div><h3>Site selection</h3><div class=\"stack\">";
+    for (int k = 0; k < SEL_COUNT; k++) {
         int m = SEL_ORDER[k];
-        o += "<a class=\"opt" + std::string(m == E.plan.sel ? " on" : "") + "\" href=\"" + c.url(here, { { "sel", ev_sel_name((ev_sel_mode)m) } }) + "\">" + SELECT_LONG[m] + "</a>";
+        o += "<a class=\"opt" + std::string(m == E.plan.sel ? " on" : "") + "\" href=\"" + c.url(here, { { "sel", selName(m) } }) + "\">" + SELECT_LONG[m] + "</a>";
     }
     o += "</div></div><div><h3>Routing</h3><div class=\"stack\">";
-    for (int r = 0; r < EV_ROUTE_COUNT; r++) {
-        bool off = r == EV_ROUTE_FLOYD && sc.nn > 1600;
-        o += "<a class=\"opt" + std::string(r == E.plan.route ? " on" : "") + (off ? " off" : "") + "\" href=\"" + c.url(here, { { "route", ev_route_name((ev_route_mode)r) } }) + "\">" + ROUTE_LABEL[r] + "</a>";
+    for (int r = 0; r < ROUTE_COUNT; r++) {
+        bool off = r == ROUTE_FLOYD && sc.nn > 1600;
+        o += "<a class=\"opt" + std::string(r == E.plan.route ? " on" : "") + (off ? " off" : "") + "\" href=\"" + c.url(here, { { "route", routeName(r) } }) + "\">" + ROUTE_LABEL[r] + "</a>";
     }
     o += "</div><p class=\"small muted\">" + esc(ROUTE_HINT[E.plan.route]) + "</p></div>";
     // budget
@@ -449,7 +451,7 @@ static std::string frame(Ctx &c, int page, const std::string &body, const std::s
     }
     o += "<p class=\"small muted\">" + esc(E.status) + "</p></aside><main>";
     o += body;
-    o += "</main></div><footer>EV33, Project 33. Engine in C11; this site is generated by a C++ server on that engine (no JavaScript). "
+    o += "</main></div><footer>EV33, Project 33. Engine in C++17; this site is generated by a C++ server on that engine (no JavaScript). "
          "The same engine also runs as a desktop app (ev33_gui).</footer></body></html>";
     return o;
 }
@@ -460,9 +462,9 @@ static std::string pagePlanner(Ctx &c) {
     Run *R = E.run();
     if (!R) return "<p>The engine could not load this city.</p>";
     const City &C = E.city();
-    const ev_scenario &sc = C.sc;
-    const ev_kpi &k = R->run.kpi;
-    const ev_selection &s = R->run.sel;
+    const Scene &sc = C.sc;
+    const KpiV &k = R->run.kpi;
+    const SelV &s = R->run.sel;
     const Baseline &BL = E.baseline;
     std::string o = "<h1>Planner</h1><p class=\"lede\">Choose a plan in the sidebar. The map shows the sites the engine builds; click a site to force it in, rule it out or change its ports. Pick a trip to replay it.</p>";
 
@@ -478,11 +480,11 @@ static std::string pagePlanner(Ctx &c) {
     };
     o += "<div class=\"kpis\">";
     kpi("Trips completed", f1(k.feasible_pct) + "%", esc(fint(k.feasible) + " of " + fint(k.trips) + " trips") + delta(k.feasible - BL.kpi.feasible, true, " trips", 0));
-    kpi("Needed a charge and got one", fint(k.charged_ok), esc("of " + fint(k.need_charge) + " that could not finish on their starting charge") + delta(k.charged_ok - BL.kpi.charged_ok, true, "", 0));
+    kpi("Beyond range, completed", fint(k.charged_ok), esc("of " + fint(k.need_charge) + " whose shortest route was beyond their starting charge") + delta(k.charged_ok - BL.kpi.charged_ok, true, "", 0));
     kpi("Stations built", fint(s.n), esc(rupees(s.cost) + " of " + rupees(E.plan.budget) + (s.optimal ? ", provably optimal" : "") + (s.over_budget ? ". Locked sites exceed the budget." : "")) +
                                           delta((double)(s.cost - BL.cost), false, " lakh", 0));
     kpi("Average trip", f1(k.avg_km) + " km", esc(f2(k.avg_kwh) + " kWh, " + f2(k.avg_stops) + " stops, " + f1(k.avg_charge_min) + " min charging") + delta(k.avg_kwh - BL.kpi.avg_kwh, false, " kWh", 2));
-    kpi("Engine time", fms(R->total_ms), esc(fint((double)ev_router_sssp_runs(R->run.router)) + " shortest-path trees"));
+    kpi("Engine time", fms(R->total_ms), esc(fint((double)R->run.sssp) + " shortest-path trees"));
     o += "</div><p class=\"controls\">";
     if (BL.set) o += "<a class=\"btn\" href=\"" + c.url("/", { { "base", "" } }) + "\">Clear baseline</a> <span class=\"muted\">Baseline: " + esc(BL.label) + ".</span>";
     else o += "<a class=\"btn\" href=\"" + c.url("/", { { "base", planCode(sc, E.plan) } }) + "\">Pin as baseline</a> <span class=\"muted\">Pin a plan to compare later runs against it.</span>";
@@ -507,16 +509,24 @@ static std::string pagePlanner(Ctx &c) {
         svg += std::string("<polyline class=\"route") + (D->plan.feasible ? "" : " bad") + "\" points=\"";
         for (int v : D->path) appf(svg, "%.1f,%.1f ", m.X(sc.nodes[v].x), m.Y(sc.nodes[v].y));
         svg += "\"/>";
-        const ev_node &a = sc.nodes[D->path.front()], &b = sc.nodes[D->path.back()];
+        const NodeV &a = sc.nodes[D->path.front()], &b = sc.nodes[D->path.back()];
         appf(svg, "<circle class=\"start\" cx=\"%.1f\" cy=\"%.1f\" r=\"6\"/><circle class=\"end\" cx=\"%.1f\" cy=\"%.1f\" r=\"6\"/>", m.X(a.x), m.Y(a.y), m.X(b.x), m.Y(b.y));
     }
     for (int i = 0; i < sc.ns; i++) {
-        const ev_node &n = sc.nodes[sc.stations[i].node];
+        const NodeV &n = sc.nodes[sc.stations[i].node];
         double x = m.X(n.x), y = m.Y(n.y);
         bool built = R->built[(size_t)i];
-        svg += "<a href=\"" + c.url("/", { { "station", std::to_string(sc.stations[i].id) } }) + "\"><title>Station " + std::to_string(sc.stations[i].id) + ", " +
-               esc(sc.nodes[sc.stations[i].node].name) + ": " + std::to_string(E.effectivePorts(i)) + " ports, " + esc(rupees(sc.stations[i].cost)) + (built ? ", built" : ", not built") + "</title>";
-        if (built) {
+        const SiteV &si = sc.stations[i];
+        svg += "<a href=\"" + c.url("/", { { "station", std::to_string(si.id) } }) + "\"><title>Station " + std::to_string(si.id) + ", " +
+               esc(sc.nodes[si.node].name) + ": " + std::to_string(E.effectivePorts(i)) + " ports, " +
+               (si.existing ? std::string(si.available ? "existing station" : "existing station, " + si.status) : esc(rupees(si.cost)) + (built ? ", built" : ", not built")) + "</title>";
+        if (si.existing) {
+            double r = 3.4 + std::sqrt((double)E.effectivePorts(i)) * 1.3;
+            if (si.available) appf(svg, "<rect class=\"exist\" x=\"%.1f\" y=\"%.1f\" width=\"%.1f\" height=\"%.1f\" rx=\"1.5\"/>", x - r, y - r, 2 * r, 2 * r);
+            else appf(svg, "<rect class=\"off\" x=\"%.1f\" y=\"%.1f\" width=\"%.1f\" height=\"%.1f\" rx=\"1.5\"/><path class=\"ban\" d=\"M%.1f %.1fL%.1f %.1fM%.1f %.1fL%.1f %.1f\"/>",
+                      x - r, y - r, 2 * r, 2 * r, x - 4, y - 4, x + 4, y + 4, x - 4, y + 4, x + 4, y - 4);
+            if (si.available && R->short_of[(size_t)i] > 0) appf(svg, "<circle class=\"short\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/>", x, y, r + 3.5);
+        } else if (built) {
             double r = 3.8 + std::sqrt((double)E.effectivePorts(i)) * 1.5;
             appf(svg, "<circle class=\"halo\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/><circle class=\"built\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/>", x, y, r + 4, x, y, r);
             if (R->short_of[(size_t)i] > 0) appf(svg, "<circle class=\"short\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/>", x, y, r + 2.5);
@@ -529,7 +539,7 @@ static std::string pagePlanner(Ctx &c) {
     }
     if (D && D->valid)
         for (int q = 0; q < D->plan.n_stops; q++) {
-            const ev_node &n = sc.nodes[sc.stations[D->plan.stop[q]].node];
+            const NodeV &n = sc.nodes[sc.stations[D->plan.stop[q]].node];
             appf(svg, "<circle class=\"badge\" cx=\"%.1f\" cy=\"%.1f\" r=\"8\"/><text class=\"badgeT\" x=\"%.1f\" y=\"%.1f\" text-anchor=\"middle\">%d</text>", m.X(n.x) - 12,
                  m.Y(n.y) - 12, m.X(n.x) - 12, m.Y(n.y) - 8, q + 1);
         }
@@ -537,24 +547,30 @@ static std::string pagePlanner(Ctx &c) {
 
     o += "<div class=\"row\"><div>" + svg;
     o += std::string("<div class=\"legend\">") + (traffic ? "<span><i style=\"background:var(--red);border-radius:2px\"></i>Busier road</span>" : "<span><i style=\"background:var(--ink3);height:2px;border-radius:0\"></i>Road</span>") +
-         "<span><i style=\"border:1.5px solid var(--ink3)\"></i>Candidate site</span><span><i style=\"background:var(--cobalt)\"></i>Built station</span>"
+         "<span><i style=\"background:var(--green);border-radius:2px\"></i>Existing station</span><span><i style=\"border:1.5px solid var(--red);border-radius:2px\"></i>Offline station</span>"
+         "<span><i style=\"border:1.5px solid var(--ink3)\"></i>Candidate site</span><span><i style=\"background:var(--cobalt)\"></i>New station</span>"
          "<span><i style=\"background:var(--cobalt);box-shadow:0 0 0 2px var(--amber)\"></i>Short of chargers</span><span><i style=\"background:var(--contour);height:2px;border-radius:0\"></i>Contour, 50 m</span></div>";
 
     // station panel
     if (station >= 0) {
-        const ev_station &st = sc.stations[station];
+        const SiteV &st = sc.stations[station];
         bool built = R->built[(size_t)station];
         int mode = E.plan.edits.lock.count(station) ? 1 : E.plan.edits.ban.count(station) ? 2 : 0;
         int ports = E.effectivePorts(station);
-        o += "<div class=\"panel\"><h2 style=\"margin-top:0\">Station " + std::to_string(st.id) + " <span class=\"pill\">" +
-             (built ? (mode == 1 ? "Built, by your edit" : "Built by the engine") : mode == 2 ? "Never built, by your edit" : "Not built") + "</span> <a class=\"small\" href=\"" +
-             c.url("/", { { "station", "" } }) + "\">close</a></h2><p class=\"muted\">Junction " + esc(sc.nodes[st.node].name) + "</p><table><tbody>";
+        std::string pill = st.existing ? (st.available ? "Existing station" : "Existing, " + st.status)
+                                       : built ? (mode == 1 ? "Built, by your edit" : "Built by the engine") : mode == 2 ? "Never built, by your edit" : "Not built";
+        o += "<div class=\"panel\"><h2 style=\"margin-top:0\">" + esc(st.name) + " <span class=\"pill\">" + esc(pill) + "</span> <a class=\"small\" href=\"" +
+             c.url("/", { { "station", "" } }) + "\">close</a></h2><p class=\"muted\">Station " + std::to_string(st.id) + " at junction " + esc(sc.nodes[st.node].name) + "</p><table><tbody>";
         auto row = [&](const char *k2, const std::string &v) { o += "<tr><th>" + std::string(k2) + "</th><td><b>" + esc(v) + "</b></td></tr>"; };
         char buf[64];
         std::snprintf(buf, sizeof buf, "%d at %g kW", ports, st.power_kw);
         row("Ports", buf);
-        row("Cost", rupees(st.cost));
-        row("Service value", fint(st.value));
+        row("Connector", st.connector.empty() ? std::string("not recorded") : st.connector);
+        if (st.existing) row("Status", st.status);
+        else {
+            row("Installation cost", rupees(st.cost));
+            row("Benefit score", fint((double)st.value) + (st.estimated ? " (estimated from trips)" : ""));
+        }
         for (int q = 0; q < R->ses.n; q++)
             if (R->ses.st[q].station == station)
                 row("Sessions", fint(R->ses.st[q].sessions) + ", needs " + std::to_string(R->ses.st[q].chargers_needed) + (R->ses.st[q].chargers_needed == 1 ? " charger" : " chargers"));
@@ -562,13 +578,15 @@ static std::string pagePlanner(Ctx &c) {
             SimView *sv = E.sim(0);
             auto it = sv ? sv->local.find(station) : std::map<int, int>::iterator();
             if (sv && it != sv->local.end()) {
-                const ev_sim_station &ss = sv->sim.st[it->second];
+                const SimSiteV &ss = sv->sim.st[it->second];
                 row("Queueing", ss.waited ? fint(ss.waited) + " drivers, " + fdur(ss.wait_min) + " in all" : "nobody waits");
             }
         }
-        o += "</tbody></table><p class=\"controls\"><span class=\"seg\">";
+        o += "</tbody></table>";
+        if (st.existing) o += "<p class=\"small muted\">Existing stations are always part of the network; the placement method only decides which candidate sites to build.</p>";
+        else o += "<p class=\"controls\"><span class=\"seg\">";
         static const char *ml[] = { "Engine decides", "Always build", "Never build" };
-        for (int mm = 0; mm < 3; mm++) {
+        for (int mm = 0; mm < 3 && !st.existing; mm++) {
             Edits w = E.plan.edits;
             w.lock.erase(station);
             w.ban.erase(station);
@@ -576,7 +594,8 @@ static std::string pagePlanner(Ctx &c) {
             if (mm == 2) w.ban.insert(station);
             o += "<a" + std::string(mm == mode ? " class=\"on\"" : "") + " href=\"" + c.url("/", { { "edit", editKey(sc, w) } }) + "\">" + ml[mm] + "</a>";
         }
-        o += "</span></p><p class=\"controls\">Ports: ";
+        if (!st.existing) o += "</span></p>";
+        o += "<p class=\"controls\">Ports: ";
         auto portsLink = [&](int n, const char *label) {
             Edits w = E.plan.edits;
             n = std::max(1, std::min(64, n));
@@ -601,10 +620,10 @@ static std::string pagePlanner(Ctx &c) {
     if (R->samples.empty()) o += "<p class=\"muted\">This plan has no trips to replay.</p>";
     o += "</div>";
     if (D && D->valid) {
-        const ev_trip &tr = sc.trips[D->trip];
+        const TripV &tr = sc.trips[D->trip];
         o += "<h3>Trip " + std::to_string(tr.id) + ": " + esc(sc.nodes[tr.src].name) + " to " + esc(sc.nodes[tr.dst].name) + "</h3><p class=\"small\">" + md(tripFacts(sc, *D)) + "</p>";
         // battery chart
-        double B = sc.cfg.battery_kwh, total = D->profile.empty() ? 1 : std::max(1e-6, D->profile.back()[0]);
+        double B = tr.battery_kwh, total = D->profile.empty() ? 1 : std::max(1e-6, D->profile.back()[0]);
         double emin = 1e9, emax = -1e9;
         for (auto &p : D->profile) { emin = std::min(emin, p[2]); emax = std::max(emax, p[2]); }
         if (emax <= emin) emax = emin + 1;
@@ -613,12 +632,12 @@ static std::string pagePlanner(Ctx &c) {
         auto Y = [&](double v) { return t + (1 - v / B) * (H - t - b); };
         auto YE = [&](double v) { return t + (1 - (v - emin) / ((emax - emin) * 2.5)) * (H - t - b); };
         appf(o, "<svg viewBox=\"0 0 %d %d\" width=\"100%%\" role=\"img\" aria-label=\"Battery and elevation along the trip\">", W, H);
-        for (int g = 0; g <= 3; g++) appf(o, "<line class=\"grid\" x1=\"%d\" x2=\"%d\" y1=\"%.1f\" y2=\"%.1f\"/><text class=\"tick\" x=\"%d\" y=\"%.1f\" text-anchor=\"end\">%g</text>", l, W - r, Y(B * g / 3), Y(B * g / 3), l - 4, Y(B * g / 3) + 4, B * g / 3);
+        for (int g = 0; g <= 3; g++) appf(o, "<line class=\"grid\" x1=\"%d\" x2=\"%d\" y1=\"%.1f\" y2=\"%.1f\"/><text class=\"tick\" x=\"%d\" y=\"%.1f\" text-anchor=\"end\">%.0f</text>", l, W - r, Y(B * g / 3), Y(B * g / 3), l - 4, Y(B * g / 3) + 4, B * g / 3);
         o += "<path class=\"elev\" d=\"M" + std::to_string(l) + " " + std::to_string(H - b);
         for (auto &p : D->profile) appf(o, "L%.1f %.1f", X(p[0]), YE(p[2]));
         appf(o, "L%d %dZ\"/>", W - r, H - b);
         appf(o, "<line class=\"reserve\" x1=\"%d\" x2=\"%d\" y1=\"%.1f\" y2=\"%.1f\"/><line class=\"target\" x1=\"%d\" x2=\"%d\" y1=\"%.1f\" y2=\"%.1f\"/>", l, W - r,
-             Y(sc.cfg.reserve_frac * B), Y(sc.cfg.reserve_frac * B), l, W - r, Y(sc.cfg.target_frac * B), Y(sc.cfg.target_frac * B));
+             Y(tr.reserve_kwh), Y(tr.reserve_kwh), l, W - r, Y(sc.cfg.target_frac * B), Y(sc.cfg.target_frac * B));
         o += "<polyline class=\"batt\" points=\"";
         for (auto &p : D->profile) appf(o, "%.1f,%.1f ", X(p[0]), Y(std::max(0.0, p[1])));
         o += "\"/>";
@@ -641,7 +660,7 @@ static std::string pageLive(Ctx &c, std::string &head) {
     SimView *sv = E.sim(policy);
     if (!R || !sv) return "<p>The engine could not run this plan.</p>";
     const City &C = E.city();
-    const ev_scenario &sc = C.sc;
+    const Scene &sc = C.sc;
     std::string ts = c.get("t");
     double T = 510;
     if (!ts.empty()) {
@@ -696,7 +715,7 @@ static std::string pageLive(Ctx &c, std::string &head) {
     mapBase(o, C, m, R, false);
     for (int k = 0; k < sv->sim.nst; k++) {
         int s = sv->sim.st[k].station;
-        const ev_node &n = sc.nodes[sc.stations[s].node];
+        const NodeV &n = sc.nodes[sc.stations[s].node];
         double x = m.X(n.x), y = m.Y(n.y), r = 7.5;
         int ports = R->ports[(size_t)s], busy = st.charging[(size_t)k], wait = st.waiting[(size_t)k];
         appf(o, "<g><title>Station %d: %d of %d ports busy, %d waiting</title><circle class=\"st\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/>", sc.stations[s].id, busy, ports, wait, x, y, r);
@@ -704,7 +723,7 @@ static std::string pageLive(Ctx &c, std::string &head) {
             double f = std::min(1.0, (double)busy / std::max(1, ports)), rr = r + 3.2;
             if (f >= 0.999) appf(o, "<circle class=\"occ full\" cx=\"%.1f\" cy=\"%.1f\" r=\"%.1f\"/>", x, y, rr);
             else {
-                double a = -M_PI / 2 + 2 * M_PI * f;
+                double a = -3.14159265358979323846 / 2 + 2 * 3.14159265358979323846 * f;
                 appf(o, "<path class=\"occ\" d=\"M%.1f %.1fA%.1f %.1f 0 %d 1 %.1f %.1f\"/>", x, y - rr, rr, rr, f > 0.5 ? 1 : 0, x + rr * std::cos(a), y + rr * std::sin(a));
             }
         }
@@ -779,12 +798,41 @@ static std::string pageLive(Ctx &c, std::string &head) {
 }
 
 /* ======================================================================== strategies */
-static std::string pageStrategies(Ctx &c) {
+// The fifteen runs per city take up to ~20 s on the large city, so a worker thread computes them
+// at start-up with its own Engine (nothing is shared with the request thread but this table).
+static std::mutex g_cmp_mu;
+static std::map<int, Compare> g_cmp;
+
+static void compareWorker(std::string data, std::string results, std::vector<int> order) {
+    Engine W;
+    if (!W.init(data, results)) return;
+    for (int i : order) {
+        if (!W.load(i)) {
+            std::lock_guard<std::mutex> g(g_cmp_mu);
+            g_cmp[i].done = true;
+            continue;
+        }
+        Compare &C = W.compare(i);
+        while (!C.done) {
+            W.stepCompare(C);
+            std::lock_guard<std::mutex> g(g_cmp_mu);
+            g_cmp[i] = C;
+        }
+    }
+}
+
+static std::string pageStrategies(Ctx &c, std::string &head) {
     Engine &E = c.E;
-    Compare &C = E.compare(E.plan.city);
-    while (!C.done) E.stepCompare(C);
+    Compare C;
+    {
+        std::lock_guard<std::mutex> g(g_cmp_mu);
+        auto it = g_cmp.find(E.plan.city);
+        if (it != g_cmp.end()) C = it->second;
+    }
+    if (!C.done) head += "<meta http-equiv=\"refresh\" content=\"3\">";
     int metric = std::max(0, std::min(3, std::atoi(c.get("metric", "0").c_str())));
     std::string o = "<h1>Same city, fifteen strategies</h1><p class=\"lede\">Every pairing of a site-selection method with a routing method, run on identical data at the city's default budget. Darker cells are better for the measure you choose.</p>";
+    if (!C.done) o += "<p class=\"panel\"><b>Still computing: " + std::to_string(C.rows.size()) + " of up to 15 runs finished.</b> This page refreshes every 3 seconds until the table is complete.</p>";
     static const char *ML[] = { "Trips completed", "Energy per trip", "Routing time", "Selection value" };
     o += "<p><span class=\"seg\">";
     for (int k = 0; k < 4; k++) o += "<a" + std::string(k == metric ? " class=\"on\"" : "") + " href=\"" + c.url("/strategies", { { "metric", std::to_string(k) } }) + "\">" + ML[k] + "</a>";
@@ -801,14 +849,14 @@ static std::string pageStrategies(Ctx &c) {
     double lo = 1e300, hi = -1e300;
     for (auto &r : C.rows) { lo = std::min(lo, val(r)); hi = std::max(hi, val(r)); }
     o += "<div class=\"scroll\"><table class=\"matrix\"><thead><tr><th>Site selection</th>";
-    for (int r = 0; r < EV_ROUTE_COUNT; r++) o += std::string("<th>") + ROUTE_LABEL[r] + "</th>";
+    for (int r = 0; r < ROUTE_COUNT; r++) o += std::string("<th>") + ROUTE_LABEL[r] + "</th>";
     o += "</tr></thead><tbody>";
-    for (int k = 0; k < EV_SEL_COUNT; k++) {
+    for (int k = 0; k < SEL_COUNT; k++) {
         int sm = SEL_ORDER[k];
         o += std::string("<tr><th>") + SELECT_LABEL[sm] + "</th>";
-        for (int rm = 0; rm < EV_ROUTE_COUNT; rm++) {
+        for (int rm = 0; rm < ROUTE_COUNT; rm++) {
             const CompareRow *r = findCompare(C, sm, rm);
-            if (!r) { o += "<td><span class=\"v\">\xE2\x80\x93</span><span class=\"s muted\">not offered at this size</span></td>"; continue; }
+            if (!r) { o += std::string("<td><span class=\"v\">\xE2\x80\x93</span><span class=\"s muted\">") + (C.done ? "not offered at this size" : "computing") + "</span></td>"; continue; }
             double sc = hi == lo ? 1 : higher ? (val(*r) - lo) / (hi - lo) : (hi - val(*r)) / (hi - lo);
             int pct = (int)std::lround(6 + 60 * sc);
             std::string v, sub;
@@ -832,8 +880,8 @@ static std::string pageCapacity(Ctx &c) {
     Engine &E = c.E;
     Run *R = E.run();
     if (!R) return "";
-    const ev_scenario &sc = E.city().sc;
-    const ev_sessions &se = R->ses;
+    const Scene &sc = E.city().sc;
+    const SessV &se = R->ses;
     std::string o = "<h1>Ports and grid under load</h1><p class=\"lede\">Charging sessions from the current plan, hour by hour against grid supply, and station by station against installed ports.</p><div class=\"row\"><div class=\"panel\"><h3 style=\"margin-top:0\">Charging energy by hour</h3>";
     int n = sc.cfg.horizon_h, W = 620, H = 300, l = 50, r = 10, t = 14, b = 28;
     double grid = sc.cfg.grid_kw, ymax = grid * 1.12;
@@ -859,14 +907,14 @@ static std::string pageCapacity(Ctx &c) {
     int mx = 1;
     for (int q : order) mx = std::max(mx, se.st[q].sessions);
     for (int q : order) {
-        const ev_station_load &L = se.st[q];
+        const LoadV &L = se.st[q];
         int ports = R->ports[(size_t)L.station];
         appf(o, "<div class=\"stbar\"><span>Station %d</span><span class=\"b\" title=\"%d of %d sessions servable\"><i style=\"left:0;width:%.1f%%\"></i><i class=\"l\" style=\"left:%.1f%%;width:%.1f%%\"></i></span><span class=\"%s\">needs %d, has %d</span></div>",
              sc.stations[L.station].id, L.served, L.sessions, 100.0 * L.served / mx, 100.0 * L.served / mx, 100.0 * (L.sessions - L.served) / mx, L.chargers_needed > ports ? "short" : "", L.chargers_needed, ports);
     }
     if (order.empty()) o += "<p class=\"muted\">No charging sessions in this plan.</p>";
     o += "</div></div></div>";
-    const ev_capacity &cp = R->cap;
+    const CapV &cp = R->cap;
     bool agree = cp.flow_dfs == cp.flow_bfs && cp.flow_bfs == cp.matching;
     auto card = [&](const char *t2, long v, const std::string &sub) { o += "<div class=\"kpi\"><div class=\"t\">" + std::string(t2) + "</div><div class=\"v\">" + fint((double)v) + "</div><div class=\"s\">" + esc(sub) + "</div></div>"; };
     o += "<div class=\"cards\">";
@@ -902,9 +950,9 @@ static std::string pageModel(Ctx &c) {
     if (!A.done) E.computeAnalysis(E.plan.city);
     int t0 = R->samples.empty() ? -1 : R->samples[0].trip;
     const TripDetail *D = t0 >= 0 ? &E.trip(t0) : nullptr;
-    std::string o = "<h1>Records, trees and graphs</h1><p class=\"lede\">How the system represents road nodes, trips, batteries, stations and installation budgets: the typed C records each city loads into, and the arrays, trees and weighted or capacitated graphs the engine builds from them.</p>";
-    o += "<h2>Typed records</h2><p class=\"small muted\">Each CSV file of a city loads into a typed C record. These are the real values for " + esc(lowerLabel(E.city())) + ".</p>";
-    o += "<div class=\"scroll\"><table><thead><tr><th>Represents</th><th>C record</th><th>Holds</th><th>In this city</th><th>Example</th><th>Defined in</th></tr></thead><tbody>";
+    std::string o = "<h1>Records, trees and graphs</h1><p class=\"lede\">How the system represents road nodes, trips, batteries, stations and installation budgets: the typed C++ records each city loads into, and the arrays, trees and weighted or capacitated graphs the engine builds from them.</p>";
+    o += "<h2>Typed records</h2><p class=\"small muted\">Each CSV file of a city loads into a typed C++ record (std::vector of structs). These are the real values for " + esc(lowerLabel(E.city())) + ".</p>";
+    o += "<div class=\"scroll\"><table><thead><tr><th>Represents</th><th>C++ type</th><th>Holds</th><th>In this city</th><th>Example</th><th>Defined in</th></tr></thead><tbody>";
     for (auto &x : modelRecords(E, *R, D))
         o += "<tr><th>" + esc(x.what) + "</th><td><code>" + esc(x.type) + "</code></td><td>" + esc(x.holds) + "</td><td>" + esc(x.count) + "</td><td class=\"mono\">" + esc(x.example) + "</td><td><code>" + esc(x.file) + "</code></td></tr>";
     o += "</tbody></table></div><h2>Structures built from them</h2><p class=\"small muted\">The engine turns those records into arrays, trees and weighted or capacitated graphs. Sizes are for the current plan.</p>";
@@ -919,7 +967,7 @@ static std::string pageModel(Ctx &c) {
 static std::string pageBench(Ctx &c) {
     Engine &E = c.E;
     const auto &rows = E.bench();
-    std::string o = "<h1>How each algorithm scales</h1><p class=\"lede\">Measured run time against input size on logarithmic axes, from results/bench.csv. A line that bends upward faster is the one that will not survive a bigger city.</p>";
+    std::string o = "<h1>How each algorithm scales</h1><p class=\"lede\">Measured run time against input size on logarithmic axes, from benchmarks/results.csv (median of repeated runs; one curve per algorithm on its typical input). A line that bends upward faster is the one that will not survive a bigger city.</p>";
     if (rows.empty()) return o + "<p>" + esc(E.bench_error) + "</p>";
     int fam = std::max(0, std::min((int)FAMILIES.size() - 1, std::atoi(c.get("family", "0").c_str())));
     o += "<p class=\"chips\">";
@@ -930,7 +978,7 @@ static std::string pageBench(Ctx &c) {
     std::map<std::string, std::vector<std::pair<double, double>>> series;
     double xmin = 1e300, xmax = -1e300, ymin = 1e300, ymax = -1e300;
     for (auto &r : rows) {
-        if (std::find(F.fam.begin(), F.fam.end(), r.family) == F.fam.end() || benchSkip(r.dataset) || r.ms <= 0 || r.n <= 0) continue;
+        if (std::find(F.fam.begin(), F.fam.end(), r.family) == F.fam.end() || benchSkip(r) || r.ms <= 0 || r.n <= 0) continue;
         series[r.alg].push_back({ r.n, r.ms });
         xmin = std::min(xmin, r.n); xmax = std::max(xmax, r.n); ymin = std::min(ymin, r.ms); ymax = std::max(ymax, r.ms);
     }
@@ -966,7 +1014,7 @@ static std::string pageBench(Ctx &c) {
         }
         o += "</svg><div class=\"legend\">" + legend + "</div>";
     }
-    o += "</div><div><h3 style=\"margin-top:0\">Inputs built to break them</h3>";
+    o += "</div><div><h3 style=\"margin-top:0\">Worst cases and trade-offs</h3>";
     for (auto &nt : adversarialNotes(rows)) o += "<p><b>" + esc(nt.first) + "</b><br><span class=\"small\">" + esc(nt.second) + "</span></p>";
     o += "</div></div>";
     return o;
@@ -1025,7 +1073,7 @@ static Response handle(Engine &E, const std::string &target) {
     switch (page) {
     case 0: body = pagePlanner(c); break;
     case 1: body = pageLive(c, head); break;
-    case 2: body = pageStrategies(c); break;
+    case 2: body = pageStrategies(c, head); break;
     case 3: body = pageCapacity(c); break;
     case 4: body = pageAlgorithms(c); break;
     case 5: body = pageModel(c); break;
@@ -1068,9 +1116,9 @@ static void client(Engine &E, sock_t s) {
         head = method == "HEAD";
         if (method != "GET" && !head) { r.status = 405; r.type = "text/plain"; r.body = "GET only"; }
         else {
-            double t0 = ev_now_ms();
+            double t0 = nowMs();
             r = handle(E, target);
-            std::fprintf(stderr, "%s %s -> %d (%.1f ms, %zu bytes)\n", method.c_str(), target.substr(0, 160).c_str(), r.status, ev_now_ms() - t0, r.body.size());
+            std::fprintf(stderr, "%s %s -> %d (%.1f ms, %zu bytes)\n", method.c_str(), target.substr(0, 160).c_str(), r.status, nowMs() - t0, r.body.size());
         }
     }
     std::string hdr;
@@ -1104,13 +1152,20 @@ int main(int argc, char **argv) {
         for (auto &r : roots) if (exists(r + "/" + sub + "/" + probe)) return r + "/" + sub;
         return std::string(sub);
     };
-    if (data.empty()) data = find("data", "medium/scenario.cfg");
-    if (results.empty()) results = find("results", "bench.csv");
+    if (data.empty()) data = find("data/scenarios", "medium/scenario.cfg");
+    if (results.empty()) results = find("benchmarks", "results.csv");
     g_assets = assets.empty() ? find("assets/fonts", "IBMPlexSans-Regular.ttf") : assets + "/fonts";
 
     Engine E;
     if (!E.init(data, results)) { std::fprintf(stderr, "cannot load cities from %s\n", data.c_str()); return 1; }
     for (int i = 0; i < (int)E.cities.size(); i++) E.load(i);
+    {
+        // smallest cities first so their tables are ready at once
+        std::vector<int> order;
+        for (const char *nm : { "small", "medium", "shock", "adversarial", "large" })
+            for (int i = 0; i < (int)E.cities.size(); i++) if (E.cities[(size_t)i].name == nm) order.push_back(i);
+        std::thread(compareWorker, data, results, order).detach();
+    }
 
 #ifdef _WIN32
     WSADATA w;

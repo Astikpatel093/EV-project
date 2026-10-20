@@ -41,7 +41,7 @@ void drawSidebar(App &app) {
     const Palette &P = app.pal;
     float S = app.scale;
 
-    label(app, "City");
+    label(app, "City (synthetic test data)");
     for (int i = 0; i < (int)E.cities.size(); i++) {
         City &c = E.cities[(size_t)i];
         E.load(i);
@@ -57,7 +57,7 @@ void drawSidebar(App &app) {
         dl->AddRect(p, ImVec2(p.x + w, p.y + h), col(sel ? P.cobalt : P.line), 6 * S, 0, 1);
         if (sel) dl->AddRectFilled(p, ImVec2(p.x + 3 * S, p.y + h), col(P.cobalt), 6 * S, ImDrawFlags_RoundCornersLeft);
         dl->AddText(app.fonts.semi, app.fonts.semi->FontSize, ImVec2(p.x + 11 * S, p.y + 5 * S), col(P.ink), c.label.c_str());
-        std::string sub = c.loaded ? fint(c.sc.nn) + " junctions, " + fint(c.sc.ns) + " sites, " + fint(c.sc.nt) + " trips"
+        std::string sub = c.loaded ? fint(c.sc.nn) + " junctions, " + fint(c.sc.nexist) + " stations, " + fint(c.sc.candidates()) + " sites, " + fint(c.sc.nt) + " trips"
                                    : "Could not load: " + c.error;
         dl->AddText(app.fonts.small, app.fonts.small->FontSize, ImVec2(p.x + 11 * S, p.y + 7 * S + app.fonts.semi->FontSize),
                     col(c.loaded ? P.ink3 : P.red), sub.c_str());
@@ -69,7 +69,7 @@ void drawSidebar(App &app) {
     label(app, "Site selection");
     ImGui::SetNextItemWidth(-1);
     if (ImGui::BeginCombo("##sel", SELECT_LONG[E.plan.sel])) {
-        for (int k = 0; k < EV_SEL_COUNT; k++) {
+        for (int k = 0; k < SEL_COUNT; k++) {
             int m = SEL_ORDER[k];
             if (ImGui::Selectable(SELECT_LONG[m], m == E.plan.sel)) edit(app).sel = m;
         }
@@ -81,8 +81,8 @@ void drawSidebar(App &app) {
     bool bigCity = E.city().loaded && E.city().sc.nn > 1600;
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2 * S));
-    for (int r = 0; r < EV_ROUTE_COUNT; r++) {
-        bool on = E.plan.route == r, off = r == EV_ROUTE_FLOYD && bigCity;
+    for (int r = 0; r < ROUTE_COUNT; r++) {
+        bool on = E.plan.route == r, off = r == ROUTE_FLOYD && bigCity;
         ImGui::PushID(r);
         ImGui::PushStyleColor(ImGuiCol_Button, on ? P.ink : P.paper);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, on ? P.ink : P.paper2);
@@ -121,7 +121,7 @@ void drawSidebar(App &app) {
     Run *R = E.run();
     if (R) {
         label(app, "Edit a site");
-        const ev_scenario &sc = E.city().sc;
+        const Scene &sc = E.city().sc;
         std::string cur = app.panel >= 0 ? "Station " + std::to_string(sc.stations[app.panel].id) : "Choose a site, or click one on the map";
         ImGui::SetNextItemWidth(-1);
         if (ImGui::BeginCombo("##site", cur.c_str(), ImGuiComboFlags_HeightLarge)) {
@@ -132,10 +132,11 @@ void drawSidebar(App &app) {
                 return sc.stations[a].id < sc.stations[c].id;
             });
             for (int i : order) {
-                const char *tag = E.plan.edits.lock.count(i) ? "always built" : E.plan.edits.ban.count(i) ? "never built"
+                const char *tag = sc.stations[i].existing ? (sc.stations[i].available ? "existing" : "existing, offline")
+                                : E.plan.edits.lock.count(i) ? "always built" : E.plan.edits.ban.count(i) ? "never built"
                                 : R->built[(size_t)i] ? "built" : "not built";
-                char buf[160];
-                std::snprintf(buf, sizeof buf, "Station %d, junction %s (%s)", sc.stations[i].id, sc.nodes[sc.stations[i].node].name, tag);
+                char buf[200];
+                std::snprintf(buf, sizeof buf, "Station %d, junction %s (%s)", sc.stations[i].id, sc.nodes[sc.stations[i].node].name.c_str(), tag);
                 if (ImGui::Selectable(buf, i == app.panel)) { app.panel = i; app.force_page = PAGE_PLANNER; }
             }
             ImGui::EndCombo();
@@ -211,23 +212,28 @@ static void stationPanel(App &app, ImVec2 mapMin, ImVec2 mapSize) {
     Run *R = E.run();
     int i = app.panel;
     if (!R || i < 0) return;
-    const ev_scenario &sc = E.city().sc;
-    const ev_station &st = sc.stations[i];
+    const Scene &sc = E.city().sc;
+    const SiteV &st = sc.stations[i];
     float w = std::min(350 * S, mapSize.x - 24 * S);
     ImGui::SetCursorScreenPos(ImVec2(mapMin.x + mapSize.x - w - 12 * S, mapMin.y + 52 * S));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, P.paper);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14 * S, 12 * S));
     ImGui::BeginChild("station-panel", ImVec2(w, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysUseWindowPadding);
     ImGui::PushFont(app.fonts.h2);
-    ImGui::Text("Station %d", st.id);
+    ImGui::Text("%s", st.name.c_str());
     ImGui::PopFont();
     ImGui::SameLine(ImGui::GetContentRegionAvail().x + ImGui::GetCursorPosX() - ImGui::GetFrameHeight());
     if (ImGui::Button("\xC3\x97", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight()))) app.panel = -1;
-    ImGui::TextColored(P.ink3, "Junction %s", sc.nodes[st.node].name);
+    ImGui::TextColored(P.ink3, "Station %d at junction %s", st.id, sc.nodes[st.node].name.c_str());
     bool built = R->built[(size_t)i] != 0;
     int mode = E.plan.edits.lock.count(i) ? 1 : E.plan.edits.ban.count(i) ? 2 : 0;
-    const char *status = built ? (mode == 1 ? "Built, by your edit" : "Built by the engine") : mode == 2 ? "Never built, by your edit" : "Not built";
-    Pill(status, built ? P.cobaltSoft : mode == 2 ? mix(P.paper, P.red, 0.15f) : P.paper3, built ? P.cobalt : mode == 2 ? P.red : P.ink2);
+    if (st.existing) {
+        std::string label = st.available ? std::string("Existing station") : "Existing, " + st.status;
+        Pill(label.c_str(), st.available ? P.greenSoft : mix(P.paper, P.red, 0.15f), st.available ? P.green : P.red);
+    } else {
+        const char *status = built ? (mode == 1 ? "Built, by your edit" : "Built by the engine") : mode == 2 ? "Never built, by your edit" : "Not built";
+        Pill(status, built ? P.cobaltSoft : mode == 2 ? mix(P.paper, P.red, 0.15f) : P.paper3, built ? P.cobalt : mode == 2 ? P.red : P.ink2);
+    }
     int ports = E.effectivePorts(i);
     if (ImGui::BeginTable("facts", 2, ImGuiTableFlags_SizingFixedFit)) {
         auto row = [&](const char *k, const std::string &v) {
@@ -238,8 +244,12 @@ static void stationPanel(App &app, ImVec2 mapMin, ImVec2 mapSize) {
         char buf[64];
         std::snprintf(buf, sizeof buf, "%d at %g kW", ports, st.power_kw);
         row("Ports", buf);
-        row("Cost", rupees(st.cost));
-        row("Service value", fint(st.value));
+        row("Connector", st.connector.empty() ? std::string("not recorded") : st.connector);
+        if (st.existing) row("Status", st.status);
+        else {
+            row("Installation cost", rupees(st.cost));
+            row("Benefit score", fint((double)st.value) + (st.estimated ? " (estimated)" : ""));
+        }
         for (int q = 0; q < R->ses.n; q++)
             if (R->ses.st[q].station == i)
                 row("Sessions", fint(R->ses.st[q].sessions) + ", needs " + std::to_string(R->ses.st[q].chargers_needed) +
@@ -249,7 +259,7 @@ static void stationPanel(App &app, ImVec2 mapMin, ImVec2 mapSize) {
             if (sv) {
                 auto it = sv->local.find(i);
                 if (it != sv->local.end()) {
-                    const ev_sim_station &ss = sv->sim.st[it->second];
+                    const SimSiteV &ss = sv->sim.st[it->second];
                     row("Queueing", ss.waited ? fint(ss.waited) + " drivers, " + fdur(ss.wait_min) + " in all" : "nobody waits");
                 }
             }
@@ -257,7 +267,13 @@ static void stationPanel(App &app, ImVec2 mapMin, ImVec2 mapSize) {
         ImGui::EndTable();
     }
     ImGui::Dummy(ImVec2(0, 2 * S));
-    {
+    if (st.existing) {
+        ImGui::PushFont(app.fonts.small);
+        ImGui::PushStyleColor(ImGuiCol_Text, P.ink2);
+        ImGui::TextWrapped("Existing stations are always part of the network; the placement method only decides which candidate sites to build.");
+        ImGui::PopStyleColor();
+        ImGui::PopFont();
+    } else {
         static const char *const ml[] = { "Engine decides", "Always build", "Never build" };
         int m = mode;
         ImGui::PushFont(app.fonts.small);
@@ -297,8 +313,9 @@ static void stationPanel(App &app, ImVec2 mapMin, ImVec2 mapSize) {
 
 static void batteryChart(App &app, const TripDetail &D, float height) {
     const Palette &P = app.pal;
-    const ev_scenario &sc = app.eng.city().sc;
-    double B = sc.cfg.battery_kwh, reserve = sc.cfg.reserve_frac * B, target = sc.cfg.target_frac * B;
+    const Scene &sc = app.eng.city().sc;
+    const TripV &tr = sc.trips[(size_t)D.trip];
+    double B = tr.battery_kwh, reserve = tr.reserve_kwh, target = sc.cfg.target_frac * B;
     std::vector<double> km, kwh, elev;
     for (auto &p : D.profile) { km.push_back(p[0]); kwh.push_back(p[1]); elev.push_back(p[2]); }
     double total = km.empty() ? 1 : std::max(1e-6, km.back());
@@ -340,9 +357,9 @@ void drawPlanner(App &app) {
     float S = app.scale;
     Run *R = E.run();
     if (!R) { RichText("The engine could not load this city: " + E.city().error, app.fonts); return; }
-    const ev_scenario &sc = E.city().sc;
-    const ev_kpi &k = R->run.kpi;
-    const ev_selection &s = R->run.sel;
+    const Scene &sc = E.city().sc;
+    const KpiV &k = R->run.kpi;
+    const SelV &s = R->run.sel;
     const Baseline &BL = E.baseline;
     bool bl = BL.set && BL.plan.city == E.plan.city;
 
@@ -353,7 +370,7 @@ void drawPlanner(App &app) {
     kpiCard(app, "k1", "Trips completed", f1(k.feasible_pct) + "%", fint(k.feasible) + " of " + fint(k.trips) + " trips",
             k.feasible - BL.kpi.feasible, bl, true, " trips", 0, w, h);
     ImGui::SameLine();
-    kpiCard(app, "k2", "Needed a charge and got one", fint(k.charged_ok), "of " + fint(k.need_charge) + " that could not finish on their starting charge",
+    kpiCard(app, "k2", "Beyond range, completed", fint(k.charged_ok), "of " + fint(k.need_charge) + " whose shortest route was beyond their starting charge",
             k.charged_ok - BL.kpi.charged_ok, bl, true, "", 0, w, h);
     ImGui::SameLine();
     kpiCard(app, "k3", "Stations built", fint(s.n), rupees(s.cost) + " of " + rupees(E.plan.budget) + (s.optimal ? ", provably optimal" : "") +
@@ -362,7 +379,7 @@ void drawPlanner(App &app) {
     kpiCard(app, "k4", "Average trip", f1(k.avg_km) + " km",
             f2(k.avg_kwh) + " kWh, " + f2(k.avg_stops) + " stops, " + f1(k.avg_charge_min) + " min charging", k.avg_kwh - BL.kpi.avg_kwh, bl, false, " kWh", 2, w, h);
     ImGui::SameLine();
-    kpiCard(app, "k5", "Engine time", fms(R->total_ms), fint(ev_router_sssp_runs(R->run.router)) + " shortest-path trees", 0, false, false, "", 0, w, h);
+    kpiCard(app, "k5", "Engine time", fms(R->total_ms), fint(R->run.sssp) + " shortest-path trees", 0, false, false, "", 0, w, h);
 
     // baseline and export
     if (ImGui::Button(BL.set ? "Clear baseline" : "Pin as baseline")) { if (BL.set) E.clearBaseline(); else E.pinBaseline(); }
@@ -416,9 +433,9 @@ void drawPlanner(App &app) {
 
     if (app.trip >= 0) {
         const TripDetail &D = E.trip(app.trip);
-        const ev_trip &tr = sc.trips[app.trip];
+        const TripV &tr = sc.trips[app.trip];
         ImGui::PushFont(app.fonts.semi);
-        ImGui::Text("Trip %d: %s to %s", tr.id, sc.nodes[tr.src].name, sc.nodes[tr.dst].name);
+        ImGui::Text("Trip %d: %s to %s", tr.id, sc.nodes[tr.src].name.c_str(), sc.nodes[tr.dst].name.c_str());
         ImGui::PopFont();
         ImGui::PushFont(app.fonts.small);
         RichText(tripFacts(sc, D), app.fonts);
@@ -453,7 +470,7 @@ void drawLive(App &app) {
     if (app.T > sv->end_min) app.T = std::fmod(app.T, sv->end_min);
     LiveState st;
     sv->at(app.T, false, st);
-    const ev_scenario &sc = E.city().sc;
+    const Scene &sc = E.city().sc;
 
     float gap = ImGui::GetStyle().ItemSpacing.x;
     float side = 360 * S;
@@ -631,16 +648,16 @@ void drawStrategies(App &app) {
     ImGui::Dummy(ImVec2(0, 4 * S));
     if (ImGui::BeginTable("matrix", 4, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableSetupColumn("Site selection", ImGuiTableColumnFlags_WidthFixed, 200 * S);
-        for (int r = 0; r < EV_ROUTE_COUNT; r++) ImGui::TableSetupColumn(ROUTE_LABEL[r]);
+        for (int r = 0; r < ROUTE_COUNT; r++) ImGui::TableSetupColumn(ROUTE_LABEL[r]);
         ImGui::TableHeadersRow();
-        for (int k = 0; k < EV_SEL_COUNT; k++) {
+        for (int k = 0; k < SEL_COUNT; k++) {
             int sm = SEL_ORDER[k];
             ImGui::TableNextRow(0, 58 * S);
             ImGui::TableNextColumn();
             ImGui::PushFont(app.fonts.semi);
             ImGui::TextUnformatted(SELECT_LABEL[sm]);
             ImGui::PopFont();
-            for (int rm = 0; rm < EV_ROUTE_COUNT; rm++) {
+            for (int rm = 0; rm < ROUTE_COUNT; rm++) {
                 ImGui::TableNextColumn();
                 const CompareRow *r = find(sm, rm);
                 if (!r) {
@@ -685,8 +702,8 @@ void drawCapacity(App &app) {
     float S = app.scale;
     Run *R = E.run();
     if (!R) return;
-    const ev_scenario &sc = E.city().sc;
-    const ev_sessions &se = R->ses;
+    const Scene &sc = E.city().sc;
+    const SessV &se = R->ses;
     Heading("Ports and grid under load", app.fonts,
             "Charging sessions from the current plan, hour by hour against grid supply, and station by station against installed ports.");
     ImGui::Dummy(ImVec2(0, 4 * S));
@@ -742,7 +759,7 @@ void drawCapacity(App &app) {
     for (int q : order) mx = std::max(mx, se.st[q].sessions);
     if (order.empty()) ImGui::TextColored(P.ink3, "No charging sessions in this plan.");
     for (int q : order) {
-        const ev_station_load &L = se.st[q];
+        const LoadV &L = se.st[q];
         int ports = R->ports[(size_t)L.station];
         ImGui::Text("Station %d", sc.stations[L.station].id);
         ImGui::SameLine(110 * S);
@@ -763,7 +780,7 @@ void drawCapacity(App &app) {
 
     // max-flow checks
     ImGui::Dummy(ImVec2(0, 4 * S));
-    const ev_capacity &c = R->cap;
+    const CapV &c = R->cap;
     float cw = (ImGui::GetContentRegionAvail().x - gap * 3) / 4;
     auto card = [&](const char *id, const char *t, long v, const std::string &sub) {
         ImGui::BeginChild(id, ImVec2(cw, 110 * S), ImGuiChildFlags_Borders);
@@ -860,11 +877,11 @@ void drawModel(App &app) {
     std::vector<StructureRow> rows = modelStructures(E, *R, A);
 
     Heading("Records, trees and graphs", app.fonts,
-            "How the system represents road nodes, trips, batteries, stations and installation budgets: the typed C records each city loads into, "
+            "How the system represents road nodes, trips, batteries, stations and installation budgets: the typed C++ records each city loads into, "
             "and the arrays, trees and weighted or capacitated graphs the engine builds from them.");
     ImGui::Dummy(ImVec2(0, 6 * S));
     ImGui::PushFont(app.fonts.h2); ImGui::TextUnformatted("Typed records"); ImGui::PopFont();
-    smallText(app, "Each CSV file of a city loads into a typed C record. These are the real values for " + lowerLabel(city) + ".", &P.ink2);
+    smallText(app, "Each CSV file of a city loads into a typed C++ record (std::vector of structs). These are the real values for " + lowerLabel(city) + ".", &P.ink2);
     auto codeText = [&](const std::string &t) { ImGui::PushFont(app.fonts.mono); ImGui::TextColored(P.cobalt, "%s", t.c_str()); ImGui::PopFont(); };
     auto begin = [&](const char *id, std::initializer_list<const char *> heads) {
         if (!ImGui::BeginTable(id, (int)heads.size(), ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) return false;
@@ -872,7 +889,7 @@ void drawModel(App &app) {
         ImGui::TableHeadersRow();
         return true;
     };
-    if (begin("records", { "Represents", "C record", "Holds", "In this city", "Example", "Defined in" })) {
+    if (begin("records", { "Represents", "C++ type", "Holds", "In this city", "Example", "Defined in" })) {
         for (auto &x : recs) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn(); ImGui::PushFont(app.fonts.semi); ImGui::TextWrapped("%s", x.what.c_str()); ImGui::PopFont();
@@ -906,7 +923,7 @@ void drawBench(App &app) {
     const Palette &P = app.pal;
     float S = app.scale;
     Heading("How each algorithm scales", app.fonts,
-            "Measured run time against input size on logarithmic axes, from results/bench.csv. A line that bends upward faster is the one that will not survive a bigger city.");
+            "Measured run time against input size on logarithmic axes, from benchmarks/results.csv (median of repeated runs; one curve per algorithm on its typical input). A line that bends upward faster is the one that will not survive a bigger city.");
     const auto &rows = E.bench();
     if (rows.empty()) { ImGui::TextColored(P.red, "%s", E.bench_error.c_str()); return; }
     ImGui::Dummy(ImVec2(0, 4 * S));
@@ -918,7 +935,7 @@ void drawBench(App &app) {
     const Family &F = FAMILIES[(size_t)app.bench_family];
     std::map<std::string, std::vector<std::pair<double, double>>> series;
     for (auto &r : rows) {
-        if (std::find(F.fam.begin(), F.fam.end(), r.family) == F.fam.end() || benchSkip(r.dataset) || r.ms <= 0 || r.n <= 0) continue;
+        if (std::find(F.fam.begin(), F.fam.end(), r.family) == F.fam.end() || benchSkip(r) || r.ms <= 0 || r.n <= 0) continue;
         series[r.alg].push_back({ r.n, r.ms });
     }
     float gap = ImGui::GetStyle().ItemSpacing.x;
@@ -953,7 +970,7 @@ void drawBench(App &app) {
     }
     ImGui::SetCursorScreenPos(ImVec2(top.x + w + gap, top.y));
     ImGui::BeginChild("adv", ImVec2(side, 440 * S), ImGuiChildFlags_None);
-    ImGui::PushFont(app.fonts.semi); ImGui::TextUnformatted("Inputs built to break them"); ImGui::PopFont();
+    ImGui::PushFont(app.fonts.semi); ImGui::TextUnformatted("Worst cases and trade-offs"); ImGui::PopFont();
     for (auto &nt : adversarialNotes(rows)) {
         ImGui::Dummy(ImVec2(0, 4 * S));
         ImGui::PushFont(app.fonts.semi); ImGui::TextWrapped("%s", nt.first.c_str()); ImGui::PopFont();

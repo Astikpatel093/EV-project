@@ -64,7 +64,7 @@ static std::string findDir(const std::vector<std::string> &cands, const std::str
 static void usage() {
     std::printf(
         "EV33 Charge Atlas (desktop app)\n"
-        "  --data DIR --results DIR --assets DIR   where the cities, bench.csv and fonts are\n"
+        "  --data DIR --results DIR --assets DIR   where the cities, benchmark results.csv and fonts are\n"
         "  --page planner|live|strategies|capacity|algorithms|model|benchmarks\n"
         "  --city medium|shock|large|adversarial|small   --select dp|bnb-lc|bnb-fifo|bnb-lifo|greedy\n"
         "  --route dijkstra|floyd|bellman   --budget N   --edit l<id>,b<id>,p<id>=n\n"
@@ -112,9 +112,9 @@ int main(int argc, char **argv) {
     std::string exe = dirOf(argv[0]);
     std::vector<std::string> roots = { ".", "..", exe, exe + "/..", exe + "/../..", EV33_SOURCE_DIR };
     std::vector<std::string> dc, rc, ac;
-    for (auto &r : roots) { dc.push_back(r + "/data"); rc.push_back(r + "/results"); ac.push_back(r + "/assets/fonts"); }
+    for (auto &r : roots) { dc.push_back(r + "/data/scenarios"); rc.push_back(r + "/benchmarks"); ac.push_back(r + "/assets/fonts"); }
     if (data.empty()) data = findDir(dc, "medium/scenario.cfg");
-    if (results.empty()) results = findDir(rc, "bench.csv");
+    if (results.empty()) results = findDir(rc, "results.csv");
     if (assets.empty()) assets = findDir(ac, "IBMPlexSans-Regular.ttf");
     else assets += "/fonts";
 
@@ -127,10 +127,10 @@ int main(int argc, char **argv) {
     // command-line plan
     for (int c = 0; c < (int)app.eng.cities.size(); c++)
         if (app.eng.cities[(size_t)c].name == city) app.eng.selectCity(c);
-    if (!select.empty()) { int m = ev_sel_parse(select.c_str()); if (m >= 0) app.eng.plan.sel = m; }
-    if (!route.empty()) { int m = ev_route_parse(route.c_str()); if (m >= 0) app.eng.plan.route = m; }
+    if (!select.empty()) { int m = selParse(select.c_str()); if (m >= 0) app.eng.plan.sel = m; }
+    if (!route.empty()) { int m = routeParse(route.c_str()); if (m >= 0) app.eng.plan.route = m; }
     if (budget >= 0) app.eng.plan.budget = budget;
-    const ev_scenario &sc = app.eng.city().sc;
+    const Scene &sc = app.eng.city().sc;
     auto stationIndex = [&](int id) { for (int k = 0; k < sc.ns; k++) if (sc.stations[k].id == id) return k; return -1; };
     if (!edits.empty()) {
         size_t p = 0;
@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
             ImGui::AlignTextToFramePadding();
             ImGui::TextColored(P.ink2, "Charge Atlas");
             ImGui::SameLine();
-            ImGui::TextColored(P.ink3, "   C11 engine, computed live");
+            ImGui::TextColored(P.ink3, "   C++17 engine, computed live");
             float right = ImGui::GetWindowContentRegionMax().x;
             float bw1 = ImGui::CalcTextSize("Save screenshot").x + 20 * S, bw2 = ImGui::CalcTextSize("Light theme").x + 20 * S;
             ImGui::SameLine(right - bw1 - bw2 - ImGui::GetStyle().ItemSpacing.x);

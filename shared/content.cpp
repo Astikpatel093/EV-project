@@ -13,7 +13,7 @@
 
 namespace ev33 {
 
-const int SEL_ORDER[EV_SEL_COUNT] = { EV_SEL_DP, EV_SEL_BNB_LC, EV_SEL_BNB_FIFO, EV_SEL_BNB_LIFO, EV_SEL_GREEDY };
+const int SEL_ORDER[SEL_COUNT] = { SEL_DP, SEL_BNB_LC, SEL_BNB_FIFO, SEL_BNB_LIFO, SEL_GREEDY };
 
 std::string lowerLabel(const City &c) {
     std::string s = c.label;
@@ -77,7 +77,7 @@ std::vector<AlgoRow> algorithmRows(const City &city, const Run *R, const Analysi
                                             f2(n(G, "huffman_bits_per_event")) + " bits per event, " + f1(n(G, "huffman_ratio") * 100) + "% of the raw size", ok(G["huffman_roundtrip"].truthy()));
     if (G.has("mst_prim_km")) row("Lay the cable backbone between stations", "Prim, checked against Kruskal", f1(n(G, "mst_prim_km")) + " km of cable either way",
                                  ok(std::fabs(n(G, "mst_prim_km") - n(G, "mst_kruskal_km")) < 1e-6));
-    row("Route each leg by distance", "Dijkstra with a binary heap", R ? fint((double)ev_router_sssp_runs(R->run.router)) + " shortest-path trees for this plan" : "\xE2\x80\x93", CHECK_STRATEGIES);
+    row("Route each leg by distance", "Dijkstra with a binary heap", R ? fint((double)R->run.sssp) + " shortest-path trees for this plan" : "\xE2\x80\x93", CHECK_STRATEGIES);
     fam("Dynamic programming");
     if (Pd.has("knapsack_dp_value")) row("Choose sites within the budget", "0/1 knapsack, compared with greedy",
                                         "Exact value " + fint(n(Pd, "knapsack_dp_value")) + ", greedy " + fint(n(Pd, "knapsack_greedy_value")) + " (" +
@@ -136,6 +136,12 @@ std::vector<AlgoRow> algorithmRows(const City &city, const Run *R, const Analysi
 }
 
 /* ======================================================================== data model */
+static std::string fixed(double v, int decimals) {
+    char b[48];
+    std::snprintf(b, sizeof b, "%.*f", decimals, v);
+    return b;
+}
+
 static std::string rec(std::initializer_list<std::pair<const char *, std::string>> kv) {
     std::string s = "{ ";
     bool first = true;
@@ -145,110 +151,127 @@ static std::string rec(std::initializer_list<std::pair<const char *, std::string
 
 std::vector<RecordRow> modelRecords(const Engine &E, const Run &R, const TripDetail *D) {
     const City &city = E.cities[(size_t)E.plan.city];
-    const ev_scenario &sc = city.sc;
-    const ev_config &cfg = sc.cfg;
-    const ev_node &n0 = sc.nodes[0];
-    const ev_edge &e0 = sc.edges[0];
-    const ev_station &s0 = sc.stations[R.run.sel.n ? R.run.sel.idx[0] : 0];
-    const ev_trip &tr = sc.trips[D && D->valid ? D->trip : (R.samples.empty() ? 0 : R.samples[0].trip)];
+    const Scene &sc = city.sc;
+    const CfgV &cfg = sc.cfg;
+    const NodeV &n0 = sc.nodes[0];
+    const EdgeV &e0 = sc.edges[0];
+    const SiteV *ex = sc.nexist ? &sc.stations[0] : nullptr;
+    const SiteV &s0 = sc.stations[(size_t)(R.run.sel.n ? R.run.sel.idx[0] : sc.nexist < sc.ns ? sc.nexist : 0)];
+    const TripV &tr = sc.trips[(size_t)(D && D->valid ? D->trip : (R.samples.empty() ? 0 : R.samples[0].trip))];
+    const VehicleV &ve = sc.vehicles[(size_t)tr.vehicle];
     std::vector<RecordRow> v;
-    v.push_back({ "Road node (junction)", "ev_node", "position in km, elevation in m, trip demand", fint(sc.nn) + " nodes",
-                  rec({ { "name", std::string("\"") + n0.name + "\"" }, { "x", f2(n0.x) + " km" }, { "y", f2(n0.y) + " km" }, { "elev", fint(n0.elev) + " m" }, { "demand", fint(n0.demand) } }),
-                  "include/ev_model.h" });
-    v.push_back({ "Road segment", "ev_edge", "two junctions, length in km, capacity", fint(sc.ne) + " roads",
-                  rec({ { "u", sc.nodes[e0.u].name }, { "v", sc.nodes[e0.v].name }, { "km", f2(e0.km) }, { "capacity", fint(e0.capacity) } }), "include/ev_model.h" });
-    v.push_back({ "Charging station site", "ev_station", "junction, installation cost, ports, power per port, maintenance window, service value", fint(sc.ns) + " candidate sites",
-                  rec({ { "id", std::to_string(s0.id) }, { "node", sc.nodes[s0.node].name }, { "cost", rupees(s0.cost) }, { "ports", std::to_string(s0.ports) },
-                        { "power", fint(s0.power_kw) + " kW" }, { "value", fint(s0.value) } }), "include/ev_model.h" });
-    v.push_back({ "Trip", "ev_trip", "origin, destination, departure time, starting battery level", fint(sc.nt) + " trips a day",
-                  rec({ { "id", std::to_string(tr.id) }, { "src", sc.nodes[tr.src].name }, { "dst", sc.nodes[tr.dst].name }, { "depart", fclock(tr.depart_min) }, { "soc0", fint(tr.soc0 * 100) + "%" } }),
-                  "include/ev_model.h" });
-    v.push_back({ "Battery and budget", "ev_config", "pack size, consumption, reserve, charge target, regeneration, speed, grid supply, installation budget", "one per city",
-                  rec({ { "battery", f1(cfg.battery_kwh) + " kWh" }, { "use", f2(cfg.cons_kwh_km) + " kWh/km" }, { "reserve", fint(cfg.reserve_frac * 100) + "%" },
-                        { "target", fint(cfg.target_frac * 100) + "%" }, { "regen", fint(cfg.regen_eff * 100) + "%" }, { "budget", rupees(city.default_budget) } }),
-                  "include/ev_model.h" });
-    v.push_back({ "Planned trip", "ev_plan", "route, charging stops with arrival time and battery, totals", fint(R.run.kpi.feasible) + " feasible plans",
-                  D && D->valid ? rec({ { "km", f1(D->plan.km) }, { "kWh", f2(D->plan.kwh) }, { "stops", std::to_string(D->plan.n_stops) }, { "charge", f1(D->plan.charge_min) + " min" },
+    v.push_back({ "Road node (junction)", "ev::RoadNode", "id, latitude/longitude, elevation, type, name", fint(sc.nn) + " nodes",
+                  rec({ { "id", std::to_string(n0.id) }, { "name", "\"" + n0.name + "\"" }, { "lat", fixed(n0.lat, 4) }, { "lon", fixed(n0.lon, 4) }, { "elev", fint(n0.elev) + " m" } }),
+                  "include/ev/models/road_network.hpp" });
+    v.push_back({ "Road segment", "ev::RoadEdge", "two junctions, length in km, optional travel time and energy", fint(sc.ne) + " roads",
+                  rec({ { "id", std::to_string(e0.id) }, { "from", sc.nodes[(size_t)e0.u].name }, { "to", sc.nodes[(size_t)e0.v].name }, { "km", f2(e0.km) } }),
+                  "include/ev/models/road_network.hpp" });
+    v.push_back({ "Existing charging station", "ev::ChargingStation", "junction, power per port, ports, connector, status (available, offline, maintenance)",
+                  fint(sc.nexist) + " stations",
+                  ex ? rec({ { "id", std::to_string(ex->id) }, { "node", sc.nodes[(size_t)ex->node].name }, { "power", fint(ex->power_kw) + " kW" }, { "ports", std::to_string(ex->ports) },
+                             { "connector", ex->connector }, { "status", ex->status } })
+                     : std::string("\xE2\x80\x93 (none in this city)"),
+                  "include/ev/models/station.hpp" });
+    v.push_back({ "Candidate site", "ev::CandidateStation", "junction, installation cost in exact paise, benefit score, ports, power, connector", fint(sc.candidates()) + " sites",
+                  rec({ { "id", std::to_string(s0.id) }, { "node", sc.nodes[(size_t)s0.node].name }, { "cost", rupees(s0.cost) }, { "benefit", fint((double)s0.value) + (s0.estimated ? " (estimated)" : "") },
+                        { "ports", std::to_string(s0.ports) }, { "power", fint(s0.power_kw) + " kW" } }),
+                  "include/ev/models/station.hpp" });
+    v.push_back({ "Electric vehicle", "ev::ElectricVehicle", "battery capacity, consumption per km, reserve, connector, charging power", fint(sc.nveh) + " vehicle models",
+                  rec({ { "id", ve.id }, { "battery", f1(ve.battery_kwh) + " kWh" }, { "use", f2(ve.consumption) + " kWh/km" }, { "reserve", f1(ve.reserve_kwh) + " kWh" },
+                        { "connector", ve.connector } }),
+                  "include/ev/models/vehicle.hpp" });
+    v.push_back({ "Trip", "ev::TripRequest", "vehicle, origin, destination, departure time, starting charge", fint(sc.nt) + " trips a day",
+                  rec({ { "id", std::to_string(tr.id) }, { "vehicle", tr.vehicle_id }, { "from", sc.nodes[(size_t)tr.src].name }, { "to", sc.nodes[(size_t)tr.dst].name },
+                        { "depart", fclock(tr.depart_min) }, { "charge", f1(tr.start_kwh) + " kWh" } }),
+                  "include/ev/models/trip.hpp" });
+    v.push_back({ "Scenario settings", "ev::ScenarioConfig", "budget, charge target, regeneration, climb energy, speed, grid supply, data source", "one per city",
+                  rec({ { "budget", rupees(city.default_budget) }, { "target", fint(cfg.target_frac * 100) + "%" }, { "regen", fint(cfg.regen_eff * 100) + "%" },
+                        { "climb", fixed(cfg.elev_kwh_per_m, 4) + " kWh/m" }, { "source", cfg.source } }),
+                  "include/ev/models/scenario.hpp" });
+    v.push_back({ "Trip plan", "ev::TripPlan", "status and reason, route, charging stops with arrival time and battery, totals", fint(R.run.kpi.feasible) + " feasible plans",
+                  D && D->valid ? rec({ { "status", D->plan.status_name }, { "km", f1(D->plan.km) }, { "kWh", f2(D->plan.kwh) }, { "stops", std::to_string(D->plan.n_stops) },
                                         { "arrive", fclock(D->plan.arrive_min) } })
                                 : std::string("\xE2\x80\x93"),
-                  "include/ev_plan.h" });
+                  "include/ev/planner/trip_plan.hpp" });
     return v;
 }
 
 std::vector<StructureRow> modelStructures(const Engine &E, const Run &R, const Analysis &A) {
-    const ev_scenario &sc = E.cities[(size_t)E.plan.city].sc;
+    const Scene &sc = E.cities[(size_t)E.plan.city].sc;
     const Json &G = A.data["greedy"], &Pd = A.data["dynamic_programming"], &Bn = A.data["backtracking_bnb"]["bnb"]["LC"];
     int arcs = 2 * sc.ne;
+    int sites = (int)R.run.sites.size();
     std::vector<StructureRow> v;
-    v.push_back({ "Arrays of records", "every record above", fint(sc.nn + sc.ne + sc.ns + sc.nt) + " records in contiguous arrays",
-                  "All data lives in typed arrays inside ev_scenario; junction ids are kept in a merge-sorted index searched by binary search.", "include/ev_model.h" });
-    v.push_back({ "Weighted graph, distance", "nodes and roads", fint(sc.nn) + " vertices, " + fint(arcs) + " arcs (each road both ways)",
-                  "Adjacency in compressed (CSR) form, weight = km. Dijkstra and Floyd\xE2\x80\x93Warshall route on it.", "include/ev_graph.h" });
-    v.push_back({ "Weighted graph, energy", "nodes, roads, elevation, battery config", fint(sc.nn) + " vertices, " + fint(arcs) + " arcs",
-                  "Same arcs, weight = kWh. Downhill arcs are negative because of regenerative braking, so Bellman\xE2\x80\x93" "Ford routes on it.", "src/domain/ev_model.c" });
-    v.push_back({ "Charging-leg graph", "trip ends and built stations", "up to " + fint(R.run.sel.n + 2) + " vertices per trip",
-                  "Edges join points the battery can reach between reserve and target charge; the best plan is a shortest path here.", "src/domain/ev_plan.c" });
-    v.push_back({ "Capacitated graph", "trips, built stations, ports", fint(R.cap.trips_needing + R.run.sel.n + 2) + " vertices; " + fint((double)R.cap.slots_total) + " port slots of capacity",
-                  "Source to each trip (capacity 1), trip to each reachable station, station to sink (its port slots). Max flow: " + fint((double)R.cap.flow_dfs) +
-                      " trips, matched by Ford\xE2\x80\x93" "Fulkerson, Edmonds\xE2\x80\x93Karp and bipartite matching.", "include/ev_flow.h" });
-    v.push_back({ "Binary heap (tree)", "arc distances; simulation events", fint((double)ev_router_sssp_runs(R.run.router)) + " shortest-path trees for this plan",
-                  "Priority queue for Dijkstra; the day simulation keeps its arrive and finish events in the same kind of heap.", "src/lib/ev_graph.c" });
-    v.push_back({ "Branch-and-bound tree", "station costs and values, budget",
+    v.push_back({ "Vectors of records", "every record above", fint(sc.nn + sc.ne + sc.ns + sc.nt + sc.nveh) + " records in std::vector",
+                  "Each kind of record is a std::vector inside ev::Scenario; node ids map to positions through an unordered_map index.", "include/ev/models/scenario.hpp" });
+    v.push_back({ "Road graph (CSR arcs)", "nodes, roads, elevation", fint(sc.nn) + " vertices, " + fint(arcs) + " arcs (each road both ways)",
+                  "Arcs grouped by tail with travel time and reference energy. Downhill arcs can be negative (regenerative braking), so energy routing uses Bellman\xE2\x80\x93" "Ford.",
+                  "include/ev/planner/energy_model.hpp" });
+    v.push_back({ "Weighted graph", "the road arcs", fint(sc.nn) + " vertices, " + fint(arcs) + " arcs",
+                  "Adjacency lists with edge ids. Dijkstra and Floyd\xE2\x80\x93Warshall route by distance on it; Bellman\xE2\x80\x93" "Ford by energy.", "include/ev/graph/graph.hpp" });
+    v.push_back({ "Charging-leg graph", "trip ends and charger sites", "up to " + fint(sites + 2) + " vertices per trip",
+                  "Edges join points the vehicle can drive between above its reserve; the best plan is a shortest path here.", "include/ev/planner/leg_planner.hpp" });
+    v.push_back({ "Battery-state graph", "junctions \xC3\x97 battery levels", fint(sc.nn) + " junctions \xC3\x97 battery steps of " + f2(sc.cfg.battery_step_kwh) + " kWh",
+                  "The exact planner runs Dijkstra over (junction, battery level) states; used to verify the leg planner.", "include/ev/planner/exact_planner.hpp" });
+    v.push_back({ "Capacitated graph", "trips, charger sites, ports", fint(R.cap.trips_needing + sites + 2) + " vertices; " + fint((double)R.cap.slots_total) + " port slots of capacity",
+                  "Source to each trip (capacity 1), trip to each reachable site, site to sink (its port slots). Max flow: " + fint((double)R.cap.flow_dfs) +
+                      " trips, matched by Ford\xE2\x80\x93" "Fulkerson, Edmonds\xE2\x80\x93Karp and bipartite matching.", "include/ev/graph/max_flow.hpp" });
+    v.push_back({ "Binary heap (tree)", "arc distances; simulation events", fint((double)R.run.sssp) + " shortest-path trees for this plan",
+                  "Hand-written priority queue for Dijkstra and Prim; the day simulation keeps its arrive and finish events in the same heap.", "include/ev/algorithms/heap.hpp" });
+    v.push_back({ "Branch-and-bound tree", "candidate costs and benefits, budget",
                   Bn.has("generated") ? fint(Bn["generated"].num()) + " nodes generated, " + fint(Bn["expanded"].num()) + " expanded (least cost)" : "computed with the report",
-                  "Search tree over build or skip decisions, pruned by a fractional-knapsack bound.", "src/lib/ev_search.c" });
+                  "Search tree over build or skip decisions, pruned by a fractional-knapsack bound.", "include/ev/algorithms/branch_and_bound.hpp" });
     v.push_back({ "Huffman tree", "station event log",
                   G.has("huffman_symbols") ? fint(G["huffman_symbols"].num()) + " symbols, " + f2(G["huffman_bits_per_event"].num()) + " bits per event" : "computed with the report",
-                  "Compresses the event log; decoding it back is checked.", "src/lib/ev_greedy.c" });
-    v.push_back({ "Optimal binary search tree", "station ids weighted by value",
+                  "Compresses the event log; decoding it back is checked.", "include/ev/algorithms/greedy.hpp" });
+    v.push_back({ "Optimal binary search tree", "station ids weighted by use",
                   Pd.has("obst_expected_probes") ? f2(Pd["obst_expected_probes"].num()) + " expected probes (balanced tree " + f2(Pd["balanced_expected_probes"].num()) + ")" : "computed with the report",
-                  "Lookup index for station ids, cheaper for the busiest sites.", "src/lib/ev_dp.c" });
-    v.push_back({ "Union\xE2\x80\x93" "find forest", "built stations, distances between them",
+                  "Lookup index for station ids, cheaper for the busiest sites.", "include/ev/algorithms/dynamic_programming.hpp" });
+    v.push_back({ "Union\xE2\x80\x93" "find forest", "charger sites, distances between them",
                   G.has("mst_kruskal_km") ? "spanning tree of " + f1(G["mst_kruskal_km"].num()) + " km" : "computed with the report",
-                  "Kruskal joins stations into a cable backbone; Prim checks the same length.", "src/lib/ev_graph.c" });
+                  "Kruskal joins sites into a cable backbone; Prim checks the same length.", "include/ev/graph/spanning_tree.hpp" });
     return v;
 }
 
 /* ======================================================================== trips */
-std::string tripFacts(const ev_scenario &sc, const TripDetail &D) {
-    const ev_trip &tr = sc.trips[D.trip];
-    std::string facts = "Departs **" + fclock(tr.depart_min) + "** at **" + fint(tr.soc0 * 100) + "%** charge. ";
+std::string tripFacts(const Scene &sc, const TripDetail &D) {
+    const TripV &tr = sc.trips[(size_t)D.trip];
+    std::string facts = "Vehicle **" + tr.vehicle_id + "** (" + f1(tr.battery_kwh) + " kWh) departs **" + fclock(tr.depart_min) + "** at **" + fint(tr.soc0 * 100) + "%** charge. ";
     if (D.plan.feasible) {
         facts += "**" + f1(D.plan.km) + " km**, " + f1(D.plan.kwh) + " kWh. ";
         facts += D.plan.n_stops ? "**" + std::to_string(D.plan.n_stops) + (D.plan.n_stops > 1 ? " stops**, " : " stop**, ") + fint(D.plan.charge_min) + " min charging. "
                                 : std::string("**No charging needed.** ");
         facts += "Arrives **" + fclock(D.plan.arrive_min) + "**.";
-    } else facts += "**Not possible** with the stations in this plan.";
+    } else facts += "**Not possible:** " + D.plan.status_name + ".";
     return facts;
 }
 
-std::vector<std::pair<std::string, std::string>> tripItinerary(const ev_scenario &sc, const TripDetail &D) {
+std::vector<std::pair<std::string, std::string>> tripItinerary(const Scene &sc, const TripDetail &D) {
     std::vector<std::pair<std::string, std::string>> v;
-    const ev_trip &tr = sc.trips[D.trip];
-    double B = sc.cfg.battery_kwh;
-    const char *src = sc.nodes[tr.src].name, *dst = sc.nodes[tr.dst].name;
-    v.push_back({ fclock(tr.depart_min), "Leave **" + std::string(src) + "** with " + f1(tr.soc0 * B) + " kWh" });
+    const TripV &tr = sc.trips[(size_t)D.trip];
+    const std::string &src = sc.nodes[(size_t)tr.src].name, &dst = sc.nodes[(size_t)tr.dst].name;
+    v.push_back({ fclock(tr.depart_min), "Leave **" + src + "** in vehicle " + tr.vehicle_id + " with " + f1(tr.start_kwh) + " of " + f1(tr.battery_kwh) + " kWh" });
     for (int q = 0; q < D.plan.n_stops; q++) {
-        const ev_station &st = sc.stations[D.plan.stop[q]];
-        v.push_back({ fclock(D.plan.stop_arrive_min[q]), "Stop " + std::to_string(q + 1) + " at **station " + std::to_string(st.id) + "** (" + sc.nodes[st.node].name +
-                                                               "), arriving with " + f1(D.plan.stop_arrive_kwh[q]) + " kWh. Charge " + fint(D.plan.stop_charge_min[q]) +
-                                                               " min at " + fint(st.power_kw) + " kW to " + f1(sc.cfg.target_frac * B) + " kWh." });
+        const SiteV &st = sc.stations[(size_t)D.plan.stop[(size_t)q]];
+        v.push_back({ fclock(D.plan.stop_arrive_min[(size_t)q]), "Stop " + std::to_string(q + 1) + " at **station " + std::to_string(st.id) + "** (" + sc.nodes[(size_t)st.node].name +
+                                                                     "), arriving with " + f1(D.plan.stop_arrive_kwh[(size_t)q]) + " kWh. Charge " + fint(D.plan.stop_charge_min[(size_t)q]) +
+                                                                     " min at " + fint(st.power_kw) + " kW to " + f1(D.plan.stop_depart_kwh[(size_t)q]) + " kWh." });
     }
-    if (D.plan.feasible) v.push_back({ fclock(D.plan.arrive_min), "Arrive at **" + std::string(dst) + "**, " + f1(D.plan.km) + " km after departure" });
-    else v.push_back({ "", "No chain of built stations is within battery range. The direct route is " + f1(D.plan.direct_km) +
-                               " km; usable energy at departure is " + f1(tr.soc0 * B - sc.cfg.reserve_frac * B) + " kWh." });
+    if (D.plan.feasible) v.push_back({ fclock(D.plan.arrive_min), "Arrive at **" + dst + "** with " + f1(D.plan.arrive_kwh) + " kWh, " + f1(D.plan.km) + " km after departure" });
+    else v.push_back({ "", "**" + D.plan.status_name + ".** " + D.plan.explanation });
     return v;
 }
 
 /* ======================================================================== live day */
 std::string liveSummary(Engine &E, const SimView &cur, const SimView *other, int policy) {
-    const ev_sim &sm = cur.sim;
+    const SimV &sm = cur.sim;
     std::string sum = sm.delayed
         ? "Over the day **" + fint(sm.delayed) + " of " + fint(sm.nv) + " drivers** queue for a port at least once, **" + fdur(sm.total_wait) +
               "** of waiting in all. The longest single wait is **" + fdur(sm.max_wait) + "**. Simulated in " + fms(sm.ms) + " from " + fint((double)sm.events) + " events."
         : "With the ports in this plan nobody has to queue: all " + fint(sm.nv) + " drivers charge on arrival. Simulated in " + fms(sm.ms) + " from " +
               fint((double)sm.events) + " events.";
     if (other) {
-        const ev_sim &w = policy == 0 ? sm : other->sim, &d = policy == 0 ? other->sim : sm;
+        const SimV &w = policy == 0 ? sm : other->sim, &d = policy == 0 ? other->sim : sm;
         if (w.total_wait > 0)
             sum += d.diverted ? " Letting drivers switch station after 20 minutes moves " + fint(d.diverted) + " of them and changes total waiting from " +
                                     fdur(w.total_wait) + " to " + fdur(d.total_wait) + "; the longest wait goes from " + fdur(w.max_wait) + " to " + fdur(d.max_wait) + "."
@@ -269,8 +292,8 @@ const CompareRow *findCompare(const Compare &C, int sm, int rm) {
 
 std::string strategiesFinding(const Compare &C) {
     std::string fnd;
-    const CompareRow *dpD = findCompare(C, EV_SEL_DP, EV_ROUTE_DIJKSTRA), *grD = findCompare(C, EV_SEL_GREEDY, EV_ROUTE_DIJKSTRA);
-    const CompareRow *flD = findCompare(C, EV_SEL_DP, EV_ROUTE_FLOYD), *beD = findCompare(C, EV_SEL_DP, EV_ROUTE_BELLMAN);
+    const CompareRow *dpD = findCompare(C, SEL_DP, ROUTE_DIJKSTRA), *grD = findCompare(C, SEL_GREEDY, ROUTE_DIJKSTRA);
+    const CompareRow *flD = findCompare(C, SEL_DP, ROUTE_FLOYD), *beD = findCompare(C, SEL_DP, ROUTE_BELLMAN);
     if (dpD && grD) {
         int diff = dpD->feasible - grD->feasible;
         fnd += diff > 0 ? "Exact selection completes **" + fint(diff) + " more trips** than greedy (" + fint(dpD->feasible) + " against " + fint(grD->feasible) + "). "
@@ -287,14 +310,14 @@ std::string strategiesFinding(const Compare &C) {
 }
 
 /* ======================================================================== capacity */
-std::string surgeNote(const ev_sessions &se) {
+std::string surgeNote(const SessV &se) {
     return se.surge_lo >= 0
         ? "From **" + fclock(se.surge_lo * 60.0) + " to " + fclock((se.surge_hi + 1) * 60.0) + "** the plan draws **" + fint(se.surge_excess_kwh) +
               " kWh** more than the grid supplies. Staggering sessions or adding storage at the busiest stations closes the gap."
         : std::string("Grid supply covers every hour of the plan.");
 }
 
-std::string flowNote(const ev_scenario &sc, const ev_capacity &c) {
+std::string flowNote(const Scene &sc, const CapV &c) {
     std::string t = fint((double)c.flow_dfs) + " of the " + fint(c.trips_needing) + " trips that need a charge fit into the " + fint((double)c.slots_total) +
                     " port slots available in a two-hour window.";
     if (c.bottleneck_station >= 0) t += " The tightest station is **" + std::to_string(sc.stations[c.bottleneck_station].id) + "**.";
@@ -303,64 +326,83 @@ std::string flowNote(const ev_scenario &sc, const ev_capacity &c) {
 
 /* ======================================================================== benchmarks */
 const std::vector<Family> FAMILIES = {
-    { "Sorting", { "sort" } }, { "Searching", { "search" } }, { "Maximum subarray", { "maxsubarray" } }, { "Matrix multiply", { "matmul" } },
-    { "All-pairs paths", { "apsp" } }, { "Spanning trees", { "mst" } }, { "Interval scheduling", { "intervals" } }, { "Knapsack", { "knapsack" } },
-    { "Travelling salesman", { "tsp" } }, { "Max-flow", { "flow" } }, { "String matching", { "strings" } }, { "LCS and optimal BST", { "lcs", "obst" } },
+    { "Sorting", { "sorting" } }, { "Searching", { "searching" } }, { "Shortest paths", { "shortest_path" } }, { "Spanning trees", { "spanning_tree" } },
+    { "Dense graphs", { "dense_graph" } }, { "Station placement", { "placement" } }, { "Session scheduling", { "scheduling" } }, { "Matrix multiply", { "matrix" } },
 };
 
 std::string algName(const std::string &a) {
     static const std::map<std::string, std::string> M = {
-        { "merge", "Merge sort" }, { "quick-median3", "Quick sort, median-of-3" }, { "quick-first", "Quick sort, first pivot" },
-        { "quick-random", "Quick sort, random pivot" }, { "libc-qsort", "C library qsort" }, { "binary-iterative", "Binary search, iterative" },
-        { "binary-recursive", "Binary search, recursive" }, { "linear-scan", "Linear scan" }, { "divide-conquer", "Divide and conquer" },
-        { "kadane", "Kadane" }, { "brute-n2", "Brute force, n\xC2\xB2" }, { "classical", "Classical" }, { "strassen-cut64", "Strassen, cutoff 64" },
-        { "strassen-cut16", "Strassen, cutoff 16" }, { "dijkstra-x-n", "Dijkstra from every source" }, { "floyd-warshall", "Floyd\xE2\x80\x93Warshall" },
-        { "prim-dense", "Prim, dense" }, { "kruskal", "Kruskal" }, { "activity-selection", "Activity selection" }, { "interval-partition", "Interval partitioning" },
-        { "dp-table", "Dynamic programming" }, { "bnb-FIFO", "Branch and bound, FIFO" }, { "bnb-LIFO", "Branch and bound, LIFO" },
-        { "bnb-LC", "Branch and bound, least cost" }, { "greedy-ratio", "Greedy ratio" }, { "held-karp", "Held\xE2\x80\x93Karp" }, { "brute-force", "Brute force" },
-        { "bipartite-kuhn", "Bipartite matching" }, { "ford-fulkerson-dfs", "Ford\xE2\x80\x93" "Fulkerson, DFS" }, { "edmonds-karp-bfs", "Edmonds\xE2\x80\x93Karp, BFS" },
-        { "naive", "Naive" }, { "rabin-karp", "Rabin\xE2\x80\x93Karp" }, { "finite-automaton", "Finite automaton" }, { "kmp", "KMP" },
+        { "merge_sort", "Merge sort" }, { "quick_sort_median3", "Quick sort, median-of-3" }, { "quick_sort_first", "Quick sort, first pivot" },
+        { "quick_sort_random", "Quick sort, random pivot" }, { "binary_search_iterative", "Binary search, iterative" },
+        { "binary_search_recursive", "Binary search, recursive" }, { "dijkstra", "Dijkstra" }, { "bellman_ford", "Bellman\xE2\x80\x93" "Ford" },
+        { "floyd_warshall", "Floyd\xE2\x80\x93Warshall" }, { "dijkstra_all_sources", "Dijkstra from every source" },
+        { "prim", "Prim (binary heap)" }, { "prim_dense", "Prim (matrix, O(V\xC2\xB2))" }, { "kruskal", "Kruskal" }, { "knapsack_dp", "Knapsack DP (exact)" },
+        { "knapsack_bnb_lc", "Branch and bound, least cost (exact)" }, { "greedy_ratio", "Greedy ratio (heuristic)" },
+        { "activity_selection", "Activity selection" }, { "interval_partitioning", "Interval partitioning" }, { "matmul_classical", "Classical" },
+        { "matmul_strassen_cutoff64", "Strassen, cutoff 64" }, { "exact_state_space", "Exact planner (battery states)" },
+        { "leg_planner_dijkstra", "Leg planner (Dijkstra legs)" },
     };
     auto it = M.find(a);
     return it == M.end() ? a : it->second;
 }
 
-bool benchSkip(const std::string &ds) {
-    return ds == "adversarial" || (ds.size() > 4 && ds.compare(ds.size() - 4, 4, "-neg") == 0) || ds == "weak-corr";
+// One curve per algorithm: keep the typical input of each family and leave the special cases
+// (sorted input, equal weights, disconnected graphs, other budgets) to the notes beside the chart.
+bool benchSkip(const BenchRow &r) {
+    if (r.family == "sorting") return r.variant != "random";
+    if (r.family == "shortest_path" || r.family == "spanning_tree") return r.variant != "connected-varied";
+    if (r.family == "placement") return r.variant != "budget 25% of total cost";
+    return r.family == "trip_planning";
 }
 
 std::vector<std::pair<std::string, std::string>> adversarialNotes(const std::vector<BenchRow> &rows) {
     std::vector<std::pair<std::string, std::string>> v;
-    auto find = [&](const char *fam, const char *alg, const std::string &ds) -> const BenchRow * {
-        for (auto &r : rows) if (r.family == fam && r.alg == alg && r.dataset == ds) return &r;
+    auto find = [&](const char *alg, const char *variant, double n) -> const BenchRow * {
+        const BenchRow *best = nullptr;
+        for (auto &r : rows)
+            if (r.alg == alg && r.variant == variant && (n <= 0 ? (!best || r.n > best->n) : r.n == n)) best = &r;
+        return best;
+    };
+    auto findDs = [&](const char *alg, const std::string &ds) -> const BenchRow * {
+        for (auto &r : rows) if (r.alg == alg && r.dataset == ds) return &r;
         return nullptr;
     };
-    const BenchRow *qf = find("sort", "quick-first", "adversarial"), *qm = find("sort", "quick-median3", "adversarial");
-    if (qf && qm) v.push_back({ "Quick sort on a list that is already sorted", "With the first element as pivot it makes " + fsci(qf->quality) + " comparisons in " + fms(qf->ms) +
-                                                                                   ", the n\xC2\xB2/2 worst case. A median-of-three pivot needs " + fms(qm->ms) + "." });
-    const BenchRow *sn = find("strings", "naive", "adversarial"), *sk = find("strings", "kmp", "adversarial");
-    if (sn && sk) v.push_back({ "A fault burst in the event log", "Searching a million F events for F\xE2\x80\xA6" "FR costs the naive matcher " + fsci(sn->quality) + " comparisons (" +
-                                                                       fms(sn->ms) + "). KMP needs " + fsci(sk->quality) + " (" + fms(sk->ms) + ")." });
-    const BenchRow *bf = find("sssp", "bellman-ford", "adversarial"), *dj = find("sssp", "dijkstra", "adversarial");
-    if (bf && dj) v.push_back({ "Roads listed in the worst possible order", "Bellman\xE2\x80\x93" "Ford is forced through all " + fint(bf->n) + " passes (" + fms(bf->ms) +
-                                                                                 "); Dijkstra answers in " + fms(dj->ms) + "." });
-    const BenchRow *neg = nullptr;
-    for (auto &r : rows) if (r.alg == "dijkstra(on-negative)" && r.note.find("WRONG") != std::string::npos) { neg = &r; break; }
-    if (neg) {
-        const BenchRow *nb = find("sssp", "bellman-ford", neg->dataset);
-        if (nb) v.push_back({ "Regenerative braking downhill", "Negative energy arcs make Dijkstra report " + f2(neg->quality) + " kWh where the true minimum is " + f2(nb->quality) +
-                                                                    " kWh. Bellman\xE2\x80\x93" "Ford gets it right." });
+    const BenchRow *qf = find("quick_sort_first", "sorted", 0);
+    if (qf) {
+        const BenchRow *qm = find("quick_sort_median3", "sorted", qf->n), *ms = find("merge_sort", "sorted", qf->n);
+        if (qm) v.push_back({ "Quick sort on a list that is already sorted", "With the first element as pivot, " + fint(qf->n) + " sorted keys take " + fms(qf->ms) +
+                                                                               " (the n\xC2\xB2 worst case). A median-of-three pivot needs " + fms(qm->ms) +
+                                                                               (ms ? ", merge sort " + fms(ms->ms) : std::string()) + "." });
     }
-    auto gen = [](const std::string &note, const char *key) {
-        size_t p = note.find(std::string(key) + "=");
-        return p == std::string::npos ? std::string("?") : fint(std::atof(note.c_str() + p + std::strlen(key) + 1));
-    };
-    const BenchRow *kf = find("knapsack", "bnb-FIFO", "adversarial"), *kl = find("knapsack", "bnb-LC", "adversarial");
-    if (kf && kl) v.push_back({ "Site costs that track their value", "On strongly correlated knapsacks FIFO branch and bound generates " + gen(kf->note, "generated") +
-                                                                          " search nodes and holds " + gen(kf->note, "frontier") + " at once. Least cost generates " + gen(kl->note, "generated") + "." });
-    const BenchRow *ff = find("flow", "ford-fulkerson-dfs", "adversarial"), *ek = find("flow", "edmonds-karp-bfs", "adversarial");
-    if (ff && ek) v.push_back({ "Large port capacities", "Depth-first Ford\xE2\x80\x93" "Fulkerson takes " + fms(ff->ms) + "; Edmonds\xE2\x80\x93Karp, whose bound ignores capacities, takes " +
-                                                              fms(ek->ms) + "." });
+    const BenchRow *fw = find("floyd_warshall", "connected-varied", 0);
+    if (fw) {
+        const BenchRow *dj = find("dijkstra", "connected-varied", fw->n), *bf = find("bellman_ford", "connected-varied", fw->n);
+        if (dj) v.push_back({ "All pairs or one source", "Floyd\xE2\x80\x93Warshall fills the whole " + fint(fw->n) + "\xC3\x97" + fint(fw->n) + " table in " + fms(fw->ms) +
+                                                             " and " + fbytes((double)fw->peak) + "; one Dijkstra tree takes " + fms(dj->ms) +
+                                                             (bf ? " and Bellman\xE2\x80\x93" "Ford " + fms(bf->ms) : std::string()) + ". Above 1,600 junctions the app does not offer Floyd\xE2\x80\x93Warshall." });
+    }
+    const BenchRow *fd = find("floyd_warshall", "dense", 0);
+    if (fd) {
+        const BenchRow *da = find("dijkstra_all_sources", "dense", fd->n);
+        if (da) v.push_back({ "Dense graphs turn the tables", "With half of all junction pairs joined (" + fint(fd->n) + " junctions), Floyd\xE2\x80\x93Warshall needs " + fms(fd->ms) +
+                                                                 " for every distance, while Dijkstra from every source needs " + fms(da->ms) + ": the simple triple loop wins when E is close to V\xC2\xB2." });
+    }
+    const BenchRow *pd = find("prim", "disconnected", 0);
+    if (pd) v.push_back({ "Four separate road networks", "On " + fint(pd->n) + " junctions in four unconnected parts, Prim and Kruskal return a " + pd->note.substr(0, pd->note.find(',')) +
+                                                             " instead of failing; Dijkstra reports the other parts as unreachable." });
+    const BenchRow *gr = find("greedy_ratio", "budget 25% of total cost", 0);
+    if (gr) {
+        const BenchRow *dp = find("knapsack_dp", "budget 25% of total cost", gr->n), *lc = find("knapsack_bnb_lc", "budget 25% of total cost", gr->n);
+        if (dp && lc) v.push_back({ "Choosing among " + fint(gr->n) + " candidate sites", "Greedy takes " + fms(gr->ms) + " and reaches " + gr->note.substr(gr->note.find('=') == std::string::npos ? 0 : gr->note.find('=') + 2) +
+                                                                                              ". The exact methods agree on the optimum: dynamic programming in " + fms(dp->ms) + ", least-cost branch and bound in " +
+                                                                                              fms(lc->ms) + " (" + lc->note + ")." });
+    }
+    const BenchRow *ip = find("interval_partitioning", "one day", 0);
+    if (ip) v.push_back({ "A million sessions in one day", "Interval partitioning sizes the bays in " + fms(ip->ms) + ": " + ip->note + "." });
+    const BenchRow *ex = findDs("exact_state_space", "scenario-large"), *lg = findDs("leg_planner_dijkstra", "scenario-large");
+    if (ex && lg) v.push_back({ "Exact planner against leg planner", "On 200 trips of the large city the exact battery-state planner takes " + fms(ex->ms) + " (" + ex->note.substr(0, ex->note.find(" (")) +
+                                                                          "); the leg planner used by the app takes " + fms(lg->ms) + " (" + lg->note.substr(0, lg->note.find(" (")) +
+                                                                          "). Both only report plans they can verify." });
     return v;
 }
 
