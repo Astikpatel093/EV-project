@@ -53,7 +53,7 @@ target_compile_options(ev33_gen PRIVATE ${EV33_WARN})
 # ------------------------------------------------------------------ front-end shared layer
 # Shared layer of the website and the desktop app: engine adapter, number formatting, report text.
 if(EV33_BUILD_WEB OR EV33_GUI)
-  add_library(ev33_shared STATIC shared/engine.cpp shared/fmt.cpp shared/content.cpp)
+  add_library(ev33_shared STATIC shared/engine.cpp shared/fmt.cpp shared/content.cpp shared/catalog.cpp)
   target_include_directories(ev33_shared PUBLIC shared)
   target_link_libraries(ev33_shared PUBLIC ev33_core)
   target_compile_options(ev33_shared PRIVATE ${EV33_WARN})
@@ -109,7 +109,7 @@ if(EV33_GUI)
   target_compile_definitions(imgui PUBLIC GLFW_INCLUDE_NONE)
   target_link_libraries(imgui PUBLIC glfw ${CMAKE_DL_LIBS})
   find_package(Threads REQUIRED)
-  add_executable(ev33_gui gui/main.cpp gui/ui.cpp gui/charts.cpp gui/network.cpp gui/catalog.cpp
+  add_executable(ev33_gui gui/main.cpp gui/ui.cpp gui/charts.cpp gui/network.cpp
     gui/view_dashboard.cpp gui/view_trip.cpp gui/view_placement.cpp gui/view_network.cpp
     gui/view_algorithms.cpp gui/view_benchmarks.cpp gui/view_data.cpp gui/view_settings.cpp)
   target_link_libraries(ev33_gui PRIVATE ev33_shared imgui Threads::Threads)

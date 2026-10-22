@@ -12,6 +12,7 @@
 #include <thread>
 #include <vector>
 
+#include "catalog.h"
 #include "engine.h"
 #include "fmt.h"
 #include "imgui.h"
@@ -100,12 +101,7 @@ int DrawNetwork(App &app, NetView &v, const char *id, ImVec2 size, NetMode mode,
                 const std::vector<int> *stops, const LiveState *live, const SimView *sim);
 void NetworkLegend(App &app, NetMode mode, const NetLayers &layers);
 
-/* ---------------------------------------------------------------- algorithm catalogue (catalog.cpp) */
-struct AlgoInfo {
-    const char *name, *family, *purpose, *input, *output, *time, *space, *role, *where, *check;
-    bool core;                               // used by the core EV workflow (else: analysis / teaching)
-};
-const std::vector<AlgoInfo> &algorithmCatalog();
+/* algorithm catalogue: shared/catalog.h */
 
 /* ---------------------------------------------------------------- app state */
 enum View { VIEW_DASHBOARD = 0, VIEW_TRIP, VIEW_PLACEMENT, VIEW_NETWORK, VIEW_ALGORITHMS, VIEW_BENCHMARKS, VIEW_DATA, VIEW_SETTINGS, VIEW_COUNT };

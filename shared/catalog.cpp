@@ -1,10 +1,10 @@
-// catalog.cpp - the algorithms shown in the Algorithms view: what each one does, its input and
+// catalog.cpp - the algorithms shown in the Algorithms view of the desktop app and the website: what each one does, its input and
 // output, its cost, and where EV33 uses it. Every entry is implemented in include/ev or src/ and
 // covered by the tests named in docs/algorithms.md.
 //
 // `core` = called by the planning workflow (load -> place -> route -> plan -> capacity -> sessions
 // -> simulation). The others run on scenario data in the analysis report, for teaching.
-#include "ui.h"
+#include "catalog.h"
 
 namespace ev33 {
 
