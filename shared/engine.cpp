@@ -1,5 +1,6 @@
 // engine.cpp - see engine.h.
 #include "engine.h"
+#include "fmt.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,6 +14,8 @@
 #include "ev/io/json_writer.hpp"
 #include "ev/io/scenario_io.hpp"
 #include "ev/placement/placement.hpp"
+#include "ev/planner/exact_planner.hpp"
+#include "ev/planner/leg_planner.hpp"
 #include "ev/planner/router.hpp"
 
 namespace ev33 {
@@ -256,7 +259,7 @@ bool Engine::load(int i) {
     City &c = cities[(size_t)i];
     if (c.loaded) return true;
     if (c.failed) return false;
-    std::string dir = data_dir + "/" + c.name;
+    std::string dir = c.dir.empty() ? data_dir + "/" + c.name : c.dir;
     try {
         c.scenario = std::make_unique<ev::Scenario>(ev::load_scenario(dir));
         c.ctx = std::make_unique<ev::ScenarioContext>(*c.scenario);
@@ -619,6 +622,147 @@ const TripDetail &Engine::trip(int t) {
     return trip_;
 }
 
+/* ======================================================================== typed-in trips */
+const char *const PLANNER_LABEL[PLANNER_COUNT] = { "Exact: battery-state search", "Fast: charging legs, Dijkstra", "Fast: charging legs, Floyd\u2013Warshall",
+                                                   "Fast: charging legs, Bellman\u2013Ford" };
+const char *const PLANNER_HINT[PLANNER_COUNT] = {
+    "Dijkstra over (junction, battery level) states. Finds the shortest route that keeps the battery above the reserve, "
+    "with the fewest stops among equals. Slower, but it does not miss routes (battery measured in steps of the scenario's battery_step_kwh).",
+    "Dijkstra between the trip ends and the charger sites, each leg along the km-shortest road path (or the energy-minimal one if that "
+    "cannot be driven). Fast; may miss a trip the exact search finds.",
+    "Same charging-leg planner with legs from a Floyd\u2013Warshall all-pairs table (offered up to 1,600 junctions).",
+    "Same charging-leg planner with energy-minimal legs from Bellman\u2013Ford (handles the negative energy of braking downhill)." };
+
+// Battery level after every road of a route (charging stops lift it to their departure charge).
+static void replayRoute(const ev::EnergyModel &model, const std::vector<int> &arcs, const ev::TripPlan *plan, int src, double start_kwh,
+                        const ev::ElectricVehicle &v, const Scene &sc, std::vector<int> &path, std::vector<std::array<double, 3>> &profile) {
+    path.assign(1, src);
+    profile.clear();
+    double km = 0, e = start_kwh;
+    profile.push_back({ 0, e, sc.nodes[(size_t)src].elev });
+    size_t next_stop = 0;
+    for (size_t i = 0; i < arcs.size(); i++) {
+        const ev::RoadArc &a = model.arcs()[(size_t)arcs[i]];
+        km += a.km;
+        e = std::min(v.battery_kwh, e - model.energy(arcs[i], v));
+        path.push_back(a.to);
+        profile.push_back({ km, e, sc.nodes[(size_t)a.to].elev });
+        if (plan && next_stop < plan->stops.size() && plan->stops[next_stop].route_pos == i + 1) {
+            e = plan->stops[next_stop].depart_kwh;
+            profile.push_back({ km, e, sc.nodes[(size_t)a.to].elev });
+            next_stop++;
+        }
+    }
+}
+
+TripAnswer Engine::planTrip(const TripQuery &q) {
+    TripAnswer a;
+    a.done = true;
+    a.query = q;
+    a.city = plan.city;
+    Run *R = run();
+    if (!R) { a.error = "The current plan could not be computed: " + status; return a; }
+    City &c = city();
+    const Scene &sc = c.sc;
+    if (q.src < 0 || q.src >= sc.nn) { a.error = "Choose a source junction that exists in this network."; return a; }
+    if (q.dst < 0 || q.dst >= sc.nn) { a.error = "Choose a destination junction that exists in this network."; return a; }
+    try {
+        ev::validate(q.vehicle);
+    } catch (const std::exception &e) {
+        a.error = std::string("Vehicle: ") + e.what() + ".";
+        return a;
+    }
+    if (!(q.start_kwh >= 0) || q.start_kwh > q.vehicle.battery_kwh + 1e-9) { a.error = "The initial charge must be between 0 and the battery capacity."; return a; }
+    if (q.method == PLANNER_LEG_FLOYD && sc.nn > FLOYD_MAX_NODES) {
+        a.error = "Floyd\u2013Warshall is not offered above " + fint(FLOYD_MAX_NODES) + " junctions (its table needs V\u00B2 memory and V\u00B3 time).";
+        return a;
+    }
+    ev::PlanningRun &pr = *R->run.pr;
+    const ev::EnergyModel &model = c.ctx->model;
+    double t0 = nowMs();
+    try {
+        if (q.method == PLANNER_EXACT) {
+            ev::ExactPlanner ex(*c.scenario, model, pr.sites);
+            a.plan = ex.plan(q.src, q.dst, q.vehicle, q.start_kwh, q.depart_min);
+            a.states = ex.last_stats().states_settled;
+        } else {
+            ev::RoutingMethod m = q.method == PLANNER_LEG_FLOYD ? ev::RoutingMethod::FloydWarshall
+                                : q.method == PLANNER_LEG_BELLMAN ? ev::RoutingMethod::BellmanFord : ev::RoutingMethod::Dijkstra;
+            ev::Router router(model, m);
+            ev::LegPlanner lp(*c.scenario, router, pr.sites);
+            a.plan = lp.plan(q.src, q.dst, q.vehicle, q.start_kwh, q.depart_min);
+        }
+    } catch (const std::exception &e) {
+        a.error = std::string("The planner rejected the request: ") + e.what();
+        return a;
+    }
+    a.ms = nowMs() - t0;
+    for (const ev::ChargingStop &st : a.plan.stops) a.stop_station.push_back(stationOfSite(sc, pr.sites[(size_t)st.site]));
+    std::vector<int> arcs;
+    if (a.plan.feasible()) arcs = a.plan.route_arcs;
+    else pr.router().leg(q.src, q.dst, arcs);   // show the plain road route the battery cannot cover
+    replayRoute(model, arcs, a.plan.feasible() ? &a.plan : nullptr, q.src, q.start_kwh, q.vehicle, sc, a.path, a.profile);
+    return a;
+}
+
+ev::PlacementResult Engine::placementWith(int sel) {
+    City &c = city();
+    ev::RunOptions o = options(plan);
+    return ev::place_stations(*c.scenario, c.ctx->benefits.benefit, toPlacement(sel), o.constraints, o.budget);
+}
+
+/* ======================================================================== data management */
+DatasetCheck checkDataset(const std::string &dir) {
+    DatasetCheck d;
+    d.dir = dir;
+    static const char *FILES[] = { "scenario.cfg", "nodes.csv", "roads.csv", "stations.csv", "candidates.csv", "vehicles.csv", "trips.csv", "sessions.csv", "events.txt" };
+    for (const char *f : FILES) {
+        FILE *h = std::fopen((dir + "/" + f).c_str(), "rb");
+        d.files.push_back({ f, h != nullptr });
+        if (h) std::fclose(h);
+    }
+    try {
+        ev::Scenario s = ev::load_scenario(dir);
+        d.ok = true;
+        d.name = s.config.name;
+        d.source = ev::to_string(s.config.source);
+        d.source_note = s.config.source_note;
+        d.nodes = s.network.node_count();
+        d.roads = s.network.edge_count();
+        d.stations = (int)s.stations.size();
+        for (const ev::ChargingStation &st : s.stations) d.offline += st.status != ev::StationStatus::Available;
+        d.candidates = (int)s.candidates.size();
+        d.vehicles = (int)s.vehicles.size();
+        d.trips = (int)s.trips.size();
+        d.sessions = (int)s.sessions.size();
+        d.components = s.network.components();
+        d.budget_lakh = toLakh(s.config.budget);
+    } catch (const std::exception &e) {
+        d.ok = false;
+        d.error = e.what();
+    }
+    return d;
+}
+
+int Engine::addCity(const std::string &dir, const std::string &label, std::string &error) {
+    for (size_t i = 0; i < cities.size(); i++)
+        if (cities[i].dir == dir) return (int)i;   // already loaded
+    City c;
+    c.name = label;
+    c.label = label;
+    c.dir = dir;
+    c.blurb = "Loaded from " + dir;
+    cities.push_back(std::move(c));
+    int i = (int)cities.size() - 1;
+    if (!load(i)) {
+        error = cities[(size_t)i].error;
+        cities.pop_back();
+        return -1;
+    }
+    cities[(size_t)i].default_budget = (int)std::lround(cities[(size_t)i].sc.cfg.budget);
+    return i;
+}
+
 /* ======================================================================== edits */
 int Engine::basePorts(int s) const { return cities[(size_t)plan.city].sc.stations[(size_t)s].ports; }
 int Engine::effectivePorts(int s) const {
@@ -750,7 +894,9 @@ void Engine::computeAnalysis(int c) {
 const std::vector<BenchRow> &Engine::bench() {
     if (bench_loaded_) return bench_;
     bench_loaded_ = true;
-    bench_path = results_dir + "/results.csv";
+    bench_.clear();
+    bench_error.clear();
+    if (bench_path.empty()) bench_path = results_dir + "/results.csv";
     std::optional<std::string> text = ev::read_text_file(bench_path);
     if (!text) { bench_error = "No benchmark results at " + bench_path + ". Run ev33_bench to produce them."; return bench_; }
     std::istringstream in(*text);
@@ -773,12 +919,19 @@ const std::vector<BenchRow> &Engine::bench() {
         r.min_ms = std::atof(get("min_ms").c_str());
         r.max_ms = std::atof(get("max_ms").c_str());
         r.peak = std::atol(get("peak_bytes").c_str());
+        r.vertices = std::atof(get("vertices").c_str());
+        r.edges = std::atof(get("edges").c_str());
         r.reps = std::atoi(get("repetitions").c_str());
         r.pass = r.validation == "pass";
         if (!r.alg.empty()) bench_.push_back(r);
     }
     if (bench_.empty()) bench_error = "The benchmark file " + bench_path + " has no rows.";
     return bench_;
+}
+
+void Engine::reloadBench(const std::string &path) {
+    if (!path.empty()) bench_path = path;
+    bench_loaded_ = false;
 }
 
 /* ======================================================================== export */

@@ -1,12 +1,17 @@
-// main.cpp - EV33 Charge Atlas, the desktop app (C++17, Dear ImGui + ImPlot on GLFW/OpenGL).
+// main.cpp - EV33 Charge Atlas, the native desktop application (C++17, Dear ImGui on GLFW + OpenGL 3).
 //
-//   ev33_gui [--data DIR] [--results DIR] [--assets DIR] [--page NAME] [--city NAME]
-//            [--select S] [--route R] [--budget N] [--edit l<id>,b<id>,p<id>=n]
-//            [--station ID] [--trip ID] [--traffic] [--time HH:MM] [--play] [--policy wait|divert]
+//   ev33_gui [--data DIR] [--results DIR] [--assets DIR] [--load DIR]
+//            [--view dashboard|trip|placement|network|algorithms|benchmarks|data|settings]
+//            [--city NAME] [--select M] [--route R] [--budget LAKH]
+//            [--trip ID] [--method exact|dijkstra|floyd|bellman]
+//            [--day] [--time HH:MM] [--play] [--policy wait|divert]
 //            [--dark|--light] [--size WxH] [--scale F] [--shot FILE.png [--frames N]]
 //
-// --shot renders N frames (default 30), saves the window as a PNG and exits: useful for reports.
+// --shot renders N frames (default 30), saves the window as a PNG and exits (for reports).
+// The window is one Dear ImGui window: a sidebar with the dataset and the navigation, and the
+// workspace on the right where the selected view draws itself (view_*.cpp).
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -17,7 +22,6 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "implot.h"
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
 #endif
@@ -29,6 +33,7 @@
 #define EV33_SOURCE_DIR "."
 #endif
 
+// The few OpenGL 1.x functions the app calls itself (everything else is in the ImGui backend).
 #if defined(_WIN32) && !defined(_WIN64)
 #define EVGL_API __stdcall
 #else
@@ -39,6 +44,7 @@ typedef void(EVGL_API *PFN_PixelStorei)(unsigned, int);
 typedef void(EVGL_API *PFN_Viewport)(int, int, int, int);
 typedef void(EVGL_API *PFN_ClearColor)(float, float, float, float);
 typedef void(EVGL_API *PFN_Clear)(unsigned);
+typedef const unsigned char *(EVGL_API *PFN_GetString)(unsigned);
 
 using namespace ev33;
 
@@ -55,7 +61,6 @@ static std::string dirOf(const char *argv0) {
     return k == std::string::npos ? "." : s.substr(0, k);
 }
 
-// first folder in the list that contains `probe`
 static std::string findDir(const std::vector<std::string> &cands, const std::string &probe) {
     for (auto &c : cands) if (exists(c + "/" + probe)) return c;
     return cands.empty() ? "." : cands.front();
@@ -63,21 +68,102 @@ static std::string findDir(const std::vector<std::string> &cands, const std::str
 
 static void usage() {
     std::printf(
-        "EV33 Charge Atlas (desktop app)\n"
-        "  --data DIR --results DIR --assets DIR   where the cities, benchmark results.csv and fonts are\n"
-        "  --page planner|live|strategies|capacity|algorithms|model|benchmarks\n"
+        "EV33 Charge Atlas - native desktop app\n"
+        "  --data DIR --results DIR --assets DIR   folders of the cities, benchmark results.csv and fonts\n"
+        "  --load DIR                              also load this dataset folder and open it\n"
+        "  --view dashboard|trip|placement|network|algorithms|benchmarks|data|settings\n"
         "  --city medium|shock|large|adversarial|small   --select dp|bnb-lc|bnb-fifo|bnb-lifo|greedy\n"
-        "  --route dijkstra|floyd|bellman   --budget N   --edit l<id>,b<id>,p<id>=n\n"
-        "  --station ID   --trip ID   --traffic   --time HH:MM   --play   --policy wait|divert\n"
+        "  --route dijkstra|floyd|bellman   --budget LAKH\n"
+        "  --trip ID [--method exact|dijkstra|floyd|bellman]   plan this dataset trip in Trip Planner\n"
+        "  --day [--time HH:MM] [--play] [--policy wait|divert]  Road Network in day-simulation mode\n"
         "  --dark | --light   --size WxH   --scale F   --shot FILE.png [--frames N]\n");
 }
 
 static void glfwError(int code, const char *msg) { std::fprintf(stderr, "GLFW error %d: %s\n", code, msg); }
 
+// ---------------------------------------------------------------- sidebar
+static void drawSidebar(App &app) {
+    Engine &E = app.eng;
+    const Palette &P = app.pal;
+    float S = app.scale;
+    ImDrawList *dl = ImGui::GetWindowDrawList();
+    // brand: a charge-point glyph (two strokes and a dot), the name
+    {
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        float u = S;
+        dl->AddLine(ImVec2(p.x + 4 * u, p.y + 22 * u), ImVec2(p.x + 13 * u, p.y + 5 * u), col(P.primary), 2.4f * u);
+        dl->AddLine(ImVec2(p.x + 13 * u, p.y + 5 * u), ImVec2(p.x + 22 * u, p.y + 22 * u), col(P.ink2), 2.4f * u);
+        dl->AddCircleFilled(ImVec2(p.x + 13 * u, p.y + 15 * u), 3.2f * u, col(P.secondary));
+        ImGui::Dummy(ImVec2(26 * S, 26 * S));
+        ImGui::SameLine(0, 8 * S);
+        ImGui::BeginGroup();
+        ImGui::PushFont(app.fonts.h2);
+        ImGui::TextUnformatted("EV33");
+        ImGui::PopFont();
+        ImGui::PushFont(app.fonts.small);
+        ImGui::TextColored(P.ink2, "Charge Atlas");
+        ImGui::PopFont();
+        ImGui::EndGroup();
+    }
+    ImGui::Dummy(ImVec2(0, 8 * S));
+    ImGui::PushFont(app.fonts.small);
+    ImGui::TextColored(P.ink2, "Dataset");
+    ImGui::PopFont();
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::BeginCombo("##city", E.city().label.c_str())) {
+        for (int i = 0; i < (int)E.cities.size(); i++) {
+            City &c = E.cities[(size_t)i];
+            std::string l = c.label + (c.loaded ? "  (" + fint(c.sc.nn) + " junctions, " + fint(c.sc.nt) + " trips)" : "");
+            if (ImGui::Selectable(l.c_str(), i == E.plan.city) && i != E.plan.city) app.pending_city = i;
+            if (ImGui::IsItemHovered() && !c.blurb.empty()) ImGui::SetTooltip("%s", c.blurb.c_str());
+        }
+        ImGui::EndCombo();
+    }
+    SyntheticTag(app, E.city().sc);
+    ImGui::Dummy(ImVec2(0, 10 * S));
+
+    // navigation
+    float w = ImGui::GetContentRegionAvail().x;
+    for (int v = 0; v < VIEW_COUNT; v++) {
+        bool on = app.view == v;
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        float h = ImGui::GetFrameHeight() + 4 * S;
+        ImGui::PushID(v);
+        if (ImGui::InvisibleButton("nav", ImVec2(w, h))) app.view = v;
+        bool hov = ImGui::IsItemHovered();
+        ImGui::PopID();
+        if (on || hov) dl->AddRectFilled(p, ImVec2(p.x + w, p.y + h), col(on ? P.primarySoft : P.panel2), 3 * S);
+        if (on) dl->AddRectFilled(p, ImVec2(p.x + 3 * S, p.y + h), col(P.primary));
+        ImFont *f = on ? app.fonts.semi : app.fonts.body;
+        dl->AddText(f, f->FontSize, ImVec2(p.x + 12 * S, p.y + (h - f->FontSize) / 2), col(on ? P.ink : P.ink2), VIEW_NAMES[v]);
+        char key[8];
+        std::snprintf(key, sizeof key, "%d", v + 1);
+        ImFont *m = app.fonts.mono;
+        dl->AddText(m, m->FontSize, ImVec2(p.x + w - 16 * S, p.y + (h - m->FontSize) / 2), col(P.ink3), key);
+    }
+    ImGui::PushFont(app.fonts.small);
+    ImGui::TextColored(P.ink3, "Ctrl + 1..8 switches views.");
+    ImGui::PopFont();
+
+    // plan summary at the bottom
+    float bottom = 92 * S;
+    if (ImGui::GetContentRegionAvail().y > bottom) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetContentRegionAvail().y - bottom);
+    ImGui::Separator();
+    ImGui::PushFont(app.fonts.small);
+    ImGui::TextColored(P.ink2, "Current plan");
+    ImGui::PushTextWrapPos(0);
+    ImGui::TextColored(P.ink3, "%s", E.planLabel(E.plan).c_str());
+    ImGui::PopTextWrapPos();
+    ImGui::PopFont();
+    static const char *const T[] = { "Light", "Charcoal" };
+    int th = app.dark ? 1 : 0;
+    if (Segmented("theme", T, 2, &th, P)) app.dark = th == 1;
+}
+
 int main(int argc, char **argv) {
-    std::string data, results, assets, page, city, select, route, edits, shot, policy, timeStr;
-    int budget = -1, station = -1, trip = -1, frames = 30, W = 1440, H = 900;
-    bool dark = false, traffic = false, play = false;
+    std::string data, results, assets, view, city, select, route, shot, policy, timeStr, load, method;
+    int budget = -1, trip = -1, frames = 30, W = 1440, H = 900;
+    bool dark = false, play = false, day = false;
     float scaleOverride = 0;
     for (int i = 1; i < argc; i++) {
         std::string a = argv[i];
@@ -86,23 +172,23 @@ int main(int argc, char **argv) {
         if (a == "--data") next(data);
         else if (a == "--results") next(results);
         else if (a == "--assets") next(assets);
-        else if (a == "--page") next(page);
+        else if (a == "--load") next(load);
+        else if (a == "--view" || a == "--page") next(view);
         else if (a == "--city") next(city);
         else if (a == "--select") next(select);
         else if (a == "--route") next(route);
-        else if (a == "--edit") next(edits);
+        else if (a == "--method") next(method);
         else if (a == "--shot") next(shot);
         else if (a == "--policy") next(policy);
         else if (a == "--time") next(timeStr);
         else if (a == "--budget") { next(tmp); budget = std::atoi(tmp.c_str()); }
-        else if (a == "--station") { next(tmp); station = std::atoi(tmp.c_str()); }
         else if (a == "--trip") { next(tmp); trip = std::atoi(tmp.c_str()); }
         else if (a == "--frames") { next(tmp); frames = std::max(2, std::atoi(tmp.c_str())); }
         else if (a == "--size") { next(tmp); std::sscanf(tmp.c_str(), "%dx%d", &W, &H); }
         else if (a == "--scale") { next(tmp); scaleOverride = (float)std::atof(tmp.c_str()); }
         else if (a == "--dark") dark = true;
         else if (a == "--light") dark = false;
-        else if (a == "--traffic") traffic = true;
+        else if (a == "--day") day = true;
         else if (a == "--play") play = true;
         else if (a == "--help" || a == "-h") { usage(); return 0; }
         else { std::fprintf(stderr, "Unknown option %s\n", a.c_str()); usage(); return 2; }
@@ -119,47 +205,55 @@ int main(int argc, char **argv) {
     else assets += "/fonts";
 
     App app;
+    app.assets_dir = assets;
+    app.exe_dir = exe;
     if (!app.eng.init(data, results)) {
         std::fprintf(stderr, "Could not load the cities from %s: %s\nRun from the project folder, or pass --data DIR.\n",
                      data.c_str(), app.eng.cities.empty() ? "" : app.eng.cities[0].error.c_str());
         return 1;
     }
-    // command-line plan
+    // command-line state
     for (int c = 0; c < (int)app.eng.cities.size(); c++)
         if (app.eng.cities[(size_t)c].name == city) app.eng.selectCity(c);
-    if (!select.empty()) { int m = selParse(select.c_str()); if (m >= 0) app.eng.plan.sel = m; }
-    if (!route.empty()) { int m = routeParse(route.c_str()); if (m >= 0) app.eng.plan.route = m; }
+    if (!load.empty()) {
+        std::string err;
+        int k = app.eng.addCity(load, load + " (loaded)", err);
+        if (k >= 0) app.eng.selectCity(k);
+        else std::fprintf(stderr, "Could not load %s: %s\n", load.c_str(), err.c_str());
+    }
+    if (!select.empty()) { int m = selParse(select); if (m >= 0) app.eng.plan.sel = m; }
+    if (!route.empty()) { int m = routeParse(route); if (m >= 0) app.eng.plan.route = m; }
     if (budget >= 0) app.eng.plan.budget = budget;
-    const Scene &sc = app.eng.city().sc;
-    auto stationIndex = [&](int id) { for (int k = 0; k < sc.ns; k++) if (sc.stations[k].id == id) return k; return -1; };
-    if (!edits.empty()) {
-        size_t p = 0;
-        while (p < edits.size()) {
-            size_t q = edits.find(',', p);
-            std::string tok = edits.substr(p, q == std::string::npos ? std::string::npos : q - p);
-            p = q == std::string::npos ? edits.size() : q + 1;
-            if (tok.size() < 2) continue;
-            int id = std::atoi(tok.c_str() + 1), k = stationIndex(id);
-            if (k < 0) continue;
-            if (tok[0] == 'l') app.eng.setBuild(k, 1);
-            else if (tok[0] == 'b') app.eng.setBuild(k, 2);
-            else if (tok[0] == 'p') { size_t e = tok.find('='); if (e != std::string::npos) app.eng.setPorts(k, std::atoi(tok.c_str() + e + 1)); }
-        }
+    for (int v = 0; v < VIEW_COUNT; v++) if (view == VIEW_KEYS[v]) app.view = v;
+    if (!method.empty()) {
+        static const char *const M[] = { "exact", "dijkstra", "floyd", "bellman" };
+        for (int m = 0; m < PLANNER_COUNT; m++) if (method == M[m]) app.default_method = m;
     }
-    if (station >= 0) app.panel = stationIndex(station);
-    if (trip >= 0) for (int k = 0; k < sc.nt; k++) if (sc.trips[k].id == trip) app.trip = k;
-    app.traffic = traffic;
+    if (trip >= 0) {
+        const Scene &sc = app.eng.city().sc;
+        for (int k = 0; k < sc.nt; k++)
+            if (sc.trips[(size_t)k].id == trip) {
+                FillTripForm(app, k);
+                app.form.method = app.default_method;
+                TripQuery q;
+                q.src = sc.trips[(size_t)k].src;
+                q.dst = sc.trips[(size_t)k].dst;
+                const VehicleV &v = sc.vehicles[(size_t)app.form.vehicle];
+                q.vehicle.id = v.id; q.vehicle.model = v.model; q.vehicle.connector = v.connector; q.vehicle.max_charge_kw = v.max_charge_kw;
+                q.vehicle.battery_kwh = v.battery_kwh; q.vehicle.consumption_kwh_per_km = v.consumption; q.vehicle.reserve_kwh = v.reserve_kwh;
+                q.vehicle.charge_kwh = sc.trips[(size_t)k].start_kwh;
+                q.start_kwh = sc.trips[(size_t)k].start_kwh;
+                q.depart_min = sc.trips[(size_t)k].depart_min;
+                q.method = app.form.method;
+                app.answer = app.eng.planTrip(q);
+            }
+    }
+    if (day) app.net_mode = NET_DAY;
     app.policy = policy == "divert" ? 1 : 0;
-    if (!timeStr.empty()) { int hh = 0, mm = 0; std::sscanf(timeStr.c_str(), "%d:%d", &hh, &mm); app.T = hh * 60 + mm; app.autoplayed = true; }
-    if (play) app.playing = true, app.autoplayed = true;
-    for (int k = 0; k < PAGE_COUNT; k++) {
-        std::string n = PAGE_NAMES[k];
-        for (auto &ch : n) ch = (char)std::tolower((unsigned char)ch);
-        if (n == page || (page == "live" && k == PAGE_LIVE) || (page == "model" && k == PAGE_MODEL) || (page == "benchmarks" && k == PAGE_BENCH))
-            app.force_page = k;
-    }
+    if (!timeStr.empty()) { int hh = 0, mm = 0; std::sscanf(timeStr.c_str(), "%d:%d", &hh, &mm); app.T = hh * 60 + mm; }
+    app.playing = play;
 
-    // window
+    // window: GLFW + OpenGL 3
     glfwSetErrorCallback(glfwError);
     if (!glfwInit()) { std::fprintf(stderr, "Could not start GLFW (no display?).\n"); return 1; }
 #ifdef __APPLE__
@@ -183,14 +277,18 @@ int main(int argc, char **argv) {
     auto glViewport_ = (PFN_Viewport)glfwGetProcAddress("glViewport");
     auto glClearColor_ = (PFN_ClearColor)glfwGetProcAddress("glClearColor");
     auto glClear_ = (PFN_Clear)glfwGetProcAddress("glClear");
+    auto glGetString_ = (PFN_GetString)glfwGetProcAddress("glGetString");
+    if (glGetString_) { const unsigned char *v = glGetString_(0x1F02); if (v) app.gl_version = (const char *)v; }
+    app.glfw_version = glfwGetVersionString();
 
     float xs = 1, ys = 1;
     glfwGetWindowContentScale(win, &xs, &ys);
-    app.scale = scaleOverride > 0 ? scaleOverride : std::max(1.0f, xs);
+    float monitorScale = std::max(1.0f, xs);
+    app.scale_user = scaleOverride;
+    app.scale = scaleOverride > 0 ? scaleOverride : monitorScale;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImPlot::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -205,106 +303,108 @@ int main(int argc, char **argv) {
     int frame = 0;
     bool wasDark = dark;
     while (!glfwWindowShouldClose(win)) {
-        bool animating = (app.page == PAGE_LIVE && app.playing) || ImGui::GetTime() - app.trip_anim < 2.6 || !shot.empty() ||
+        bool animating = (app.view == VIEW_NETWORK && app.net_mode == NET_DAY && app.playing) || app.job.running || !shot.empty() ||
                          ImGui::GetTime() < app.toast_until;
-        if (animating) glfwPollEvents(); else glfwWaitEventsTimeout(0.5);
+        if (animating) glfwPollEvents(); else glfwWaitEventsTimeout(0.25);
 
-        // apply plan changes requested during the last frame
+        // changes requested during the last frame
         if (app.pending_city >= 0) {
             app.eng.selectCity(app.pending_city);
             app.pending_city = -1;
             app.has_next = false;
-            app.panel = app.trip = -1;
-            app.plannerMap.reset();
-            app.liveMap.reset();
+            app.station_panel = -1;
+            app.net.reset();
+            app.tripNet.reset();
         }
         if (app.has_next) { app.eng.plan = app.next; app.has_next = false; }
         if (app.dark != wasDark) { app.pal = makePalette(app.dark); applyTheme(app.pal, app.dark, app.scale); wasDark = app.dark; }
+        if (app.rebuild_fonts) {
+            app.rebuild_fonts = false;
+            app.scale = app.scale_user > 0 ? app.scale_user : monitorScale;
+            loadFonts(app.fonts, assets, app.scale);
+            ImGui_ImplOpenGL3_DestroyFontsTexture();
+            ImGui_ImplOpenGL3_CreateFontsTexture();
+            applyTheme(app.pal, app.dark, app.scale);
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         float S = app.scale;
         const Palette &P = app.pal;
+        if (io.KeyCtrl)
+            for (int v = 0; v < VIEW_COUNT; v++)
+                if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_1 + v), false)) app.view = v;
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("EV33", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
                                           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-        // brand
+        ImGui::PopStyleVar();
+        float statusH = ImGui::GetTextLineHeight() + 10 * S;
+        float sideW = 232 * S;
+        // sidebar
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, P.panel);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14 * S, 14 * S));
+        ImGui::BeginChild("sidebar", ImVec2(sideW, -statusH), ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoScrollbar);
+        drawSidebar(app);
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
         {
+            ImVec2 a = ImGui::GetItemRectMin(), b = ImGui::GetItemRectMax();
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(b.x, a.y), ImVec2(b.x, b.y), col(P.line));
+        }
+        ImGui::SameLine(0, 0);
+        // workspace
+        bool fixed = app.view == VIEW_NETWORK || app.view == VIEW_TRIP;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20 * S, 16 * S));
+        ImGui::BeginChild("workspace", ImVec2(0, -statusH), ImGuiChildFlags_AlwaysUseWindowPadding,
+                          fixed ? ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse : 0);
+        ImGui::PopStyleVar();
+        switch (app.view) {
+        case VIEW_DASHBOARD: DrawDashboard(app); break;
+        case VIEW_TRIP: DrawTripPlanner(app); break;
+        case VIEW_PLACEMENT: DrawPlacement(app); break;
+        case VIEW_NETWORK: DrawRoadNetwork(app); break;
+        case VIEW_ALGORITHMS: DrawAlgorithms(app); break;
+        case VIEW_BENCHMARKS: DrawBenchmarks(app); break;
+        case VIEW_DATA: DrawDataManagement(app); break;
+        default: DrawSettings(app); break;
+        }
+        ImGui::EndChild();
+        // status bar
+        {
+            ImVec2 a = ImGui::GetCursorScreenPos();
             ImDrawList *dl = ImGui::GetWindowDrawList();
-            ImVec2 p = ImGui::GetCursorScreenPos();
-            float u = 30 * S / 32;
-            ImVec2 pts[4] = { ImVec2(p.x + 4 * u, p.y + 22 * u), ImVec2(p.x + 10 * u, p.y + 12 * u), ImVec2(p.x + 16 * u, p.y + 10 * u), ImVec2(p.x + 28 * u, p.y + 4 * u) };
-            dl->AddBezierCubic(pts[0], pts[1], pts[2], pts[3], col(P.ink), 2.2f * u);
-            dl->AddCircleFilled(ImVec2(p.x + 16 * u, p.y + 10 * u), 4.2f * u, col(P.cobalt));
-            ImGui::Dummy(ImVec2(32 * S, 30 * S));
-            ImGui::SameLine();
-            ImGui::PushFont(app.fonts.h2);
-            ImGui::AlignTextToFramePadding();
-            ImGui::TextUnformatted("EV33");
-            ImGui::PopFont();
-            ImGui::SameLine();
-            ImGui::AlignTextToFramePadding();
-            ImGui::TextColored(P.ink2, "Charge Atlas");
-            ImGui::SameLine();
-            ImGui::TextColored(P.ink3, "   C++17 engine, computed live");
-            float right = ImGui::GetWindowContentRegionMax().x;
-            float bw1 = ImGui::CalcTextSize("Save screenshot").x + 20 * S, bw2 = ImGui::CalcTextSize("Light theme").x + 20 * S;
-            ImGui::SameLine(right - bw1 - bw2 - ImGui::GetStyle().ItemSpacing.x);
-            if (ImGui::Button(app.dark ? "Light theme" : "Dark theme", ImVec2(bw2, 0))) app.dark = !app.dark;
-            ImGui::SameLine();
-            if (ImGui::Button("Save screenshot", ImVec2(bw1, 0))) {
+            dl->AddRectFilled(a, ImVec2(a.x + io.DisplaySize.x, a.y + statusH), col(P.panel2));
+            dl->AddLine(a, ImVec2(a.x + io.DisplaySize.x, a.y), col(P.line));
+            ImGui::SetCursorScreenPos(ImVec2(a.x + 14 * S, a.y + 5 * S));
+            ImGui::PushFont(app.fonts.small);
+            if (ImGui::GetTime() < app.toast_until) ImGui::TextColored(app.toast_error ? P.error : P.primary, "%s", app.toast.c_str());
+            else {
+                const std::string &st = app.eng.status;
+                bool err = !st.empty() && st[0] == '!';
+                std::string line = st.empty() ? app.eng.city().label + ": " + app.eng.planLabel(app.eng.plan) : err ? st.substr(1) : st;
+                ImGui::TextColored(err ? P.error : P.ink2, "%s", line.c_str());
+            }
+            ImGui::SameLine(io.DisplaySize.x - 210 * S);
+            if (ImGui::SmallButton("Save screenshot")) {
                 char buf[64];
                 std::time_t t = std::time(nullptr);
                 std::strftime(buf, sizeof buf, "ev33_screenshot_%Y%m%d_%H%M%S.png", std::localtime(&t));
                 app.shot_path = buf;
             }
+            ImGui::PopFont();
         }
-        // pages
-        if (ImGui::BeginTabBar("pages", ImGuiTabBarFlags_NoTooltip)) {
-            for (int k = 0; k < PAGE_COUNT; k++) {
-                ImGuiTabItemFlags fl = app.force_page == k ? ImGuiTabItemFlags_SetSelected : 0;
-                if (ImGui::BeginTabItem(PAGE_NAMES[k], nullptr, fl)) { app.page = k; ImGui::EndTabItem(); }
-            }
-            ImGui::EndTabBar();
-        }
-        app.force_page = -1;
-
-        float statusH = ImGui::GetTextLineHeightWithSpacing() + 6 * S;
-        float sideW = 300 * S;
-        ImGui::BeginChild("sidebar", ImVec2(sideW, -statusH), ImGuiChildFlags_None);
-        drawSidebar(app);
-        ImGui::EndChild();
-        ImGui::SameLine(0, 18 * S);
-        bool fixed = app.page == PAGE_PLANNER || app.page == PAGE_LIVE;
-        ImGui::BeginChild("content", ImVec2(0, -statusH), ImGuiChildFlags_None, fixed ? ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse : 0);
-        switch (app.page) {
-        case PAGE_PLANNER: drawPlanner(app); break;
-        case PAGE_LIVE: drawLive(app); break;
-        case PAGE_STRATEGIES: drawStrategies(app); break;
-        case PAGE_CAPACITY: drawCapacity(app); break;
-        case PAGE_ALGORITHMS: drawAlgorithms(app); break;
-        case PAGE_MODEL: drawModel(app); break;
-        default: drawBench(app); break;
-        }
-        ImGui::EndChild();
-        // status line
-        ImGui::PushFont(app.fonts.small);
-        if (ImGui::GetTime() < app.toast_until) ImGui::TextColored(P.green, "%s", app.toast.c_str());
-        else {
-            std::string plan = "Plan: " + app.eng.city().label + ", " + app.eng.planLabel(app.eng.plan) + ".  Data: " + app.eng.data_dir;
-            ImGui::TextColored(P.ink3, "%s", plan.c_str());
-        }
-        ImGui::PopFont();
         ImGui::End();
 
         ImGui::Render();
         int fw, fh;
         glfwGetFramebufferSize(win, &fw, &fh);
         glViewport_(0, 0, fw, fh);
-        glClearColor_(P.paper.x, P.paper.y, P.paper.z, 1);
+        glClearColor_(P.bg.x, P.bg.y, P.bg.z, 1);
         glClear_(0x4000);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -316,16 +416,16 @@ int main(int argc, char **argv) {
             glPixelStorei_(0x0D05, 1);
             glReadPixels_(0, 0, fw, fh, 0x1908, 0x1401, px.data());
             bool ok = writePng(app.shot_path, fw, fh, px);
-            app.notify(ok ? "Saved the window to " + app.shot_path : "Could not write " + app.shot_path, ImGui::GetTime());
+            app.notify(ok ? "Saved the window to " + app.shot_path : "Could not write " + app.shot_path, ImGui::GetTime(), !ok);
             if (autoShot) { std::printf("%s %s\n", ok ? "saved" : "failed", app.shot_path.c_str()); glfwSetWindowShouldClose(win, 1); }
             app.shot_path.clear();
         }
         glfwSwapBuffers(win);
     }
 
+    if (app.job.worker.joinable()) app.job.worker.join();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImPlot::DestroyContext();
     ImGui::DestroyContext();
     glfwDestroyWindow(win);
     glfwTerminate();

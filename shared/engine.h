@@ -112,6 +112,7 @@ struct Terrain {
 
 struct City {
     std::string name, label, blurb;
+    std::string dir;                 // dataset folder; empty = data_dir/name
     bool loaded = false, failed = false;
     std::string error;
     std::unique_ptr<ev::Scenario> scenario;
@@ -261,6 +262,41 @@ struct TripDetail {
     std::vector<std::array<double, 3>> profile;   // km, kWh after the move, elevation m
 };
 
+/* ---------------------------------------------------------------- trip planner (a trip the user types in) */
+enum { PLANNER_EXACT = 0, PLANNER_LEG_DIJKSTRA, PLANNER_LEG_FLOYD, PLANNER_LEG_BELLMAN, PLANNER_COUNT };
+extern const char *const PLANNER_LABEL[PLANNER_COUNT];
+extern const char *const PLANNER_HINT[PLANNER_COUNT];
+struct TripQuery {
+    int src = -1, dst = -1;              // node positions
+    ev::ElectricVehicle vehicle;         // battery, consumption and reserve as entered
+    double start_kwh = 0;
+    double depart_min = 480;
+    int method = PLANNER_EXACT;
+};
+struct TripAnswer {
+    bool done = false;                   // a calculation was attempted
+    std::string error;                   // the input was rejected; nothing was planned
+    TripQuery query;
+    int city = -1;
+    ev::TripPlan plan;
+    std::vector<int> path;               // node positions to draw: the plan, or the shortest road route when infeasible
+    std::vector<std::array<double, 3>> profile;   // km, kWh after the move, elevation m
+    std::vector<int> stop_station;       // station index of every stop
+    double ms = 0;
+    unsigned long long states = 0;       // exact planner: (node, battery) states settled
+};
+
+/* ---------------------------------------------------------------- data management */
+struct DatasetCheck {
+    bool ok = false;
+    std::string dir, error;              // error = "file:line: reason" when the data is rejected
+    std::string name, source, source_note;
+    int nodes = 0, roads = 0, stations = 0, offline = 0, candidates = 0, vehicles = 0, trips = 0, sessions = 0, components = 0;
+    double budget_lakh = 0;
+    std::vector<std::pair<std::string, bool>> files;   // file name, present
+};
+DatasetCheck checkDataset(const std::string &dir);
+
 /* ---------------------------------------------------------------- comparison, report, bench */
 struct CompareRow {
     int sel, route, stations;
@@ -278,7 +314,7 @@ struct Analysis { bool done = false; std::string text; Json data; };
 
 struct BenchRow {
     std::string family, alg, dataset, variant, validation, note, compiler, build;
-    double n = 0, ms = 0, min_ms = 0, max_ms = 0;
+    double n = 0, ms = 0, min_ms = 0, max_ms = 0, vertices = 0, edges = 0;
     long peak = 0;
     int reps = 0;
     bool pass = false;
@@ -313,6 +349,12 @@ public:
 
     SimView *sim(int policy);             // day simulation for the current run
     const TripDetail &trip(int trip_index);
+    // plans a typed-in trip on the current city with the current run's charger sites
+    TripAnswer planTrip(const TripQuery &q);
+    // placement only (no trip planning) for the current plan with another method: for comparisons
+    ev::PlacementResult placementWith(int sel);
+    // adds a dataset folder as a new city (after full validation); returns its index or -1 with `error`
+    int addCity(const std::string &dir, const std::string &label, std::string &error);
 
     // what-if edits on the current plan
     void setBuild(int station, int mode); // 0 engine decides, 1 always build, 2 never build (candidates only)
@@ -337,6 +379,7 @@ public:
 
     // benchmarks from benchmarks/results.csv
     const std::vector<BenchRow> &bench();
+    void reloadBench(const std::string &path = "");   // re-read (optionally another) results file
     std::string bench_error, bench_path;
 
     std::string planLabel(const Plan &p) const;
