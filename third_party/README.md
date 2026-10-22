@@ -5,8 +5,7 @@ here so the project builds offline with only CMake and a C/C++ compiler.
 
 | Library | Version | Language | Licence | Used for |
 |---|---|---|---|---|
-| [Dear ImGui](https://github.com/ocornut/imgui) | v1.91.5 | C++ | MIT (`imgui/LICENSE.txt`) | windows, widgets, tables, map drawing |
-| [ImPlot](https://github.com/epezent/implot) | v0.16 | C++ | MIT (`implot/LICENSE`) | charts |
+| [Dear ImGui](https://github.com/ocornut/imgui) | v1.91.5 | C++ | MIT (`imgui/LICENSE.txt`) | windows, widgets, tables, charts and network drawing (`ImDrawList`) |
 | [GLFW](https://github.com/glfw/glfw) | 3.4 | C | zlib (`glfw/LICENSE.md`) | window, input and OpenGL context |
 
 Only the files needed to build are kept. GLFW's docs, examples, tests, its Wayland protocol files and its
