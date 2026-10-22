@@ -20,6 +20,7 @@ ENV TZ=Asia/Kolkata
 WORKDIR /app
 COPY --from=build /src/build/ev33_web /app/ev33_web
 COPY data/scenarios /app/data/scenarios
+COPY data/sample /app/data/sample
 COPY benchmarks/results.csv /app/benchmarks/results.csv
 COPY assets /app/assets
 EXPOSE 10000
