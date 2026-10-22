@@ -22,3 +22,9 @@ file(GLOB EV33_UNIT_TESTS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/unit/*.c
 ev33_test(ev33_unit_tests unit ${EV33_UNIT_TESTS})
 ev33_test(ev33_integration_tests integration ${CMAKE_CURRENT_SOURCE_DIR}/integration/integration_tests.cpp)
 ev33_test(ev33_adversarial_tests adversarial ${CMAKE_CURRENT_SOURCE_DIR}/adversarial/adversarial_tests.cpp)
+
+# FE01-FE09: the engine calls the desktop app makes (shared/engine.*), run without a window.
+if(TARGET ev33_shared)
+  ev33_test(ev33_frontend_tests frontend ${CMAKE_CURRENT_SOURCE_DIR}/frontend/frontend_tests.cpp)
+  target_link_libraries(ev33_frontend_tests PRIVATE ev33_shared)
+endif()
