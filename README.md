@@ -6,14 +6,16 @@ EV33 answers two questions for an electric-vehicle network:
 2. **How should each trip be driven and recharged** so that the battery never falls below the
    vehicle's reserve — and, when that is impossible, why?
 
-The whole system is **C++17** (engine, command line, tests, benchmarks, website server and desktop
-app). Every assessed algorithm is written by hand; the engine uses only the C++ standard library.
+The whole system is **C++17** (engine, command line, tests, benchmarks, website server and the
+native desktop app **EV33 Charge Atlas**). Every assessed algorithm is written by hand; the engine
+uses only the C++ standard library. The desktop app adds three external C/C++ libraries (Dear ImGui,
+GLFW, OpenGL 3), and the tests use GoogleTest — see [Requirements](#4-requirements).
 Live website: <https://ev-project-84u5.onrender.com>.
 
 Contents: [1 Features](#1-features) · [2 Data honesty](#2-data-honesty) · [3 Repository layout](#3-repository-layout) ·
 [4 Requirements](#4-requirements) · [5 Build on Linux or macOS](#5-build-on-linux-or-macos) ·
 [6 Build on Windows (MinGW-w64)](#6-build-on-windows-mingw-w64) · [7 Command-line use](#7-command-line-use) ·
-[8 Input data](#8-input-data) · [9 Website and desktop app](#9-website-and-desktop-app) ·
+[8 Input data](#8-input-data) · [9 Desktop app and website](#9-desktop-app-and-website) ·
 [10 Tests](#10-tests) · [11 Benchmarks](#11-benchmarks) · [12 Algorithms](#12-algorithms) ·
 [13 Results](#13-results) · [14 Limitations and responsible use](#14-limitations-and-responsible-use) ·
 [15 Documentation and checklist](#15-documentation-and-checklist)
@@ -70,8 +72,10 @@ benchmarks/            benchmark.cpp (ev33_bench), gbench.cpp (Google Benchmark)
 shared/ server/ gui/   website and desktop app (shared adapter, web.cpp, Dear ImGui views)
 data/                  sample/, scenarios/, generated/ (benchmark data, regenerated on demand)
 docs/                  architecture, algorithms, testing, benchmark methodology, data, user guide
-third_party/           googletest, benchmark, imgui, implot, glfw (vendored, licences included)
+third_party/           googletest, benchmark, imgui, glfw (vendored, licences included)
+assets/fonts/          IBM Plex Sans and Mono for the desktop app (SIL OFL)
 cmake/                 MinGW-w64 cross-compilation toolchain file
+Makefile               short Make commands that drive CMake (make, make gui, make test, ...)
 Dockerfile render.yaml website image and Render blueprint
 ```
 
@@ -79,10 +83,24 @@ Dockerfile render.yaml website image and Render blueprint
 
 * A C++17 compiler: GCC ≥ 9, Clang ≥ 10, or MinGW-w64 GCC ≥ 9 / llvm-mingw (tested: GCC 13.3 on
   Linux, llvm-mingw Clang 19.1 for Windows x64). MSVC 2019+ should work but has not been tested.
-* CMake ≥ 3.16 and a build tool (Ninja recommended, or Make).
-* Nothing else to install: GoogleTest, Google Benchmark, Dear ImGui, ImPlot and GLFW are in
-  `third_party/`. The desktop app needs OpenGL (always present on Windows; on Linux install
-  `libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl-dev`).
+* CMake ≥ 3.16 and a build tool (Ninja or Make). GNU Make is optional; the `Makefile` only
+  shortens the CMake commands.
+* Libraries, all vendored in `third_party/` so nothing has to be downloaded:
+
+| Library | Version | Used by | Licence |
+|---|---|---|---|
+| C++ standard library | C++17 | engine, CLI, website, everything | — |
+| GoogleTest | 1.15.2 | tests only | BSD-3 |
+| Google Benchmark | 1.9.1 | `ev33_gbench` only | Apache-2.0 |
+| Dear ImGui | 1.91.5 | desktop app: windows, widgets, tables, drawing | MIT |
+| GLFW | 3.4 | desktop app: window, input, OpenGL context | zlib |
+| OpenGL | 3.0+ (GLSL 130) | desktop app: rendering; provided by the graphics driver | — |
+
+  OpenGL is part of every Windows graphics driver. On Linux the desktop app also needs the X11 and
+  OpenGL development headers: `sudo apt install libx11-dev libxrandr-dev libxinerama-dev
+  libxcursor-dev libxi-dev libgl-dev` (Debian/Ubuntu) or `sudo dnf install libX11-devel
+  libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel mesa-libGL-devel` (Fedora).
+  The engine, CLI, tests, benchmarks and website need none of these.
 
 ## 5. Build on Linux or macOS
 
@@ -91,6 +109,21 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+
+Or with Make (the `Makefile` runs the same CMake commands):
+
+| Command | Does |
+|---|---|
+| `make` | configure (Release) and build the engine, CLI, tests, benchmarks and website |
+| `make gui` | also build the desktop app `ev33_gui` (needs the OpenGL/X11 headers above) |
+| `make run` | build and start the desktop app |
+| `make test` | build and run all four test suites through CTest |
+| `make bench` | build and run the benchmarks, writing `benchmarks/results.csv` |
+| `make data` | regenerate the benchmark datasets in `data/generated` (seed 12345) |
+| `make web` | build and start the website on <http://localhost:8033> |
+| `make clean` | delete the build folder |
+
+Variables: `BUILD=dir` (default `build`), `CONFIG=Release|Debug`, `GENERATOR="Ninja"`, `JOBS=8`.
 
 Options (all `ON` unless noted): `EV33_BUILD_TESTS`, `EV33_BUILD_BENCHMARKS`, `EV33_BUILD_GBENCH`,
 `EV33_BUILD_WEB`, `EV33_GUI` (`OFF`; desktop app), `EV33_SANITIZE` (`OFF`; AddressSanitizer +
@@ -124,6 +157,13 @@ Executables:
 | benchmarks | `build\benchmarks\ev33_bench.exe`, `benchmark_data_generator.exe`, `ev33_gbench.exe` |
 
 Run the programs from the project folder so they find `data\`, `benchmarks\` and `assets\`.
+With MSYS2's `make` (`pacman -S make` in the UCRT64 shell) or `mingw32-make` in PowerShell the
+Make commands work too: `mingw32-make gui GENERATOR="MinGW Makefiles"`, then
+`mingw32-make run GENERATOR="MinGW Makefiles"`. In VS Code, open the folder with the CMake Tools
+extension, pick the UCRT64 GCC kit, set `EV33_GUI` to `ON` and choose `ev33_gui` as the launch
+target. The desktop app is a Windows GUI program (no console window); start it by double-clicking
+`ev33_gui.exe` or from a terminal.
+
 Cross-compiling from Linux works too:
 `cmake -S . -B build-win -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake -DMINGW_ROOT=/path/to/mingw`
 (this is how the Windows executables in the release ZIP were built; they link statically and need
@@ -165,9 +205,47 @@ A scenario is a folder with `scenario.cfg`, `nodes.csv`, `roads.csv` and optiona
 Columns are matched by name; money is in rupees (stored exactly as paise). Full formats,
 validation rules and real-data guidance: `docs/data.md`.
 
-## 9. Website and desktop app
+## 9. Desktop app and website
 
-Both show the same seven views on the same engine code (`shared/engine.*`):
+There are two front ends on the same engine code (`shared/engine.*` → `ev::PlanningRun`). They are
+**separate programs and separate deployment targets**: the desktop app is a native Windows/Linux
+executable that runs on your own computer, and the website is a server deployed on Render. The
+desktop app does not replace the website, and the website is not part of the desktop app (the app
+contains no HTML, CSS or JavaScript).
+
+### 9.1 Desktop app — EV33 Charge Atlas (`ev33_gui`)
+
+C++17 with Dear ImGui on GLFW + OpenGL 3. Every figure on screen comes from an engine call on the
+loaded dataset; nothing is hard-coded or invented. A **SYNTHETIC DATASET** tag sits in the
+sidebar and on each view whenever the loaded data is generated.
+
+| View (Ctrl+1…8) | What it does |
+|---|---|
+| Dashboard | nodes, roads, existing stations, candidate sites, trips, selected stations, budget, total cost, money left; trip results; capacity (three max-flow methods); hourly charging energy against grid supply; busiest stations |
+| Trip Planner | form: source and destination junction, EV model (or custom), battery, starting charge, consumption, reserve, departure time, routing method; **Calculate route** runs the exact planner or the charging-leg planner (Dijkstra / Floyd–Warshall / Bellman–Ford legs). Shows feasibility, a sentence explaining the result, distance, energy, driving and charging time, stops, battery profile chart, route sequence and a small map |
+| Station Placement | method (0/1 knapsack DP, branch and bound FIFO / LIFO / least cost, greedy ratio), budget slider; selected count, total cost, money left, total benefit; candidate table with cost, benefit, benefit per lakh, ports and force/forbid; existing stations; a comparison of every method; a paragraph on why these sites were chosen and what the model does **not** solve (geographic coverage) |
+| Road Network | the network drawn with ImDrawList: existing (blue square), offline (red cross), candidate (ring), new (green diamond), route and numbered stops; legend; wheel zoom, drag pan, Fit; scale bar; junction dots hidden on large networks until zoomed in; the projection is stated and synthetic graphs say so. A day-simulation mode replays every trip minute by minute with queues |
+| Algorithms | name, purpose, input, output, time and space complexity and role of 26 algorithms, core workflow separate from educational ones; a button runs every algorithm on the loaded city with its independent check |
+| Benchmarks | reads `benchmarks/results.csv`: algorithm, size, vertices, edges, runtime, repetitions, median, min, max, correctness; log–log charts per family. Without the file it says "No benchmark results available. Run the benchmark executable to generate measurements." **Run quick benchmark** starts `ev33_bench --quick` in the background and loads its results |
+| Data Management | the loaded dataset's files and record counts; check any folder against the validation rules (missing files or columns, malformed records, duplicate ids, negative distances, invalid costs, invalid battery values, references to unknown nodes) with the exact `file:line: reason`; load a valid folder as a new dataset. Nothing is fixed silently; the hand-made sample is labelled as such |
+| Settings | light or charcoal theme, UI scale, default trip method, simulation policy and map layers, folders in use, library versions |
+
+Run it with `build/ev33_gui` (Windows: `build\ev33_gui.exe`, or `make run`). Options:
+
+```
+--data DIR --results DIR --assets DIR     folders of the cities, results.csv and fonts
+--load DIR                                also load this dataset folder and open it
+--view dashboard|trip|placement|network|algorithms|benchmarks|data|settings
+--city small|medium|shock|large|adversarial   --select dp|bnb-lc|bnb-fifo|bnb-lifo|greedy
+--route dijkstra|floyd|bellman   --budget LAKH
+--trip ID [--method exact|dijkstra|floyd|bellman]   plan a dataset trip in the Trip Planner
+--day [--time HH:MM] [--play] [--policy wait|divert]
+--dark | --light   --size WxH   --scale F   --shot FILE.png [--frames N]   (save a screenshot and exit)
+```
+
+### 9.2 Website (`ev33_web`)
+
+The website shows seven views:
 
 | View | What it shows |
 |---|---|
@@ -181,13 +259,10 @@ Both show the same seven views on the same engine code (`shared/engine.*`):
 
 **Website** — `build/ev33_web` serves <http://localhost:8033> (the `PORT` variable overrides). Pages
 are HTML + SVG generated in C++ with no JavaScript; the plan travels in the address, so any view
-can be bookmarked. Deployment: the `Dockerfile` builds the server, **runs all three test suites**
+can be bookmarked. Deployment: the `Dockerfile` builds the server, **runs all four test suites**
 (a failing test stops the deploy), and copies the scenarios, benchmark results and fonts into a
 small image; `render.yaml` is the Render blueprint (*New → Blueprint* on render.com). `/health`
 answers `ok`.
-
-**Desktop app** — `build/ev33_gui` (Dear ImGui + ImPlot on GLFW/OpenGL). Wheel to zoom, drag to
-pan; `--help` lists options such as `--city shock --page live --shot view.png` to save a view.
 
 ## 10. Tests
 
@@ -196,7 +271,11 @@ ctest --test-dir build --output-on-failure        # all suites
 ctest --test-dir build -L unit                    # 154 unit tests
 ctest --test-dir build -L integration -V          # IT01-IT08 + regression, prints ACTUAL lines
 ctest --test-dir build -L adversarial             # AD01-AD25
+ctest --test-dir build -L frontend                # FE01-FE09, the engine calls of the desktop app
 ```
+
+Latest run (Linux, GCC 13.3, Release): **4 / 4 suites passed** — 154 unit tests, IT01–IT08 +
+regression, AD01–AD25 and FE01–FE09.
 
 Unit tests cover each algorithm's normal, boundary and invalid cases against independent oracles
 (brute force, a second algorithm, `std::sort`, textbook answers). Integration tests run complete
@@ -259,6 +338,15 @@ From `ev33 run` (DP placement, Dijkstra legs) on the generated cities, and `ev33
 * All bundled data is synthetic. With real data, protect trip privacy (aggregate, anonymise),
   check that under-served areas are not ignored, and keep a safety margin in any driver-facing use
   (`docs/data.md`).
+* Desktop app: built and run on Windows x64 only (cross-compiled with llvm-mingw, then
+  started and checked view by view on the PC). On Linux its own sources compile cleanly with GCC 13
+  (`-Wall -Wextra`, syntax check), but the full link was **not** verified because the X11/OpenGL
+  development packages could not be installed on the build machine. macOS is not supported (GLFW's
+  macOS backend is Objective-C and is left out).
+* The map draws latitude/longitude on a flat plane; it is a schematic, not a geographic map, and
+  has no background tiles. Floyd–Warshall is disabled above 1,600 junctions (its n² table).
+* "Run quick benchmark" uses the quick settings (fewer sizes and repetitions); for report-quality
+  numbers run `ev33_bench` from a terminal on an idle machine.
 
 ## 15. Documentation and checklist
 
@@ -287,5 +375,10 @@ From `ev33 run` (DP placement, Dijkstra legs) on the generated cities, and `ev33
 | Benchmark CSV with median/min/max, peak bytes, validation; Google Benchmark | done (228 rows, 0 failures) |
 | Documentation set | done (this README + `docs/`) |
 | Synthetic data clearly labelled; no fabricated results | done |
+| Native desktop app in C++17 + Dear ImGui / GLFW / OpenGL 3, no web code | done (8 views, `gui/`) |
+| Desktop app uses real engine calls only, synthetic data labelled | done |
+| Makefile driving CMake | done (`make test` passes on Linux) |
+| Desktop app built and run on Windows | done (Windows x64, static exe, no DLLs) |
+| Desktop app full build on Linux | **not verified** (sources compile with GCC 13; link needs X11/GL headers) |
 | Coverage-aware placement objective | **not done** (optional; documented as future work) |
 | MSVC build | **not tested** |

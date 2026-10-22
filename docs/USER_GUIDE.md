@@ -114,15 +114,71 @@ build/ev33_gen --all --seed 33 --out data/scenarios             # the five bundl
 build/benchmarks/benchmark_data_generator --seed 12345 --size all --out data/generated
 ```
 
-## Website and desktop app
+## Website
 
-* `build/ev33_web` then open <http://localhost:8033>. Options: `--port N` (or `PORT`),
-  `--data DIR` (default `data/scenarios`), `--results DIR` (default `benchmarks`), `--assets DIR`.
-* `build/ev33_gui` opens the desktop app. `--help` lists the options; for example
-  `build/ev33_gui --city shock --page live --time 19:10 --policy divert --shot shock.png` saves
-  that view to a PNG and exits.
+`build/ev33_web` then open <http://localhost:8033>. Options: `--port N` (or `PORT`), `--data DIR`
+(default `data/scenarios`), `--results DIR` (default `benchmarks`), `--assets DIR`. The sidebar
+holds the plan (city, placement method, routing method, budget). On the planner map, click a site
+to force it in, rule it out or change its ports. "Pin as baseline" keeps the current figures so
+later changes show their difference. The website is deployed separately (Render); the desktop app
+below does not replace it.
 
-In both, the sidebar holds the plan (city, placement method, routing method, budget). On the
-planner map, click a site to force it in, rule it out or change its ports; existing stations
-(green squares; red outline when offline) can only have their ports changed. "Pin as baseline"
-keeps the current figures so later changes show their difference.
+## Desktop app — EV33 Charge Atlas
+
+Start `build/ev33_gui` (Windows: double-click `ev33_gui.exe`, or `make run`). It finds `data/`,
+`benchmarks/` and `assets/` in the working folder, next to the program or one or two folders up.
+
+**Sidebar.** The dataset list (the five generated cities, plus any folder you load), the
+SYNTHETIC DATASET tag, the eight views (Ctrl+1 … Ctrl+8), the current plan and the
+Light / Charcoal switch. The status bar shows what the engine last did and has a
+**Save screenshot** button (PNG in the working folder).
+
+**Dashboard (Ctrl+1).** Dataset figures (junctions, roads, existing stations, candidate sites,
+trips) and the placement result (stations selected, budget, total cost, money left), then trip
+results, the capacity check, charging energy by hour against grid supply and the busiest stations.
+
+**Trip Planner (Ctrl+2).**
+1. Optionally pick a trip from the dataset to fill the form.
+2. Enter source and destination junction ids (the names appear beside them), choose an EV model or
+   *Custom* and set battery (kWh), starting charge (kWh), consumption (kWh/km), reserve (kWh) and
+   departure time.
+3. Choose the method: *Exact (battery states)* finds the best plan the energy model allows;
+   *Charging legs with Dijkstra / Floyd–Warshall / Bellman–Ford* is the fleet planner used for
+   every trip in the city.
+4. Press **Calculate route**. The answer says *Feasible* or *Not feasible* with the reason, then
+   distance, energy, driving and charging time, stops, the lowest charge on the way, a battery
+   chart, the stop table and the full junction sequence. Invalid input (unknown junction,
+   starting charge above the battery, reserve above the battery, …) is reported, not corrected.
+
+**Station Placement (Ctrl+3).** Choose the method and budget. The candidate table can be sorted
+and filtered; each row can be set to *Auto*, *Always* (force in) or *Never* (rule out), and ports
+can be changed with − / +. *Compare methods* runs every method on the same data (one run per
+frame, so the window stays responsive) and shows which reached the optimum. *Why these sites* explains the choice; with the
+greedy method it also shows how far it is from the exact optimum.
+
+**Road Network (Ctrl+4).** Mouse wheel zooms, dragging pans, double-click zooms in, *Fit* shows
+everything. Click a station for its details, ports and build decision. Layers switch terrain,
+junctions, names, station kinds, the Trip Planner route and traffic. *Day simulation* replays the
+day: Play / Pause, ±1 h, the time slider, speed, and the policy (*drivers wait* or *switch after
+20 min*); the panel shows vehicles on the road, charging, waiting, arrived, grid draw and energy.
+
+**Algorithms (Ctrl+5).** The catalogue of core and educational algorithms. *Run the analysis on
+this city* executes each one on the loaded data and shows its independent check.
+
+**Benchmarks (Ctrl+6).** Charts and the measurement table from `benchmarks/results.csv`.
+*Run quick benchmark* starts `ev33_bench --quick` (it must be next to `ev33_gui`, in a
+`benchmarks` folder beside it, or in `build/benchmarks`) in the background and writes
+`results_local.csv` beside `results.csv`, which is not changed; *Show the committed results*
+switches back.
+
+**Data Management (Ctrl+7).** Type a dataset folder (or click one of the folders found) and press
+**Check**: either a summary of the records or the first problem as `file:line: reason`. A folder
+that passes can be opened with **Load as a new city**; a folder that fails is never loaded.
+
+**Settings (Ctrl+8).** Theme, UI scale (automatic from the monitor or chosen), the default trip
+method, simulation policy and map layers, the folders in use and the versions of Dear ImGui, GLFW,
+OpenGL and the compiler.
+
+Command-line options (`README.md`, section 9.1) open a given view directly; for example
+`build/ev33_gui --city shock --view network --day --time 19:10 --policy divert --shot shock.png`
+saves that view to a PNG and exits.

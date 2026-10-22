@@ -8,6 +8,7 @@ registered with CTest under three labels:
 | `unit` | `ev33_unit_tests` | `tests/unit/*.cpp` | 154 tests in 40 suites |
 | `integration` | `ev33_integration_tests` | `tests/integration/integration_tests.cpp` | IT01–IT08 + regression check |
 | `adversarial` | `ev33_adversarial_tests` | `tests/adversarial/adversarial_tests.cpp` | AD01–AD25 |
+| `frontend` | `ev33_frontend_tests` | `tests/frontend/frontend_tests.cpp` | FE01–FE09 (the engine calls the desktop app makes) |
 
 ```
 ctest --test-dir build --output-on-failure            # everything
@@ -100,9 +101,29 @@ ctest --test-dir build-asan --output-on-failure
 ```
 
 AddressSanitizer + UndefinedBehaviorSanitizer with `-fno-sanitize-recover=all`, so any invalid
-memory access, leak or undefined arithmetic fails the run. Result: all three suites pass with no
+memory access, leak or undefined arithmetic fails the run. Result: all four suites (including FE01–FE09) pass with no
 report (Debug, gcc 13.3). The website server was also run under the sanitizers and every page of
 the small, medium, shock and adversarial cities requested, including what-if edits; no report.
+
+## Desktop app tests (FE01–FE09)
+
+The views of *EV33 Charge Atlas* only draw what the shared engine adapter returns, so the adapter
+calls are tested without opening a window (`ctest --test-dir build -L frontend`).
+
+| ID | Input | Expected | Actual |
+|---|---|---|---|
+| FE01 Trip Planner answer | sample, SV1 typed in (20 kWh, 12 kWh start, 0.2 kWh/km, 2 kWh reserve), node 1 → 5, each of the 4 methods | feasible, 80 km, 1 stop, path from 1 to 5, battery never below the reserve | passed for all 4 methods |
+| FE02 infeasible trip | node 1 → 9 (other component) | not feasible, `no-road-connection`, explanation filled, no error | passed |
+| FE03 invalid form input | unknown source, destination −1, start 25 kWh on a 20 kWh battery, reserve above battery, zero consumption | each rejected with a message; nothing planned | passed |
+| FE04 Floyd–Warshall limit | a 1,700-junction chain written to disk and loaded | Floyd refused with the 1,600-junction reason; Dijkstra legs still answer (19 km) | passed |
+| FE05 placement comparison | sample, budget 1 crore | DP and branch and bound 155 (optimal), greedy 140, all within budget; the Dashboard run shows 155 | passed |
+| FE06 dataset check, valid | `data/sample` | ok; 10 nodes, 11 roads, 3 stations (1 offline), 6 candidates, 3 vehicles, 8 trips, 2 components, synthetic | passed |
+| FE07 dataset check, invalid | 7 corrupted copies: negative distance, non-numeric distance, duplicate node id, unknown node, negative cost, zero battery, missing column | each rejected naming the file and line; *Load as a new city* refuses it and the current city stays | passed |
+| FE08 missing file | sample without `roads.csv`; a folder that does not exist | rejected, naming `roads.csv` | passed |
+| FE09 benchmark file | committed `benchmarks/results.csv`; a missing file | rows load with reps > 0 and min ≤ median ≤ max; missing file → no rows and an error (the view then shows the "No benchmark results available" message) | passed |
+
+The window itself (layout, drawing, interaction) was checked by hand on Windows x64: every view was
+opened at 1920×1040 and 150 % scale in both themes, with screenshots saved through `--shot`.
 
 ## Manual checks
 

@@ -2,8 +2,9 @@
 
 EV33 is one C++17 code base with a single engine library (`ev33_core`) and five programs on top
 of it. Nothing outside the C++ standard library is used by the engine; GoogleTest and Google
-Benchmark are used only by the test and micro-benchmark programs, and Dear ImGui / ImPlot / GLFW
-only by the optional desktop app. All of them are vendored in `third_party/`.
+Benchmark are used only by the test and micro-benchmark programs, and Dear ImGui, GLFW and OpenGL 3
+only by the optional desktop app. All of them except OpenGL (supplied by the graphics driver) are
+vendored in `third_party/`.
 
 ```
                     data/*.csv, scenario.cfg                     benchmarks/results.csv
@@ -92,9 +93,30 @@ Rules the code follows:
   as HTML + SVG (no JavaScript). The strategy comparison (up to 15 full runs per city) is computed
   at start-up by a worker thread with its own engine instance; the request thread only copies its
   finished rows under a mutex.
-* **`ev33_gui`** (`gui/`) — Dear ImGui desktop app with the same seven views.
+* **`ev33_gui`** (`gui/`) — the native desktop app *EV33 Charge Atlas* (Dear ImGui on GLFW +
+  OpenGL 3, eight views). It is a separate deployment target from the website: an executable that
+  runs on the user's computer, with no HTML, CSS or JavaScript.
 * Both share `shared/engine.*` (adapter that flattens engine results into display records and owns
   caching), `shared/content.*` (the report sentences) and `shared/fmt.*` (number formatting).
+
+### Desktop app structure
+
+| File | Responsibility |
+|---|---|
+| `gui/main.cpp` | command line, GLFW window and OpenGL context, font loading and DPI scale, sidebar, status bar, screenshots, main loop |
+| `gui/ui.h`, `gui/ui.cpp` | `App` state, the two palettes (light, charcoal), fonts, shared widgets (metric, tag, segmented control, panels, rich text), PNG writer |
+| `gui/charts.cpp` | line (log–log), bar and battery charts drawn with `ImDrawList` |
+| `gui/network.cpp` | the road-network canvas: projection, zoom/pan/fit, markers, route, stops, legend, day-simulation drawing |
+| `gui/catalog.cpp` | the algorithm catalogue (purpose, input, output, time, space, role) |
+| `gui/view_*.cpp` | one file per view: dashboard, trip, placement, network, algorithms, benchmarks, data, settings |
+
+Data flow inside the app: a view reads `Engine::run()` (a cached `PlanningRun` for the current
+plan) or calls a specific engine function — `Engine::planTrip` for the Trip Planner,
+`Engine::placementWith` for the method comparison, `checkDataset` for Data Management — and draws
+the returned records. Views never compute domain results themselves. Long work does not freeze the
+window: the method comparison does one full planning run per frame (`Engine::stepCompare`), and
+*Run quick benchmark* starts a separate `ev33_bench` process from a worker thread and loads its CSV
+when it exits.
 
 ## Error handling
 
@@ -116,6 +138,10 @@ Rules the code follows:
 | `ev33_bench`, `benchmark_data_generator` | programs | `EV33_BUILD_BENCHMARKS=ON` (default) |
 | `ev33_gbench` | Google Benchmark program | `EV33_BUILD_GBENCH=ON` (default) |
 | `ev33_shared`, `ev33_web` | library, program | `EV33_BUILD_WEB=ON` (default) |
+| `imgui`, `glfw` | static libraries | `EV33_GUI=ON` |
 | `ev33_gui` | program | `EV33_GUI=ON` (Windows, or Linux with X11/GL headers) |
+
+The root `Makefile` is a thin wrapper: every target (`make`, `make gui`, `make test`, …) runs the
+corresponding `cmake` / `ctest` command, so CMake stays the single build description.
 
 `EV33_SANITIZE=ON` adds AddressSanitizer and UndefinedBehaviorSanitizer to every target.
