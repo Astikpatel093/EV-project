@@ -89,8 +89,8 @@ Rules the code follows:
 
 * **`ev33`** (`src/app`) — command-line runner with a menu mode; exit code 0 success, 1 data or
   usage error, 2 internal error.
-* **`ev33_web`** (`server/web.cpp`) — a small single-threaded HTTP server that renders every page
-  as HTML + SVG (no JavaScript). The strategy comparison (up to 15 full runs per city) is computed
+* **`ev33_web`** (`server/web.cpp`) — a small single-threaded HTTP server that renders the same
+  eight views as the desktop app (same layout and palette) as HTML + SVG (no JavaScript). The strategy comparison (up to 15 full runs per city) is computed
   at start-up by a worker thread with its own engine instance; the request thread only copies its
   finished rows under a mutex.
 * **`ev33_gui`** (`gui/`) — the native desktop app *EV33 Charge Atlas* (Dear ImGui on GLFW +
@@ -107,7 +107,7 @@ Rules the code follows:
 | `gui/ui.h`, `gui/ui.cpp` | `App` state, the two palettes (light, charcoal), fonts, shared widgets (metric, tag, segmented control, panels, rich text), PNG writer |
 | `gui/charts.cpp` | line (log–log), bar and battery charts drawn with `ImDrawList` |
 | `gui/network.cpp` | the road-network canvas: projection, zoom/pan/fit, markers, route, stops, legend, day-simulation drawing |
-| `gui/catalog.cpp` | the algorithm catalogue (purpose, input, output, time, space, role) |
+| `shared/catalog.cpp` | the algorithm catalogue (purpose, input, output, time, space, role), shared with the website |
 | `gui/view_*.cpp` | one file per view: dashboard, trip, placement, network, algorithms, benchmarks, data, settings |
 
 Data flow inside the app: a view reads `Engine::run()` (a cached `PlanningRun` for the current

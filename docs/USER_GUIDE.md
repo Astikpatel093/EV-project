@@ -116,12 +116,14 @@ build/benchmarks/benchmark_data_generator --seed 12345 --size all --out data/gen
 
 ## Website
 
-`build/ev33_web` then open <http://localhost:8033>. Options: `--port N` (or `PORT`), `--data DIR`
-(default `data/scenarios`), `--results DIR` (default `benchmarks`), `--assets DIR`. The sidebar
-holds the plan (city, placement method, routing method, budget). On the planner map, click a site
-to force it in, rule it out or change its ports. "Pin as baseline" keeps the current figures so
-later changes show their difference. The website is deployed separately (Render); the desktop app
-below does not replace it.
+`build/ev33_web` then open <http://localhost:8033> (live copy: <https://ev-project-84u5.onrender.com>).
+Options: `--port N` (or `PORT`), `--data DIR` (default `data/scenarios`), `--results DIR` (default
+`benchmarks`), `--assets DIR`. The website has the same eight views as the desktop app below and works
+the same way, with links and forms instead of mouse input: choose the dataset in the sidebar and press
+**Open**; in the Trip Planner fill the form and press **Calculate route**; in Station Placement press
+**Apply** after changing the method or budget; on the Road Network use + / − / arrows / Fit and
+**Apply layers**. Everything you choose is kept in the address, so a view can be bookmarked or shared.
+The website and the desktop app are deployed separately; neither replaces the other.
 
 ## Desktop app — EV33 Charge Atlas
 

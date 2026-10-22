@@ -245,24 +245,32 @@ Run it with `build/ev33_gui` (Windows: `build\ev33_gui.exe`, or `make run`). Opt
 
 ### 9.2 Website (`ev33_web`)
 
-The website shows seven views:
+Live at <https://ev-project-84u5.onrender.com>. The website shows the **same eight views** as the
+desktop app, in the same layout and colours (sidebar with the dataset, the views and the current
+plan; light, charcoal or automatic theme), and calls the same engine, so the numbers agree:
 
-| View | What it shows |
+| View | On the website |
 |---|---|
-| Planner | headline figures, map of existing, offline, candidate and new stations, what-if edits (force or forbid a site, change ports), baseline comparison, trip inspector with route, battery and elevation |
-| Live day | the day simulation on the map: vehicles drive, queue and charge; wait or divert policy; grid draw |
-| Strategies | all 15 placement × routing pairings on identical data |
-| Capacity | charging energy by hour against grid supply, busiest stations, the three max-flow checks |
-| Algorithms | each decision, its algorithm, the result on this city and the independent check |
-| Data model | the typed C++ records with real values and the graphs and trees built from them |
-| Benchmarks | log–log scaling charts from `benchmarks/results.csv` with notes on worst cases |
+| Dashboard | the same figures, trips and capacity panels, hourly energy chart and busiest stations |
+| Trip Planner | the same form (junctions, EV model or custom values, battery, charge, consumption, reserve, departure, method); **Calculate route** plans the trip on the server; invalid fields are listed, never corrected |
+| Station Placement | method and budget, six figures, "why these sites", candidate table with sorting, filter, ports − / + and Auto / Always / Never, existing stations, all 15 method pairings |
+| Road Network | the network as SVG with the same markers and legend, zoom (+ / −), pan arrows and Fit, layers, station details, a dataset trip's route; **Day simulation** plays the day by reloading once a second |
+| Algorithms | the catalogue (core and educational) and the cross-checks on the city |
+| Benchmarks | families, log–log chart, worst cases and the measurement table from `benchmarks/results.csv` |
+| Data Management | the loaded files; check the bundled folders and eight deliberately broken copies of the sample to see the `file:line: reason` messages; the typed records and structures |
+| Settings | theme, default trip method and day-simulation policy, the website-versus-desktop note, versions |
 
-**Website** — `build/ev33_web` serves <http://localhost:8033> (the `PORT` variable overrides). Pages
-are HTML + SVG generated in C++ with no JavaScript; the plan travels in the address, so any view
-can be bookmarked. Deployment: the `Dockerfile` builds the server, **runs all four test suites**
-(a failing test stops the deploy), and copies the scenarios, benchmark results and fonts into a
-small image; `render.yaml` is the Render blueprint (*New → Blueprint* on render.com). `/health`
-answers `ok`.
+Differences that come from running on a server: nothing can be uploaded (check your own folders in the
+desktop app or with `ev33 validate`), the benchmark program is not started from the site, and zooming
+uses buttons instead of the mouse wheel.
+
+`build/ev33_web` serves <http://localhost:8033> (the `PORT` variable overrides). Pages are HTML + SVG
+generated in C++ with no JavaScript; the plan and settings travel in the address, so any view can be
+bookmarked, and the addresses of the earlier version (`/live`, `/strategies`, `/capacity`, `/model`)
+redirect to the new views. Deployment: the `Dockerfile` builds the server, **runs all four test
+suites** (a failing test stops the deploy), and copies the scenarios, the sample, the benchmark
+results and the fonts into a small image; `render.yaml` is the Render blueprint (*New → Blueprint* on
+render.com). `/health` answers `ok`.
 
 ## 10. Tests
 
