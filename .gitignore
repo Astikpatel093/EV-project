@@ -21,3 +21,5 @@ data/generated/**
 !data/generated/README.md
 # run outputs
 results/
+# local run of "Run quick benchmark" in the desktop app
+benchmarks/results_local.csv
