@@ -23,7 +23,11 @@ static std::vector<std::string> findDatasets(App &app) {
         for (const auto &e : fs::directory_iterator(r, ec)) {
             if (!e.is_directory(ec)) continue;
             if (!fs::exists(e.path() / "scenario.cfg", ec)) continue;
-            std::string p = fs::weakly_canonical(e.path(), ec).generic_string();
+            fs::path full = fs::weakly_canonical(e.path(), ec);
+            // shown and used relative to the working folder when it lies inside it (shorter, as a user would type it)
+            fs::path rel = fs::relative(full, fs::current_path(ec), ec);
+            bool inside = !ec && !rel.empty() && rel.begin()->string() != "..";
+            std::string p = (inside ? rel : full).generic_string();
             if (std::find(out.begin(), out.end(), p) == out.end()) out.push_back(p);
         }
     }
