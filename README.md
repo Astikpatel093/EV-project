@@ -10,7 +10,14 @@ The whole system is **C++17** (engine, command line, tests, benchmarks, website 
 native desktop app **EV33 Charge Atlas**). Every assessed algorithm is written by hand; the engine
 uses only the C++ standard library. The desktop app adds three external C/C++ libraries (Dear ImGui,
 GLFW, OpenGL 3), and the tests use GoogleTest — see [Requirements](#4-requirements).
-Live website: <https://ev-project-84u5.onrender.com>.
+**Live website: <https://ev-project-84u5.onrender.com>** (hosted on Render; the first visit after a quiet
+period can take about a minute while the free server wakes up).
+
+> **About the `localhost:8033` addresses in this README:** they only work on your own computer *after*
+> you start the website server there (`make web`, or `build/ev33_web`; on Windows
+> `build\ev33_web.exe`). `localhost` means "this computer", so opening it from GitHub without the
+> server running shows "This site can't be reached". To see the website without building anything,
+> use the live link above.
 
 Contents: [1 Features](#1-features) · [2 Data honesty](#2-data-honesty) · [3 Repository layout](#3-repository-layout) ·
 [4 Requirements](#4-requirements) · [5 Build on Linux or macOS](#5-build-on-linux-or-macos) ·
@@ -120,7 +127,7 @@ Or with Make (the `Makefile` runs the same CMake commands):
 | `make test` | build and run all four test suites through CTest |
 | `make bench` | build and run the benchmarks, writing `benchmarks/results.csv` |
 | `make data` | regenerate the benchmark datasets in `data/generated` (seed 12345) |
-| `make web` | build and start the website on <http://localhost:8033> |
+| `make web` | build and start the website, then open `http://localhost:8033` on the same computer |
 | `make clean` | delete the build folder |
 
 Variables: `BUILD=dir` (default `build`), `CONFIG=Release|Debug`, `GENERATOR="Ninja"`, `JOBS=8`.
@@ -151,7 +158,7 @@ Executables:
 |---|---|
 | command line | `build\ev33.exe` |
 | scenario generator | `build\ev33_gen.exe` |
-| website server | `build\ev33_web.exe` (then open <http://localhost:8033>) |
+| website server | `build\ev33_web.exe` (keep it running, then open `http://localhost:8033` in a browser on the same computer) |
 | desktop app | `build\ev33_gui.exe` |
 | tests | `build\tests\ev33_unit_tests.exe`, `ev33_integration_tests.exe`, `ev33_adversarial_tests.exe` |
 | benchmarks | `build\benchmarks\ev33_bench.exe`, `benchmark_data_generator.exe`, `ev33_gbench.exe` |
@@ -264,7 +271,8 @@ Differences that come from running on a server: nothing can be uploaded (check y
 desktop app or with `ev33 validate`), the benchmark program is not started from the site, and zooming
 uses buttons instead of the mouse wheel.
 
-`build/ev33_web` serves <http://localhost:8033> (the `PORT` variable overrides). Pages are HTML + SVG
+`build/ev33_web` serves the site at `http://localhost:8033` on the computer where it runs (the `PORT`
+variable or `--port N` changes the port; stop it with Ctrl+C). Pages are HTML + SVG
 generated in C++ with no JavaScript; the plan and settings travel in the address, so any view can be
 bookmarked, and the addresses of the earlier version (`/live`, `/strategies`, `/capacity`, `/model`)
 redirect to the new views. Deployment: the `Dockerfile` builds the server, **runs all four test

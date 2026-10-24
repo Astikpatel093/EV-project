@@ -116,7 +116,9 @@ build/benchmarks/benchmark_data_generator --seed 12345 --size all --out data/gen
 
 ## Website
 
-`build/ev33_web` then open <http://localhost:8033> (live copy: <https://ev-project-84u5.onrender.com>).
+Start `build/ev33_web` (Windows: `build\ev33_web.exe`) from the project folder and leave it running,
+then open `http://localhost:8033` in a browser on the same computer (stop the server with Ctrl+C).
+The hosted copy needs no build: <https://ev-project-84u5.onrender.com>.
 Options: `--port N` (or `PORT`), `--data DIR` (default `data/scenarios`), `--results DIR` (default
 `benchmarks`), `--assets DIR`. The website has the same eight views as the desktop app below and works
 the same way, with links and forms instead of mouse input: choose the dataset in the sidebar and press
